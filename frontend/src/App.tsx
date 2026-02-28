@@ -21,6 +21,9 @@ const ConflictsPage = lazy(() => import('./features/conflicts/ConflictsPage'));
 const TasksPage = lazy(() => import('./features/tasks/TasksPage'));
 const TemplatesPage = lazy(() => import('./features/templates/TemplatesPage'));
 const DeadlinesPage = lazy(() => import('./features/deadlines/DeadlinesPage'));
+const IntakePage = lazy(() => import('./features/intake/IntakePage'));
+const LEDESPage = lazy(() => import('./features/ledes/LEDESPage'));
+const ReportsPage = lazy(() => import('./features/reports/ReportsPage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const AuditLogPage = lazy(() => import('./features/admin/AuditLogPage'));
@@ -65,6 +68,9 @@ export default function App() {
         <Route path="/tasks" element={<SuspenseWrapper><TasksPage /></SuspenseWrapper>} />
         <Route path="/templates" element={<SuspenseWrapper><TemplatesPage /></SuspenseWrapper>} />
         <Route path="/deadlines" element={<SuspenseWrapper><DeadlinesPage /></SuspenseWrapper>} />
+        <Route path="/ledes" element={<SuspenseWrapper><LEDESPage /></SuspenseWrapper>} />
+        <Route path="/intake" element={<SuspenseWrapper><IntakePage /></SuspenseWrapper>} />
+        <Route path="/reports" element={<SuspenseWrapper><ReportsPage /></SuspenseWrapper>} />
         <Route path="/settings" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
         <Route path="/admin" element={<SuspenseWrapper><AdminPage /></SuspenseWrapper>} />
         <Route path="/admin/audit" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />

@@ -5,8 +5,9 @@ import {
 } from '@mantine/core';
 import {
   IconAlarm, IconAlertTriangle, IconCalendar, IconCash, IconChecklist, IconClipboardList, IconDashboard,
-  IconFileDescription, IconLogout, IconMoon, IconScale, IconSearch, IconSettings, IconShieldLock,
-  IconSun, IconTemplate, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
+  IconFileDescription, IconLogout, IconMoon, IconReceipt2, IconReportAnalytics, IconScale, IconSearch,
+  IconSettings, IconShieldLock,
+  IconSun, IconTemplate, IconUserPlus, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
 } from '@tabler/icons-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTimerStore } from '../stores/timerStore';
@@ -17,12 +18,15 @@ const NAV_ITEMS = [
   { label: 'Clients', icon: IconUsers, path: '/clients' },
   { label: 'Matters', icon: IconClipboardList, path: '/matters' },
   { label: 'Contacts', icon: IconUsersGroup, path: '/contacts' },
+  { label: 'Intake', icon: IconUserPlus, path: '/intake' },
   { label: 'Documents', icon: IconFileDescription, path: '/documents' },
   { label: 'Calendar', icon: IconCalendar, path: '/calendar' },
   { label: 'Billing', icon: IconCash, path: '/billing' },
+  { label: 'Reports', icon: IconReportAnalytics, path: '/reports' },
   { label: 'Tasks', icon: IconChecklist, path: '/tasks' },
   { label: 'Templates', icon: IconTemplate, path: '/templates' },
   { label: 'Trust Accounts', icon: IconBuildingBank, path: '/trust' },
+  { label: 'E-Billing', icon: IconReceipt2, path: '/ledes' },
   { label: 'Deadlines', icon: IconAlarm, path: '/deadlines' },
   { label: 'Conflicts', icon: IconAlertTriangle, path: '/conflicts' },
   { label: 'Portal', icon: IconWorld, path: '/portal-admin' },

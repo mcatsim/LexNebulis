@@ -1,13 +1,20 @@
 import api, { portalApi } from './client';
 import type {
-  AuditLogEntry, CalendarEvent, Client, ClientUser, ConflictCheck, ConflictMatch, Contact,
-  CourtRuleSet, DeadlineRule, GeneratedDeadline,
+  AgedReceivable, AuditLogEntry, BillableHoursSummary, BillingGuideline, BlockBillingResult,
+  CalendarEvent, Client, ClientUser, CollectionReport, ComplianceResult, ConflictCheck,
+  ConflictMatch, Contact,
+  CourtRuleSet, DashboardSummary, DeadlineRule, GeneratedDeadline,
   Document as LegalDocument, DocumentTemplate, EthicalWall, GeneratedDocument, Invoice,
-  LoginResponse, Matter, Payment,
-  PortalInvoice, PortalMatter, PortalMessage, SharedDocument,
-  StatuteOfLimitations, Task, TaskChecklistItem, TaskDependency, TriggerEvent,
+  IntakeForm, IntakeSubmission, Lead,
+  LoginResponse, Matter, MatterProfitability, Payment,
+  PipelineSummaryResponse,
+  PortalInvoice, PortalMatter, PortalMessage, RealizationReport,
+  ReportExportType, RevenueByAttorney,
+  SharedDocument,
+  StatuteOfLimitations, Task, TaskChecklistItem, TaskDependency, TimeEntryCode, TriggerEvent,
   TwoFactorSetupResponse,
-  TwoFactorStatusResponse, TwoFactorVerifySetupResponse, WorkflowTemplate,
+  TwoFactorStatusResponse, TwoFactorVerifySetupResponse, UTBMSCode, UTBMSCodeType,
+  UtilizationReport, WorkflowTemplate,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
   PaginatedResponse, SearchResult,
 } from '../types';
@@ -226,6 +233,58 @@ export const deadlinesApi = {
     api.get<StatuteOfLimitations[]>('/deadlines/sol/warnings', { params: { days_ahead: daysAhead || 90 } }),
 };
 
+// Intake / CRM Pipeline
+export const intakeApi = {
+  // Leads
+  listLeads: (params: {
+    page?: number; page_size?: number; search?: string;
+    stage?: string; source?: string; practice_area?: string; assigned_to?: string;
+  }) =>
+    api.get<PaginatedResponse<Lead>>('/intake', { params }),
+  getLead: (id: string) => api.get<Lead>(`/intake/${id}`),
+  createLead: (data: {
+    first_name: string; last_name: string; email?: string; phone?: string;
+    organization?: string; source?: string; source_detail?: string; stage?: string;
+    practice_area?: string; description?: string; estimated_value_cents?: number;
+    assigned_to?: string; notes?: string; custom_fields?: Record<string, unknown>;
+  }) =>
+    api.post<Lead>('/intake', data),
+  updateLead: (id: string, data: Partial<Lead>) =>
+    api.put<Lead>(`/intake/${id}`, data),
+  deleteLead: (id: string) => api.delete(`/intake/${id}`),
+  convertLead: (id: string, data: {
+    client_type?: string; organization_name?: string;
+    create_matter?: boolean; matter_title?: string;
+    litigation_type?: string; jurisdiction?: string;
+  }) =>
+    api.post<Lead>(`/intake/${id}/convert`, data),
+  getPipelineSummary: () =>
+    api.get<PipelineSummaryResponse>('/intake/pipeline/summary'),
+  // Intake Forms
+  listForms: (params?: { page?: number; page_size?: number; is_active?: boolean }) =>
+    api.get<PaginatedResponse<IntakeForm>>('/intake/forms', { params }),
+  createForm: (data: {
+    name: string; description?: string; practice_area?: string;
+    fields_json: unknown[]; is_active?: boolean; is_public?: boolean;
+  }) =>
+    api.post<IntakeForm>('/intake/forms', data),
+  updateForm: (id: string, data: {
+    name?: string; description?: string; practice_area?: string;
+    fields_json?: unknown[]; is_active?: boolean; is_public?: boolean;
+  }) =>
+    api.put<IntakeForm>(`/intake/forms/${id}`, data),
+  deleteForm: (id: string) => api.delete(`/intake/forms/${id}`),
+  // Submissions
+  listSubmissions: (params?: { page?: number; page_size?: number; form_id?: string; is_reviewed?: boolean }) =>
+    api.get<PaginatedResponse<IntakeSubmission>>('/intake/submissions', { params }),
+  reviewSubmission: (id: string, data: {
+    lead_id?: string; create_lead?: boolean;
+    lead_first_name?: string; lead_last_name?: string;
+    lead_email?: string; lead_phone?: string;
+  }) =>
+    api.put<IntakeSubmission>(`/intake/submissions/${id}/review`, data),
+};
+
 // Admin
 export const adminApi = {
   listAuditLogs: (params: { page?: number; page_size?: number; entity_type?: string; action?: string; user_id?: string; severity?: string; start_date?: string; end_date?: string }) =>
@@ -303,4 +362,72 @@ export const portalClientApi = {
     portalApi.put<PortalMessage>(`/portal/my/messages/${messageId}/read`),
   getUnreadCount: () =>
     portalApi.get<{ unread_count: number }>('/portal/my/unread'),
+};
+
+// LEDES / E-Billing
+export const ledesApi = {
+  // UTBMS Codes
+  listCodes: (params: { page?: number; page_size?: number; code_type?: UTBMSCodeType; practice_area?: string; search?: string }) =>
+    api.get<PaginatedResponse<UTBMSCode>>('/ledes/codes', { params }),
+  createCode: (data: { code: string; code_type: UTBMSCodeType; name: string; description?: string; practice_area?: string; is_active?: boolean }) =>
+    api.post<UTBMSCode>('/ledes/codes', data),
+  updateCode: (id: string, data: { code?: string; code_type?: UTBMSCodeType; name?: string; description?: string; practice_area?: string; is_active?: boolean }) =>
+    api.put<UTBMSCode>(`/ledes/codes/${id}`, data),
+  deleteCode: (id: string) => api.delete(`/ledes/codes/${id}`),
+  seedCodes: () => api.post<{ message: string; codes_created: number }>('/ledes/codes/seed'),
+  // Billing Guidelines
+  listGuidelines: (params: { page?: number; page_size?: number; client_id?: string }) =>
+    api.get<PaginatedResponse<BillingGuideline>>('/ledes/guidelines', { params }),
+  getGuideline: (id: string) => api.get<BillingGuideline>(`/ledes/guidelines/${id}`),
+  createGuideline: (data: {
+    client_id: string; name: string; rate_cap_cents?: number; daily_hour_cap?: number;
+    block_billing_prohibited?: boolean; task_code_required?: boolean; activity_code_required?: boolean;
+    restricted_codes?: string[]; notes?: string; is_active?: boolean;
+  }) =>
+    api.post<BillingGuideline>('/ledes/guidelines', data),
+  updateGuideline: (id: string, data: {
+    name?: string; rate_cap_cents?: number; daily_hour_cap?: number;
+    block_billing_prohibited?: boolean; task_code_required?: boolean; activity_code_required?: boolean;
+    restricted_codes?: string[]; notes?: string; is_active?: boolean;
+  }) =>
+    api.put<BillingGuideline>(`/ledes/guidelines/${id}`, data),
+  deleteGuideline: (id: string) => api.delete(`/ledes/guidelines/${id}`),
+  // Time Entry Codes
+  getEntryCodes: (entryId: string) =>
+    api.get<TimeEntryCode[]>(`/ledes/time-entries/${entryId}/codes`),
+  assignCode: (entryId: string, utbmsCodeId: string) =>
+    api.post<TimeEntryCode>(`/ledes/time-entries/${entryId}/codes`, { utbms_code_id: utbmsCodeId }),
+  removeCode: (entryId: string, codeId: string) =>
+    api.delete(`/ledes/time-entries/${entryId}/codes/${codeId}`),
+  // Compliance
+  checkCompliance: (data: { time_entry_id: string; client_id: string }) =>
+    api.post<ComplianceResult>('/ledes/check-compliance', data),
+  detectBlockBilling: (data: { description: string; duration_minutes?: number }) =>
+    api.post<BlockBillingResult>('/ledes/detect-block-billing', data),
+  // LEDES Export
+  exportLedesUrl: (invoiceId: string) => `/api/ledes/export/ledes/${invoiceId}`,
+  exportLedes: (invoiceId: string) =>
+    api.get<string>(`/ledes/export/ledes/${invoiceId}`, { responseType: 'text' }),
+};
+
+// Reports & Analytics
+export const reportsApi = {
+  getSummary: (params: { start_date: string; end_date: string }) =>
+    api.get<DashboardSummary>('/reports/summary', { params }),
+  getUtilization: (params: { start_date: string; end_date: string }) =>
+    api.get<UtilizationReport[]>('/reports/utilization', { params }),
+  getRealization: (params: { start_date: string; end_date: string }) =>
+    api.get<RealizationReport>('/reports/realization', { params }),
+  getCollection: (params: { start_date: string; end_date: string }) =>
+    api.get<CollectionReport>('/reports/collection', { params }),
+  getRevenueByAttorney: (params: { start_date: string; end_date: string }) =>
+    api.get<RevenueByAttorney[]>('/reports/revenue-by-attorney', { params }),
+  getAgedReceivables: () =>
+    api.get<AgedReceivable[]>('/reports/aged-receivables'),
+  getMatterProfitability: (params: { start_date: string; end_date: string; limit?: number }) =>
+    api.get<MatterProfitability[]>('/reports/matter-profitability', { params }),
+  getBillableHours: (params: { start_date: string; end_date: string }) =>
+    api.get<BillableHoursSummary[]>('/reports/billable-hours', { params }),
+  exportCsv: (reportType: ReportExportType, params?: { start_date?: string; end_date?: string }) =>
+    api.get(`/reports/export/${reportType}`, { params, responseType: 'blob' }),
 };

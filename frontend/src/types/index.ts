@@ -480,6 +480,216 @@ export interface StatuteOfLimitations {
   updated_at: string;
 }
 
+// Intake / CRM Pipeline
+export type LeadSource = 'website' | 'referral' | 'social_media' | 'advertisement' | 'walk_in' | 'phone' | 'other';
+export type PipelineStage = 'new' | 'contacted' | 'qualified' | 'proposal_sent' | 'retained' | 'declined' | 'lost';
+
+export interface Lead {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string | null;
+  phone: string | null;
+  organization: string | null;
+  source: LeadSource;
+  source_detail: string | null;
+  stage: PipelineStage;
+  practice_area: string | null;
+  description: string | null;
+  estimated_value_cents: number | null;
+  assigned_to: string | null;
+  converted_client_id: string | null;
+  converted_matter_id: string | null;
+  converted_at: string | null;
+  notes: string | null;
+  custom_fields: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntakeForm {
+  id: string;
+  name: string;
+  description: string | null;
+  practice_area: string | null;
+  fields_json: IntakeFormField[];
+  is_active: boolean;
+  is_public: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface IntakeFormField {
+  name: string;
+  type: string;
+  label: string;
+  required: boolean;
+  options?: string[];
+}
+
+export interface IntakeSubmission {
+  id: string;
+  form_id: string;
+  lead_id: string | null;
+  data_json: Record<string, unknown>;
+  ip_address: string | null;
+  user_agent: string | null;
+  is_reviewed: boolean;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PipelineStageSummary {
+  stage: PipelineStage;
+  count: number;
+  total_value_cents: number;
+}
+
+export interface PipelineSummaryResponse {
+  stages: PipelineStageSummary[];
+  total_leads: number;
+  total_value_cents: number;
+}
+
+// Reports & Analytics
+export interface UtilizationReport {
+  user_id: string;
+  user_name: string;
+  total_hours: number;
+  billable_hours: number;
+  non_billable_hours: number;
+  utilization_rate: number;
+}
+
+export interface RealizationReport {
+  total_billed_cents: number;
+  total_collected_cents: number;
+  realization_rate: number;
+  period_start: string;
+  period_end: string;
+}
+
+export interface CollectionReport {
+  total_invoiced_cents: number;
+  total_collected_cents: number;
+  total_outstanding_cents: number;
+  collection_rate: number;
+  period_start: string;
+  period_end: string;
+}
+
+export interface RevenueByAttorney {
+  user_id: string;
+  user_name: string;
+  billed_cents: number;
+  collected_cents: number;
+  hours_worked: number;
+  effective_rate_cents: number;
+}
+
+export interface AgedReceivable {
+  client_id: string;
+  client_name: string;
+  current_cents: number;
+  days_31_60_cents: number;
+  days_61_90_cents: number;
+  days_91_120_cents: number;
+  over_120_cents: number;
+  total_cents: number;
+}
+
+export interface MatterProfitability {
+  matter_id: string;
+  matter_title: string;
+  client_name: string;
+  total_billed_cents: number;
+  total_collected_cents: number;
+  total_hours: number;
+  effective_rate_cents: number;
+  status: string;
+}
+
+export interface BillableHoursSummary {
+  user_id: string;
+  user_name: string;
+  practice_area: string;
+  billable_hours: number;
+  billable_amount_cents: number;
+}
+
+export interface DashboardSummary {
+  total_revenue_cents: number;
+  total_outstanding_cents: number;
+  total_wip_cents: number;
+  total_matters_open: number;
+  total_matters_closed_period: number;
+  average_collection_days: number;
+  utilization_rate: number;
+  collection_rate: number;
+}
+
+export type ReportExportType = 'utilization' | 'collection' | 'revenue' | 'aged-receivables' | 'matter-profitability' | 'billable-hours';
+
+// LEDES / E-Billing
+export type UTBMSCodeType = 'activity' | 'expense' | 'task' | 'phase';
+
+export interface UTBMSCode {
+  id: string;
+  code: string;
+  code_type: UTBMSCodeType;
+  name: string;
+  description: string | null;
+  practice_area: string | null;
+  is_active: boolean;
+}
+
+export interface BillingGuideline {
+  id: string;
+  client_id: string;
+  name: string;
+  rate_cap_cents: number | null;
+  daily_hour_cap: number | null;
+  block_billing_prohibited: boolean;
+  task_code_required: boolean;
+  activity_code_required: boolean;
+  restricted_codes: string[] | null;
+  notes: string | null;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TimeEntryCode {
+  id: string;
+  time_entry_id: string;
+  utbms_code_id: string;
+  created_at: string;
+  code: string | null;
+  code_type: UTBMSCodeType | null;
+  code_name: string | null;
+}
+
+export interface ComplianceViolation {
+  rule: string;
+  message: string;
+  severity: string;
+}
+
+export interface ComplianceResult {
+  compliant: boolean;
+  violations: ComplianceViolation[];
+}
+
+export interface BlockBillingResult {
+  is_block_billing: boolean;
+  reasons: string[];
+  confidence: string;
+}
+
 // Audit
 export interface AuditLogEntry {
   id: string;

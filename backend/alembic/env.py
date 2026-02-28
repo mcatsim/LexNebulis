@@ -18,6 +18,8 @@ from app.billing.models import TimeEntry, RateSchedule, Invoice, InvoiceLineItem
 from app.trust.models import TrustAccount, TrustLedgerEntry, TrustReconciliation  # noqa: F401
 from app.portal.models import ClientUser, Message, SharedDocument  # noqa: F401
 from app.templates.models import DocumentTemplate, GeneratedDocument  # noqa: F401
+from app.intake.models import Lead, IntakeForm, IntakeSubmission  # noqa: F401
+from app.ledes.models import UTBMSCode, BillingGuideline, TimeEntryCode  # noqa: F401
 
 config = context.config
 

@@ -13,10 +13,13 @@ from app.conflicts.router import router as conflicts_router
 from app.contacts.router import router as contacts_router
 from app.deadlines.router import router as deadlines_router
 from app.documents.router import router as documents_router
+from app.intake.router import router as intake_router
+from app.ledes.router import router as ledes_router
 from app.matters.router import router as matters_router
 from app.middleware import CorrelationIDMiddleware
 from app.portal.router import client_router as portal_client_router
 from app.portal.router import staff_router as portal_staff_router
+from app.reports.router import router as reports_router
 from app.search.router import router as search_router
 from app.tasks.router import router as tasks_router
 from app.tasks.router import workflow_router
@@ -69,6 +72,9 @@ app.include_router(templates_router, prefix="/api/templates", tags=["Templates"]
 app.include_router(portal_staff_router, prefix="/api/portal", tags=["Portal (Staff)"])
 app.include_router(portal_client_router, prefix="/api/portal", tags=["Portal (Client)"])
 app.include_router(deadlines_router, prefix="/api/deadlines", tags=["Deadlines"])
+app.include_router(intake_router, prefix="/api/intake", tags=["Intake"])
+app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
+app.include_router(ledes_router, prefix="/api/ledes", tags=["LEDES"])
 
 
 @app.get("/api/health")
