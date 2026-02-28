@@ -33,6 +33,15 @@ dev = [
     "mypy>=1.13.0",
     "factory-boy>=3.3.0",
 ]
+test = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "httpx>=0.28",
+    "factory-boy>=3.3",
+    "faker>=33.0",
+    "aiosqlite>=0.20",
+]
 
 [tool.ruff]
 target-version = "py312"
@@ -44,6 +53,14 @@ select = ["E", "F", "I", "N", "W", "UP"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing --cov-report=html --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["app/celery_app.py"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if TYPE_CHECKING:", "if __name__"]
 
 [build-system]
 requires = ["setuptools>=75.0"]

@@ -1,0 +1,15 @@
+# LegalForge Code Owners
+# Each line is a file pattern followed by one or more owners.
+# Order matters — last matching pattern takes precedence.
+
+# Default owner for everything
+* @mcatsim
+
+# Backend
+/backend/ @mcatsim
+
+# Frontend
+/frontend/ @mcatsim
+
+# CI/CD and GitHub configuration
+/.github/ @mcatsim

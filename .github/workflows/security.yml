@@ -1,0 +1,244 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly scan every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "22"
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Python Dependency Vulnerability Check
+  # ---------------------------------------------------------------------------
+  dependency-check-backend:
+    name: Backend Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Install project dependencies
+        run: pip install -e .
+
+      - name: Run pip-audit
+        run: |
+          pip-audit \
+            --format json \
+            --output pip-audit-report.json \
+            --desc || true
+          # Also produce human-readable output
+          pip-audit --desc
+
+      - name: Upload pip-audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: backend/pip-audit-report.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # JavaScript Dependency Vulnerability Check
+  # ---------------------------------------------------------------------------
+  dependency-check-frontend:
+    name: Frontend Dependency Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --json > npm-audit-report.json || true
+          npm audit --audit-level=high
+
+      - name: Upload npm audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: frontend/npm-audit-report.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Python SAST with Bandit
+  # ---------------------------------------------------------------------------
+  sast-backend:
+    name: Backend SAST (Bandit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Bandit
+        run: pip install bandit[toml]
+
+      - name: Run Bandit SAST scan
+        run: |
+          bandit -r app/ \
+            -f json \
+            -o bandit-report.json \
+            --severity-level medium \
+            --confidence-level medium \
+            || true
+          # Also produce human-readable output
+          bandit -r app/ \
+            --severity-level medium \
+            --confidence-level medium \
+            -f screen
+
+      - name: Upload Bandit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: backend/bandit-report.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Frontend SAST (ESLint security — covered by CI lint, but explicit here)
+  # ---------------------------------------------------------------------------
+  sast-frontend:
+    name: Frontend SAST (ESLint Security)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint with security rules
+        run: npm run lint
+
+  # ---------------------------------------------------------------------------
+  # Container Image Scanning with Trivy
+  # ---------------------------------------------------------------------------
+  container-scan:
+    name: Container Scan (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.service }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./${{ matrix.service }}
+          push: false
+          load: true
+          tags: legalforge-${{ matrix.service }}:scan
+          cache-from: type=gha,scope=${{ matrix.service }}-security
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}-security
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: legalforge-${{ matrix.service }}:scan
+          format: json
+          output: trivy-${{ matrix.service }}-report.json
+          severity: CRITICAL,HIGH
+          exit-code: "0"
+
+      - name: Trivy scan (human-readable + fail on CRITICAL)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: legalforge-${{ matrix.service }}:scan
+          format: table
+          severity: CRITICAL,HIGH
+          # Fail the job if CRITICAL vulnerabilities are found
+          exit-code: "1"
+          ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Upload Trivy report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ matrix.service }}-report
+          path: trivy-${{ matrix.service }}-report.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # Secrets Detection with Gitleaks
+  # ---------------------------------------------------------------------------
+  secrets-scan:
+    name: Secrets Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Gitleaks report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+          retention-days: 30
+          if-no-files-found: ignore

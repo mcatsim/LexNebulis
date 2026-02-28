@@ -1,0 +1,72 @@
+version: 2
+updates:
+  # Python (pip) dependencies — backend
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - backend
+    commit-message:
+      prefix: "deps(backend):"
+
+  # JavaScript (npm) dependencies — frontend
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+      - frontend
+    commit-message:
+      prefix: "deps(frontend):"
+
+  # Docker base images
+  - package-ecosystem: docker
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Los_Angeles
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "deps(docker):"
+
+  - package-ecosystem: docker
+    directory: /frontend
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Los_Angeles
+    labels:
+      - dependencies
+      - docker
+    commit-message:
+      prefix: "deps(docker):"
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Los_Angeles
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: "deps(actions):"

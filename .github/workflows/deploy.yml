@@ -1,0 +1,245 @@
+name: Deploy
+
+on:
+  # Manual trigger with environment selection
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: "Version tag to deploy (e.g. v1.2.3). Leave empty to use latest main."
+        required: false
+        type: string
+  # Auto-deploy on version tag push
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: deploy-${{ github.event.inputs.environment || 'production' }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/mcatsim/legalforge-backend
+  FRONTEND_IMAGE: ghcr.io/mcatsim/legalforge-frontend
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build and Push Docker Images to GHCR
+  # ---------------------------------------------------------------------------
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      backend-image: ${{ steps.meta.outputs.backend-image }}
+      frontend-image: ${{ steps.meta.outputs.frontend-image }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine version
+        id: meta
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${{ github.ref_name }}"
+          elif [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="sha-$(echo ${{ github.sha }} | head -c 7)"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "backend-image=${{ env.BACKEND_IMAGE }}:${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "frontend-image=${{ env.FRONTEND_IMAGE }}:${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Deploying version: ${VERSION}"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:${{ steps.meta.outputs.version }}
+            ${{ env.BACKEND_IMAGE }}:sha-${{ github.sha }}
+            ${{ env.BACKEND_IMAGE }}:latest
+          cache-from: type=gha,scope=backend-deploy
+          cache-to: type=gha,mode=max,scope=backend-deploy
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:${{ steps.meta.outputs.version }}
+            ${{ env.FRONTEND_IMAGE }}:sha-${{ github.sha }}
+            ${{ env.FRONTEND_IMAGE }}:latest
+          cache-from: type=gha,scope=frontend-deploy
+          cache-to: type=gha,mode=max,scope=frontend-deploy
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=${{ steps.meta.outputs.version }}
+
+  # ---------------------------------------------------------------------------
+  # Deploy to Staging
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    # Run for tag pushes or when staging is explicitly selected
+    if: >-
+      github.event_name == 'push' ||
+      github.event.inputs.environment == 'staging'
+    environment:
+      name: staging
+      url: https://staging.legalforge.example.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to staging server
+        env:
+          VERSION: ${{ needs.build-and-push.outputs.version }}
+          BACKEND_IMAGE: ${{ needs.build-and-push.outputs.backend-image }}
+          FRONTEND_IMAGE: ${{ needs.build-and-push.outputs.frontend-image }}
+        run: |
+          echo "=========================================="
+          echo "  Deploying to STAGING"
+          echo "  Version:  ${VERSION}"
+          echo "  Backend:  ${BACKEND_IMAGE}"
+          echo "  Frontend: ${FRONTEND_IMAGE}"
+          echo "=========================================="
+
+          # -----------------------------------------------------------------
+          # PLACEHOLDER: Replace with your actual deployment method.
+          # Option A: SSH to staging server
+          # -----------------------------------------------------------------
+          # ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }} << 'DEPLOY'
+          #   cd /opt/legalforge
+          #   export BACKEND_IMAGE="${BACKEND_IMAGE}"
+          #   export FRONTEND_IMAGE="${FRONTEND_IMAGE}"
+          #   docker compose pull
+          #   docker compose up -d --remove-orphans
+          #   docker compose exec backend alembic upgrade head
+          #   echo "Staging deployment complete."
+          # DEPLOY
+
+          # -----------------------------------------------------------------
+          # Option B: Webhook trigger
+          # -----------------------------------------------------------------
+          # curl -X POST "${{ secrets.STAGING_DEPLOY_WEBHOOK }}" \
+          #   -H "Authorization: Bearer ${{ secrets.STAGING_DEPLOY_TOKEN }}" \
+          #   -H "Content-Type: application/json" \
+          #   -d '{"version": "'${VERSION}'", "environment": "staging"}'
+
+          echo "Staging deployment placeholder completed."
+
+      # ROLLBACK INSTRUCTIONS:
+      # To roll back staging to a previous version:
+      #   1. Find the previous version tag or SHA:
+      #      git log --oneline --tags
+      #   2. Re-run this workflow with workflow_dispatch:
+      #      - environment: staging
+      #      - version: <previous-version-tag>
+      #   3. Or SSH to the server and manually:
+      #      cd /opt/legalforge
+      #      export BACKEND_IMAGE=ghcr.io/mcatsim/legalforge-backend:<old-version>
+      #      export FRONTEND_IMAGE=ghcr.io/mcatsim/legalforge-frontend:<old-version>
+      #      docker compose pull && docker compose up -d
+
+  # ---------------------------------------------------------------------------
+  # Deploy to Production (manual approval required)
+  # ---------------------------------------------------------------------------
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, deploy-staging]
+    # Run for tag pushes (after staging) or when production is explicitly selected
+    if: >-
+      github.event_name == 'push' ||
+      github.event.inputs.environment == 'production'
+
+    # The "production" environment must have required reviewers configured
+    # in GitHub Settings > Environments > production > Required reviewers
+    environment:
+      name: production
+      url: https://legalforge.example.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to production server
+        env:
+          VERSION: ${{ needs.build-and-push.outputs.version }}
+          BACKEND_IMAGE: ${{ needs.build-and-push.outputs.backend-image }}
+          FRONTEND_IMAGE: ${{ needs.build-and-push.outputs.frontend-image }}
+        run: |
+          echo "=========================================="
+          echo "  Deploying to PRODUCTION"
+          echo "  Version:  ${VERSION}"
+          echo "  Backend:  ${BACKEND_IMAGE}"
+          echo "  Frontend: ${FRONTEND_IMAGE}"
+          echo "=========================================="
+
+          # -----------------------------------------------------------------
+          # PLACEHOLDER: Replace with your actual deployment method.
+          # Option A: SSH to production server
+          # -----------------------------------------------------------------
+          # ssh -o StrictHostKeyChecking=no ${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_SSH_HOST }} << 'DEPLOY'
+          #   cd /opt/legalforge
+          #   export BACKEND_IMAGE="${BACKEND_IMAGE}"
+          #   export FRONTEND_IMAGE="${FRONTEND_IMAGE}"
+          #
+          #   # Create a database backup before deploying
+          #   docker compose exec db pg_dump -U legalforge legalforge > /opt/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql
+          #
+          #   docker compose pull
+          #   docker compose up -d --remove-orphans
+          #   docker compose exec backend alembic upgrade head
+          #   echo "Production deployment complete."
+          # DEPLOY
+
+          echo "Production deployment placeholder completed."
+
+      # ROLLBACK INSTRUCTIONS:
+      # To roll back production to a previous version:
+      #   1. Identify the last known good version:
+      #      git tag --sort=-creatordate | head -5
+      #   2. Re-run this workflow with workflow_dispatch:
+      #      - environment: production
+      #      - version: <previous-version-tag>
+      #   3. Or SSH to the server and manually roll back:
+      #      cd /opt/legalforge
+      #      export BACKEND_IMAGE=ghcr.io/mcatsim/legalforge-backend:<old-version>
+      #      export FRONTEND_IMAGE=ghcr.io/mcatsim/legalforge-frontend:<old-version>
+      #      docker compose pull && docker compose up -d
+      #   4. If database migrations need reverting:
+      #      docker compose exec backend alembic downgrade -1
+      #   5. Restore database from pre-deploy backup if needed:
+      #      cat /opt/backups/pre-deploy-<timestamp>.sql | docker compose exec -T db psql -U legalforge legalforge

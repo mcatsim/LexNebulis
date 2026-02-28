@@ -1,0 +1,76 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+          CURRENT_TAG="${{ github.ref_name }}"
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "First release -- including all commits."
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+          else
+            echo "Generating changelog from ${PREVIOUS_TAG} to ${CURRENT_TAG}"
+            CHANGELOG=$(git log "${PREVIOUS_TAG}..${CURRENT_TAG}" --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          # Write changelog to file (handles multiline safely)
+          cat > changelog.md << 'HEADER'
+          ## What's Changed
+          HEADER
+          echo "" >> changelog.md
+          echo "${CHANGELOG}" >> changelog.md
+
+          cat >> changelog.md << 'FOOTER'
+
+          ## Docker Images
+
+          ```
+          docker pull ghcr.io/mcatsim/legalforge-backend:${{ github.ref_name }}
+          docker pull ghcr.io/mcatsim/legalforge-frontend:${{ github.ref_name }}
+          ```
+
+          ## Deployment
+
+          1. Download the attached `docker-compose.yml` and `.env.example`
+          2. Copy `.env.example` to `.env` and configure all values
+          3. Run `docker compose up -d`
+
+          See the [deployment documentation](https://github.com/mcatsim/LegalForge#deployment) for full instructions.
+          FOOTER
+
+      - name: Prepare release assets
+        run: |
+          cp docker-compose.yml docker-compose.release.yml
+          cp .env.example .env.example
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: LegalForge ${{ github.ref_name }}
+          body_path: changelog.md
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
+          files: |
+            docker-compose.release.yml
+            .env.example
+          generate_release_notes: true

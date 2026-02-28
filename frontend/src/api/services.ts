@@ -1,6 +1,6 @@
 import api from './client';
 import type {
-  CalendarEvent, Client, Contact, Document as LegalDocument, Invoice, Matter, Payment,
+  AuditLogEntry, CalendarEvent, Client, Contact, Document as LegalDocument, Invoice, Matter, Payment,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
   PaginatedResponse, SearchResult,
 } from '../types';
@@ -121,7 +121,7 @@ export const searchApi = {
 // Admin
 export const adminApi = {
   listAuditLogs: (params: { page?: number; page_size?: number; entity_type?: string; action?: string; user_id?: string; severity?: string; start_date?: string; end_date?: string }) =>
-    api.get<PaginatedResponse<Record<string, unknown>>>('/admin/audit-logs', { params }),
+    api.get<PaginatedResponse<AuditLogEntry>>('/admin/audit-logs', { params }),
   verifyAuditChain: (limit = 1000) =>
     api.get('/admin/audit-logs/verify-chain', { params: { limit } }),
   exportAuditJSON: (params: { start_date?: string; end_date?: string; limit?: number }) =>
