@@ -1,0 +1,43 @@
+import enum
+import uuid
+from datetime import datetime
+
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.common.base_models import TimestampMixin, UUIDBase
+
+
+class EventType(str, enum.Enum):
+    court_date = "court_date"
+    deadline = "deadline"
+    filing = "filing"
+    meeting = "meeting"
+    reminder = "reminder"
+
+
+class EventStatus(str, enum.Enum):
+    scheduled = "scheduled"
+    completed = "completed"
+    cancelled = "cancelled"
+
+
+class CalendarEvent(UUIDBase, TimestampMixin):
+    __tablename__ = "calendar_events"
+
+    matter_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("matters.id", ondelete="SET NULL"), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    event_type: Mapped[EventType] = mapped_column(Enum(EventType), nullable=False, default=EventType.meeting)
+    start_datetime: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    end_datetime: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    all_day: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    location: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    assigned_to: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+    reminder_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    status: Mapped[EventStatus] = mapped_column(Enum(EventStatus), nullable=False, default=EventStatus.scheduled)
+    created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+
+    matter = relationship("Matter", back_populates="calendar_events", lazy="selectin")
+    assigned_user = relationship("User", back_populates="calendar_events", foreign_keys=[assigned_to], lazy="selectin")
