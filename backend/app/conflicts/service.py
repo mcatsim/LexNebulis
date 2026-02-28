@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import jellyfish
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -13,12 +13,11 @@ from app.conflicts.models import (
     ConflictMatch,
     ConflictStatus,
     EthicalWall,
-    MatchResolution,
     MatchType,
 )
 from app.conflicts.schemas import ConflictCheckCreate, ConflictMatchResolve, EthicalWallCreate
 from app.contacts.models import Contact
-from app.matters.models import Matter, MatterContact
+from app.matters.models import MatterContact
 
 
 def _normalize(name: str) -> str:
@@ -77,7 +76,6 @@ async def run_conflict_check(
 ) -> ConflictCheck:
     """Run a full conflict-of-interest check across clients, contacts, and matter parties."""
 
-    search_name = _normalize(data.search_name)
     search_org = _normalize(data.search_organization) if data.search_organization else None
 
     matches: list[dict] = []
@@ -120,14 +118,16 @@ async def run_conflict_check(
                 matched_name = client.email
 
         if best_score > 0.4:
-            matches.append({
-                "matched_entity_type": "client",
-                "matched_entity_id": client.id,
-                "matched_name": matched_name,
-                "match_type": best_type,
-                "match_score": best_score,
-                "relationship_context": f"Client #{client.client_number}" if client.client_number else "Client",
-            })
+            matches.append(
+                {
+                    "matched_entity_type": "client",
+                    "matched_entity_id": client.id,
+                    "matched_name": matched_name,
+                    "match_type": best_type,
+                    "match_score": best_score,
+                    "relationship_context": f"Client #{client.client_number}" if client.client_number else "Client",
+                }
+            )
 
     # ── Search Contacts ───────────────────────────────────────────────
     contact_result = await db.execute(select(Contact))
@@ -164,14 +164,16 @@ async def run_conflict_check(
                 matched_name = contact.email
 
         if best_score > 0.4:
-            matches.append({
-                "matched_entity_type": "contact",
-                "matched_entity_id": contact.id,
-                "matched_name": matched_name,
-                "match_type": best_type,
-                "match_score": best_score,
-                "relationship_context": f"Contact ({contact.role.value})",
-            })
+            matches.append(
+                {
+                    "matched_entity_type": "contact",
+                    "matched_entity_id": contact.id,
+                    "matched_name": matched_name,
+                    "match_type": best_type,
+                    "match_score": best_score,
+                    "relationship_context": f"Contact ({contact.role.value})",
+                }
+            )
 
     # ── Search Matter Contacts (opposing parties) ─────────────────────
     mc_result = await db.execute(
@@ -211,14 +213,16 @@ async def run_conflict_check(
             if case_num:
                 context += f" (#{case_num})"
 
-            matches.append({
-                "matched_entity_type": "matter_party",
-                "matched_entity_id": contact.id,
-                "matched_name": full_name,
-                "match_type": mtype,
-                "match_score": score,
-                "relationship_context": context,
-            })
+            matches.append(
+                {
+                    "matched_entity_type": "matter_party",
+                    "matched_entity_id": contact.id,
+                    "matched_name": full_name,
+                    "match_type": mtype,
+                    "match_score": score,
+                    "relationship_context": context,
+                }
+            )
             matched_contact_ids.add(contact.id)
 
     # ── Determine overall status ──────────────────────────────────────
@@ -331,10 +335,12 @@ async def get_ethical_walls(
 ) -> list[EthicalWall]:
     """Get all ethical walls for a specific matter."""
     result = await db.execute(
-        select(EthicalWall).where(
+        select(EthicalWall)
+        .where(
             EthicalWall.matter_id == matter_id,
-            EthicalWall.is_active == True,  # noqa: E712
-        ).order_by(EthicalWall.created_at.desc())
+            EthicalWall.is_active.is_(True),
+        )
+        .order_by(EthicalWall.created_at.desc())
     )
     return result.scalars().all()
 
@@ -349,7 +355,7 @@ async def check_ethical_wall(
         select(func.count(EthicalWall.id)).where(
             EthicalWall.matter_id == matter_id,
             EthicalWall.user_id == user_id,
-            EthicalWall.is_active == True,  # noqa: E712
+            EthicalWall.is_active.is_(True),
         )
     )
     return result.scalar_one() > 0

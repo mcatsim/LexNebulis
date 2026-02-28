@@ -4,9 +4,9 @@ import {
   ActionIcon, AppShell, Badge, Burger, Group, NavLink, ScrollArea, Text, Tooltip, useMantineColorScheme,
 } from '@mantine/core';
 import {
-  IconAlertTriangle, IconCalendar, IconCash, IconChecklist, IconClipboardList, IconDashboard,
+  IconAlarm, IconAlertTriangle, IconCalendar, IconCash, IconChecklist, IconClipboardList, IconDashboard,
   IconFileDescription, IconLogout, IconMoon, IconScale, IconSearch, IconSettings, IconShieldLock,
-  IconSun, IconUsers, IconUsersGroup, IconBuildingBank,
+  IconSun, IconTemplate, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
 } from '@tabler/icons-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTimerStore } from '../stores/timerStore';
@@ -21,8 +21,11 @@ const NAV_ITEMS = [
   { label: 'Calendar', icon: IconCalendar, path: '/calendar' },
   { label: 'Billing', icon: IconCash, path: '/billing' },
   { label: 'Tasks', icon: IconChecklist, path: '/tasks' },
+  { label: 'Templates', icon: IconTemplate, path: '/templates' },
   { label: 'Trust Accounts', icon: IconBuildingBank, path: '/trust' },
+  { label: 'Deadlines', icon: IconAlarm, path: '/deadlines' },
   { label: 'Conflicts', icon: IconAlertTriangle, path: '/conflicts' },
+  { label: 'Portal', icon: IconWorld, path: '/portal-admin' },
 ];
 
 const ADMIN_ITEMS = [

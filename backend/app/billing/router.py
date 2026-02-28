@@ -64,7 +64,11 @@ async def create_new_time_entry(
 ):
     entry = await create_time_entry(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "time_entry", str(entry.id), "create",
+        db,
+        current_user.id,
+        "time_entry",
+        str(entry.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -89,7 +93,11 @@ async def update_existing_time_entry(
 
     updated = await update_time_entry(db, entry, data)
     await create_audit_log(
-        db, current_user.id, "time_entry", str(entry_id), "update",
+        db,
+        current_user.id,
+        "time_entry",
+        str(entry_id),
+        "update",
         changes_json=json.dumps(data.model_dump(exclude_unset=True), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -115,7 +123,11 @@ async def delete_existing_time_entry(
 
     await delete_time_entry(db, entry)
     await create_audit_log(
-        db, current_user.id, "time_entry", str(entry_id), "delete",
+        db,
+        current_user.id,
+        "time_entry",
+        str(entry_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
 
@@ -157,7 +169,11 @@ async def create_new_invoice(
 ):
     invoice = await create_invoice(db, data)
     await create_audit_log(
-        db, current_user.id, "invoice", str(invoice.id), "create",
+        db,
+        current_user.id,
+        "invoice",
+        str(invoice.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -184,7 +200,11 @@ async def create_new_payment(
 ):
     payment = await create_payment(db, data)
     await create_audit_log(
-        db, current_user.id, "payment", str(payment.id), "create",
+        db,
+        current_user.id,
+        "payment",
+        str(payment.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )

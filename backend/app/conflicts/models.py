@@ -36,13 +36,13 @@ class ConflictCheck(UUIDBase, TimestampMixin):
     search_name: Mapped[str] = mapped_column(String(255), nullable=False)
     search_organization: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     matter_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("matters.id"), nullable=True, index=True)
-    status: Mapped[ConflictStatus] = mapped_column(
-        Enum(ConflictStatus), nullable=False, default=ConflictStatus.clear
-    )
+    status: Mapped[ConflictStatus] = mapped_column(Enum(ConflictStatus), nullable=False, default=ConflictStatus.clear)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Relationships
-    matches = relationship("ConflictMatch", back_populates="conflict_check", lazy="selectin", cascade="all, delete-orphan")
+    matches = relationship(
+        "ConflictMatch", back_populates="conflict_check", lazy="selectin", cascade="all, delete-orphan"
+    )
     checked_by_user = relationship("User", lazy="selectin", foreign_keys=[checked_by])
     matter = relationship("Matter", lazy="selectin")
 

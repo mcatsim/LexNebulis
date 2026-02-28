@@ -1,7 +1,7 @@
+import datetime as _dt
 import enum
 import uuid
-import datetime as _dt
-from datetime import date, datetime
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import BigInteger, Boolean, Date, Enum, ForeignKey, Integer, String, Text, func
@@ -68,7 +68,9 @@ class Invoice(UUIDBase, TimestampMixin):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     time_entries = relationship("TimeEntry", back_populates="invoice", lazy="selectin")
-    line_items = relationship("InvoiceLineItem", back_populates="invoice", lazy="selectin", cascade="all, delete-orphan")
+    line_items = relationship(
+        "InvoiceLineItem", back_populates="invoice", lazy="selectin", cascade="all, delete-orphan"
+    )
     payments = relationship("Payment", back_populates="invoice", lazy="selectin")
     client = relationship("Client", lazy="selectin")
     matter = relationship("Matter", lazy="selectin")

@@ -36,7 +36,9 @@ class User(UUIDBase, TimestampMixin):
 
     # Relationships
     time_entries = relationship("TimeEntry", back_populates="user", lazy="selectin")
-    calendar_events = relationship("CalendarEvent", back_populates="assigned_user", foreign_keys="CalendarEvent.assigned_to", lazy="selectin")
+    calendar_events = relationship(
+        "CalendarEvent", back_populates="assigned_user", foreign_keys="CalendarEvent.assigned_to", lazy="selectin"
+    )
 
     @property
     def full_name(self) -> str:
@@ -60,6 +62,7 @@ class AuditLog(UUIDBase):
     and the previous entry's hash, creating a tamper-evident chain. Entries
     are append-only — no update or delete operations are exposed.
     """
+
     __tablename__ = "audit_log"
 
     user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True, index=True)
@@ -74,7 +77,9 @@ class AuditLog(UUIDBase):
     severity: Mapped[str] = mapped_column(String(20), nullable=False, default="info")
     integrity_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     previous_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
+    )
 
 
 class SystemSetting(UUIDBase):
@@ -83,4 +88,6 @@ class SystemSetting(UUIDBase):
     key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     value: Mapped[str] = mapped_column(Text, nullable=False)
     updated_by: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )

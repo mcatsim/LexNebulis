@@ -4,7 +4,7 @@ import {
   mockUser,
   mockUsers,
   mockClients,
-  mockClient,
+
   mockMatters,
   mockCalendarEvents,
   mockTimeEntries,

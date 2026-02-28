@@ -41,7 +41,9 @@ async def get_time_entries(
 
     total = (await db.execute(count_query)).scalar_one()
     offset = (page - 1) * page_size
-    result = await db.execute(query.order_by(TimeEntry.date.desc(), TimeEntry.created_at.desc()).offset(offset).limit(page_size))
+    result = await db.execute(
+        query.order_by(TimeEntry.date.desc(), TimeEntry.created_at.desc()).offset(offset).limit(page_size)
+    )
     return result.scalars().all(), total
 
 
@@ -72,7 +74,9 @@ async def delete_time_entry(db: AsyncSession, entry: TimeEntry) -> None:
 
 
 # Rate Schedules
-async def get_user_rate(db: AsyncSession, user_id: uuid.UUID, matter_id: Optional[uuid.UUID] = None, for_date: Optional[date] = None) -> int:
+async def get_user_rate(
+    db: AsyncSession, user_id: uuid.UUID, matter_id: Optional[uuid.UUID] = None, for_date: Optional[date] = None
+) -> int:
     if for_date is None:
         for_date = date.today()
 
@@ -80,7 +84,11 @@ async def get_user_rate(db: AsyncSession, user_id: uuid.UUID, matter_id: Optiona
     if matter_id:
         result = await db.execute(
             select(RateSchedule)
-            .where(RateSchedule.user_id == user_id, RateSchedule.matter_id == matter_id, RateSchedule.effective_date <= for_date)
+            .where(
+                RateSchedule.user_id == user_id,
+                RateSchedule.matter_id == matter_id,
+                RateSchedule.effective_date <= for_date,
+            )
             .order_by(RateSchedule.effective_date.desc())
             .limit(1)
         )
@@ -91,7 +99,9 @@ async def get_user_rate(db: AsyncSession, user_id: uuid.UUID, matter_id: Optiona
     # Fall back to default rate
     result = await db.execute(
         select(RateSchedule)
-        .where(RateSchedule.user_id == user_id, RateSchedule.matter_id.is_(None), RateSchedule.effective_date <= for_date)
+        .where(
+            RateSchedule.user_id == user_id, RateSchedule.matter_id.is_(None), RateSchedule.effective_date <= for_date
+        )
         .order_by(RateSchedule.effective_date.desc())
         .limit(1)
     )
@@ -196,5 +206,7 @@ async def create_payment(db: AsyncSession, data: PaymentCreate) -> Payment:
 
 
 async def get_payments(db: AsyncSession, invoice_id: uuid.UUID) -> list[Payment]:
-    result = await db.execute(select(Payment).where(Payment.invoice_id == invoice_id).order_by(Payment.payment_date.desc()))
+    result = await db.execute(
+        select(Payment).where(Payment.invoice_id == invoice_id).order_by(Payment.payment_date.desc())
+    )
     return result.scalars().all()

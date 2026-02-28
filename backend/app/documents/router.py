@@ -46,12 +46,21 @@ async def upload_new_document(
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File too large (max 100MB)")
 
     doc = await upload_document(
-        db, matter_id, current_user.id, file.filename or "unnamed",
-        content, file.content_type or "application/octet-stream",
-        description=description, parent_document_id=parent_document_id,
+        db,
+        matter_id,
+        current_user.id,
+        file.filename or "unnamed",
+        content,
+        file.content_type or "application/octet-stream",
+        description=description,
+        parent_document_id=parent_document_id,
     )
     await create_audit_log(
-        db, current_user.id, "document", str(doc.id), "create",
+        db,
+        current_user.id,
+        "document",
+        str(doc.id),
+        "create",
         changes_json=json.dumps({"filename": doc.filename, "matter_id": str(matter_id)}),
         ip_address=request.client.host if request.client else None,
     )
@@ -97,7 +106,11 @@ async def delete_existing_document(
 
     await delete_document(db, doc)
     await create_audit_log(
-        db, current_user.id, "document", str(document_id), "delete",
+        db,
+        current_user.id,
+        "document",
+        str(document_id),
+        "delete",
         changes_json=json.dumps({"filename": doc.filename}),
         ip_address=request.client.host if request.client else None,
     )

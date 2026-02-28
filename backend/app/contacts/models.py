@@ -1,7 +1,7 @@
 import enum
 from typing import Optional
 
-from sqlalchemy import Enum, JSON, String, Text
+from sqlalchemy import JSON, Enum, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.common.base_models import TimestampMixin, UUIDBase

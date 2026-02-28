@@ -3,7 +3,7 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.base_models import GUID, TimestampMixin, UUIDBase
@@ -34,15 +34,9 @@ class Task(UUIDBase, TimestampMixin):
     assigned_to: Mapped[Optional[uuid.UUID]] = mapped_column(
         GUID(), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    created_by: Mapped[uuid.UUID] = mapped_column(
-        GUID(), ForeignKey("users.id"), nullable=False
-    )
-    status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus), nullable=False, default=TaskStatus.pending
-    )
-    priority: Mapped[TaskPriority] = mapped_column(
-        Enum(TaskPriority), nullable=False, default=TaskPriority.medium
-    )
+    created_by: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False)
+    status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), nullable=False, default=TaskStatus.pending)
+    priority: Mapped[TaskPriority] = mapped_column(Enum(TaskPriority), nullable=False, default=TaskPriority.medium)
     due_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
@@ -52,20 +46,24 @@ class Task(UUIDBase, TimestampMixin):
     assignee = relationship("User", foreign_keys=[assigned_to], lazy="selectin")
     creator = relationship("User", foreign_keys=[created_by], lazy="selectin")
     checklist = relationship(
-        "TaskChecklist", back_populates="task", lazy="selectin",
-        cascade="all, delete-orphan", order_by="TaskChecklist.sort_order"
+        "TaskChecklist",
+        back_populates="task",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        order_by="TaskChecklist.sort_order",
     )
     dependencies = relationship(
-        "TaskDependency", back_populates="task", lazy="selectin",
-        cascade="all, delete-orphan", foreign_keys="TaskDependency.task_id"
+        "TaskDependency",
+        back_populates="task",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        foreign_keys="TaskDependency.task_id",
     )
 
 
 class TaskDependency(UUIDBase):
     __tablename__ = "task_dependencies"
-    __table_args__ = (
-        UniqueConstraint("task_id", "depends_on_id", name="uq_task_dependency"),
-    )
+    __table_args__ = (UniqueConstraint("task_id", "depends_on_id", name="uq_task_dependency"),)
 
     task_id: Mapped[uuid.UUID] = mapped_column(
         GUID(), ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False, index=True
@@ -106,8 +104,11 @@ class WorkflowTemplate(UUIDBase, TimestampMixin):
     # Relationships
     creator = relationship("User", lazy="selectin")
     steps = relationship(
-        "WorkflowTemplateStep", back_populates="workflow_template", lazy="selectin",
-        cascade="all, delete-orphan", order_by="WorkflowTemplateStep.sort_order"
+        "WorkflowTemplateStep",
+        back_populates="workflow_template",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+        order_by="WorkflowTemplateStep.sort_order",
     )
 
 

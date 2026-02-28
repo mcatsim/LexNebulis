@@ -19,9 +19,21 @@ const BillingPage = lazy(() => import('./features/billing/BillingPage'));
 const TrustPage = lazy(() => import('./features/trust/TrustPage'));
 const ConflictsPage = lazy(() => import('./features/conflicts/ConflictsPage'));
 const TasksPage = lazy(() => import('./features/tasks/TasksPage'));
+const TemplatesPage = lazy(() => import('./features/templates/TemplatesPage'));
+const DeadlinesPage = lazy(() => import('./features/deadlines/DeadlinesPage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const AuditLogPage = lazy(() => import('./features/admin/AuditLogPage'));
+const PortalManagementPage = lazy(() => import('./features/portal/PortalManagementPage'));
+
+// Portal (client-facing) pages
+const PortalLoginPage = lazy(() => import('./portal/PortalLoginPage'));
+const PortalLayout = lazy(() => import('./portal/PortalLayout'));
+const PortalDashboard = lazy(() => import('./portal/PortalDashboard'));
+const PortalMattersPage = lazy(() => import('./portal/PortalMattersPage'));
+const PortalMatterDetailPage = lazy(() => import('./portal/PortalMatterDetailPage'));
+const PortalInvoicesPage = lazy(() => import('./portal/PortalInvoicesPage'));
+const PortalMessagesPage = lazy(() => import('./portal/PortalMessagesPage'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingOverlay visible />}>{children}</Suspense>;
@@ -51,9 +63,22 @@ export default function App() {
         <Route path="/trust" element={<SuspenseWrapper><TrustPage /></SuspenseWrapper>} />
         <Route path="/conflicts" element={<SuspenseWrapper><ConflictsPage /></SuspenseWrapper>} />
         <Route path="/tasks" element={<SuspenseWrapper><TasksPage /></SuspenseWrapper>} />
+        <Route path="/templates" element={<SuspenseWrapper><TemplatesPage /></SuspenseWrapper>} />
+        <Route path="/deadlines" element={<SuspenseWrapper><DeadlinesPage /></SuspenseWrapper>} />
         <Route path="/settings" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
         <Route path="/admin" element={<SuspenseWrapper><AdminPage /></SuspenseWrapper>} />
         <Route path="/admin/audit" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />
+        <Route path="/portal-admin" element={<SuspenseWrapper><PortalManagementPage /></SuspenseWrapper>} />
+      </Route>
+
+      {/* Portal routes (client-facing, separate auth) */}
+      <Route path="/portal/login" element={<SuspenseWrapper><PortalLoginPage /></SuspenseWrapper>} />
+      <Route path="/portal" element={<SuspenseWrapper><PortalLayout /></SuspenseWrapper>}>
+        <Route index element={<SuspenseWrapper><PortalDashboard /></SuspenseWrapper>} />
+        <Route path="matters" element={<SuspenseWrapper><PortalMattersPage /></SuspenseWrapper>} />
+        <Route path="matters/:id" element={<SuspenseWrapper><PortalMatterDetailPage /></SuspenseWrapper>} />
+        <Route path="invoices" element={<SuspenseWrapper><PortalInvoicesPage /></SuspenseWrapper>} />
+        <Route path="messages" element={<SuspenseWrapper><PortalMessagesPage /></SuspenseWrapper>} />
       </Route>
     </Routes>
   );

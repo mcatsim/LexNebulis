@@ -8,7 +8,7 @@ from typing import Optional
 import pyotp
 from jose import jwt
 from passlib.context import CryptContext
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import AuditLog, RefreshToken, User, UserRole
@@ -258,11 +258,7 @@ async def create_audit_log(
     from app.common.audit import ACTION_SEVERITY, compute_integrity_hash
 
     # Get the previous entry's hash for the chain
-    prev_result = await db.execute(
-        select(AuditLog.integrity_hash)
-        .order_by(AuditLog.timestamp.desc())
-        .limit(1)
-    )
+    prev_result = await db.execute(select(AuditLog.integrity_hash).order_by(AuditLog.timestamp.desc()).limit(1))
     previous_hash = prev_result.scalar_one_or_none()
 
     # Determine severity
@@ -275,8 +271,14 @@ async def create_audit_log(
 
     # Compute integrity hash (nonrepudiation chain)
     integrity_hash = compute_integrity_hash(
-        entry_id, now, str(user_id) if user_id else None,
-        action, entity_type, str(entity_id), changes_json, previous_hash,
+        entry_id,
+        now,
+        str(user_id) if user_id else None,
+        action,
+        entity_type,
+        str(entity_id),
+        changes_json,
+        previous_hash,
     )
 
     entry = AuditLog(

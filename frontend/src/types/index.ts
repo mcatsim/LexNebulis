@@ -331,6 +331,155 @@ export interface WorkflowTemplateStep {
   depends_on_step_order: number | null;
 }
 
+// Portal
+export interface ClientUser {
+  id: string;
+  client_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  is_active: boolean;
+  last_login: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PortalMessage {
+  id: string;
+  matter_id: string;
+  sender_type: 'staff' | 'client';
+  sender_name: string;
+  subject: string | null;
+  body: string;
+  parent_message_id: string | null;
+  is_read: boolean;
+  read_at: string | null;
+  created_at: string;
+}
+
+export interface SharedDocument {
+  id: string;
+  document_id: string;
+  matter_id: string;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  shared_by_name: string;
+  shared_at: string;
+  note: string | null;
+}
+
+export interface PortalMatter {
+  id: string;
+  title: string;
+  status: string;
+  litigation_type: string;
+  date_opened: string;
+  date_closed: string | null;
+  description: string | null;
+  attorney_name: string | null;
+}
+
+export interface PortalInvoice {
+  id: string;
+  invoice_number: number | null;
+  matter_title: string | null;
+  total_cents: number;
+  status: string;
+  issued_date: string | null;
+  due_date: string | null;
+}
+
+// Document Templates
+export type TemplateCategory = 'engagement_letter' | 'correspondence' | 'pleading' | 'motion' | 'contract' | 'discovery' | 'other';
+
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  practice_area: string | null;
+  category: TemplateCategory;
+  filename: string;
+  version: number;
+  is_active: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GeneratedDocument {
+  id: string;
+  template_id: string;
+  template_name: string;
+  matter_id: string;
+  document_id: string | null;
+  generated_by: string;
+  context_json: string;
+  created_at: string;
+}
+
+// Deadlines
+export type OffsetType = 'calendar_days' | 'business_days';
+
+export interface CourtRuleSet {
+  id: string;
+  name: string;
+  jurisdiction: string;
+  court_type: string | null;
+  is_active: boolean;
+  rules: DeadlineRule[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeadlineRule {
+  id: string;
+  rule_set_id: string;
+  name: string;
+  description: string | null;
+  trigger_event: string;
+  offset_days: number;
+  offset_type: OffsetType;
+  creates_event_type: string;
+  is_active: boolean;
+  sort_order: number;
+}
+
+export interface TriggerEvent {
+  id: string;
+  matter_id: string;
+  trigger_name: string;
+  trigger_date: string;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface GeneratedDeadline {
+  id: string;
+  calendar_event_id: string;
+  trigger_event_id: string;
+  deadline_rule_id: string;
+  matter_id: string;
+  computed_date: string;
+  rule_name?: string;
+  event_title?: string;
+  created_at: string;
+}
+
+export interface StatuteOfLimitations {
+  id: string;
+  matter_id: string;
+  description: string;
+  expiration_date: string;
+  statute_reference: string | null;
+  reminder_days: number[] | null;
+  is_active: boolean;
+  days_remaining?: number;
+  created_at: string;
+  updated_at: string;
+}
+
 // Audit
 export interface AuditLogEntry {
   id: string;

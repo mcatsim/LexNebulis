@@ -20,6 +20,7 @@ router = APIRouter()
 
 # --- Audit Log Viewer ---
 
+
 @router.get("/audit-logs", response_model=PaginatedResponse)
 async def list_audit_logs(
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -84,6 +85,7 @@ async def list_audit_logs(
 
 # --- Audit Log Integrity Verification ---
 
+
 @router.get("/audit-logs/verify-chain")
 async def verify_audit_chain(
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -97,9 +99,7 @@ async def verify_audit_chain(
     """
     from app.common.audit import compute_integrity_hash
 
-    result = await db.execute(
-        select(AuditLog).order_by(AuditLog.timestamp.asc()).limit(limit)
-    )
+    result = await db.execute(select(AuditLog).order_by(AuditLog.timestamp.asc()).limit(limit))
     logs = result.scalars().all()
 
     if not logs:
@@ -110,31 +110,42 @@ async def verify_audit_chain(
         expected_previous = logs[i - 1].integrity_hash if i > 0 else None
 
         if log.previous_hash != expected_previous:
-            errors.append({
-                "entry_id": str(log.id),
-                "position": i,
-                "error": "previous_hash mismatch",
-                "expected": expected_previous,
-                "actual": log.previous_hash,
-            })
+            errors.append(
+                {
+                    "entry_id": str(log.id),
+                    "position": i,
+                    "error": "previous_hash mismatch",
+                    "expected": expected_previous,
+                    "actual": log.previous_hash,
+                }
+            )
 
         # Ensure timezone-aware timestamp for consistent hash (SQLite strips tzinfo)
         ts = log.timestamp
         if ts.tzinfo is None:
             from datetime import timezone
+
             ts = ts.replace(tzinfo=timezone.utc)
         recomputed = compute_integrity_hash(
-            str(log.id), ts.isoformat(), str(log.user_id) if log.user_id else None,
-            log.action, log.entity_type, log.entity_id, log.changes_json, log.previous_hash,
+            str(log.id),
+            ts.isoformat(),
+            str(log.user_id) if log.user_id else None,
+            log.action,
+            log.entity_type,
+            log.entity_id,
+            log.changes_json,
+            log.previous_hash,
         )
         if recomputed != log.integrity_hash:
-            errors.append({
-                "entry_id": str(log.id),
-                "position": i,
-                "error": "integrity_hash mismatch (possible tampering)",
-                "expected": recomputed,
-                "actual": log.integrity_hash,
-            })
+            errors.append(
+                {
+                    "entry_id": str(log.id),
+                    "position": i,
+                    "error": "integrity_hash mismatch (possible tampering)",
+                    "expected": recomputed,
+                    "actual": log.integrity_hash,
+                }
+            )
 
     return {
         "status": "valid" if not errors else "invalid",
@@ -144,6 +155,7 @@ async def verify_audit_chain(
 
 
 # --- SIEM/SOAR Export Endpoints ---
+
 
 @router.get("/audit-logs/export/json")
 async def export_audit_json(
@@ -185,9 +197,15 @@ async def export_audit_json(
         )
         events.append(event.model_dump())
 
-    await create_audit_log(db, admin.id, "audit_log", "export", "export",
-                           changes_json=json.dumps({"format": "json", "count": len(events)}),
-                           user_email=admin.email)
+    await create_audit_log(
+        db,
+        admin.id,
+        "audit_log",
+        "export",
+        "export",
+        changes_json=json.dumps({"format": "json", "count": len(events)}),
+        user_email=admin.email,
+    )
 
     return {"format": "json", "count": len(events), "events": events}
 
@@ -234,9 +252,15 @@ async def export_audit_cef(
         lines.append(cef.to_cef_string())
 
     content = "\n".join(lines)
-    await create_audit_log(db, admin.id, "audit_log", "export", "export",
-                           changes_json=json.dumps({"format": "cef", "count": len(lines)}),
-                           user_email=admin.email)
+    await create_audit_log(
+        db,
+        admin.id,
+        "audit_log",
+        "export",
+        "export",
+        changes_json=json.dumps({"format": "cef", "count": len(lines)}),
+        user_email=admin.email,
+    )
 
     return StreamingResponse(
         iter([content]),
@@ -287,9 +311,15 @@ async def export_audit_syslog(
         lines.append(syslog.to_syslog_string())
 
     content = "\n".join(lines)
-    await create_audit_log(db, admin.id, "audit_log", "export", "export",
-                           changes_json=json.dumps({"format": "syslog", "count": len(lines)}),
-                           user_email=admin.email)
+    await create_audit_log(
+        db,
+        admin.id,
+        "audit_log",
+        "export",
+        "export",
+        changes_json=json.dumps({"format": "syslog", "count": len(lines)}),
+        user_email=admin.email,
+    )
 
     return StreamingResponse(
         iter([content]),
@@ -299,6 +329,7 @@ async def export_audit_syslog(
 
 
 # --- SOAR Webhook Configuration ---
+
 
 @router.post("/audit-logs/webhook/test")
 async def test_webhook(
@@ -312,7 +343,10 @@ async def test_webhook(
     result = await db.execute(select(SystemSetting).where(SystemSetting.key == "siem_webhook_url"))
     setting = result.scalar_one_or_none()
     if not setting:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No webhook URL configured. Set 'siem_webhook_url' in system settings.")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No webhook URL configured. Set 'siem_webhook_url' in system settings.",
+        )
 
     test_event = {
         "timestamp": datetime.utcnow().isoformat(),
@@ -338,6 +372,7 @@ async def test_webhook(
 
 
 # --- System Settings ---
+
 
 @router.get("/settings")
 async def list_settings(
@@ -374,7 +409,11 @@ async def update_setting(
         db.add(setting)
 
     await create_audit_log(
-        db, admin.id, "system_setting", key, "settings_change",
+        db,
+        admin.id,
+        "system_setting",
+        key,
+        "settings_change",
         changes_json=json.dumps({"old": old_value, "new": str(value)}),
         ip_address=request.client.host if request.client else None,
         user_email=admin.email,

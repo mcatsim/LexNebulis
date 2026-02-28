@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import BigInteger, ForeignKey, Integer, JSON, String, Text, func
+from sqlalchemy import JSON, BigInteger, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.base_models import GUID, UUIDBase
@@ -11,7 +11,9 @@ from app.common.base_models import GUID, UUIDBase
 class Document(UUIDBase):
     __tablename__ = "documents"
 
-    matter_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True)
+    matter_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     uploaded_by: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False)
     filename: Mapped[str] = mapped_column(String(500), nullable=False)
     storage_key: Mapped[str] = mapped_column(String(1000), nullable=False)

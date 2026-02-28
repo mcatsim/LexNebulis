@@ -33,7 +33,9 @@ class TrustAccount(UUIDBase):
 class TrustLedgerEntry(UUIDBase):
     __tablename__ = "trust_ledger_entries"
 
-    trust_account_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("trust_accounts.id"), nullable=False, index=True)
+    trust_account_id: Mapped[uuid.UUID] = mapped_column(
+        GUID(), ForeignKey("trust_accounts.id"), nullable=False, index=True
+    )
     client_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("clients.id"), nullable=False, index=True)
     matter_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("matters.id"), nullable=True)
     entry_type: Mapped[TrustEntryType] = mapped_column(Enum(TrustEntryType), nullable=False)

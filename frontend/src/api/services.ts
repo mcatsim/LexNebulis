@@ -1,8 +1,12 @@
-import api from './client';
+import api, { portalApi } from './client';
 import type {
-  AuditLogEntry, CalendarEvent, Client, ConflictCheck, ConflictMatch, Contact,
-  Document as LegalDocument, EthicalWall, Invoice, LoginResponse, Matter, Payment,
-  Task, TaskChecklistItem, TaskDependency, TwoFactorSetupResponse,
+  AuditLogEntry, CalendarEvent, Client, ClientUser, ConflictCheck, ConflictMatch, Contact,
+  CourtRuleSet, DeadlineRule, GeneratedDeadline,
+  Document as LegalDocument, DocumentTemplate, EthicalWall, GeneratedDocument, Invoice,
+  LoginResponse, Matter, Payment,
+  PortalInvoice, PortalMatter, PortalMessage, SharedDocument,
+  StatuteOfLimitations, Task, TaskChecklistItem, TaskDependency, TriggerEvent,
+  TwoFactorSetupResponse,
   TwoFactorStatusResponse, TwoFactorVerifySetupResponse, WorkflowTemplate,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
   PaginatedResponse, SearchResult,
@@ -181,6 +185,47 @@ export const workflowsApi = {
   delete: (id: string) => api.delete(`/workflows/${id}`),
 };
 
+// Deadlines
+export const deadlinesApi = {
+  // Rule Sets
+  listRuleSets: (params?: { jurisdiction?: string; search?: string }) =>
+    api.get<CourtRuleSet[]>('/deadlines/rules', { params }),
+  createRuleSet: (data: { name: string; jurisdiction: string; court_type?: string }) =>
+    api.post<CourtRuleSet>('/deadlines/rules', data),
+  getRuleSet: (id: string) => api.get<CourtRuleSet>(`/deadlines/rules/${id}`),
+  addRule: (ruleSetId: string, data: { name: string; trigger_event: string; offset_days: number; offset_type: string; description?: string; creates_event_type?: string }) =>
+    api.post<DeadlineRule>(`/deadlines/rules/${ruleSetId}/rules`, data),
+  updateRule: (ruleId: string, data: Partial<DeadlineRule>) =>
+    api.put<DeadlineRule>(`/deadlines/rules/rules/${ruleId}`, data),
+  deleteRule: (ruleId: string) =>
+    api.delete(`/deadlines/rules/rules/${ruleId}`),
+  seedFederal: () => api.post<CourtRuleSet>('/deadlines/rules/seed-federal'),
+  // Matter Deadlines
+  applyRules: (matterId: string, data: { rule_set_id: string }) =>
+    api.post(`/deadlines/matters/${matterId}/apply-rules`, data),
+  setTrigger: (matterId: string, data: { trigger_name: string; trigger_date: string; notes?: string }) =>
+    api.post<TriggerEvent>(`/deadlines/matters/${matterId}/triggers`, data),
+  getTriggers: (matterId: string) =>
+    api.get<TriggerEvent[]>(`/deadlines/matters/${matterId}/triggers`),
+  updateTrigger: (triggerId: string, data: { trigger_date: string; notes?: string }) =>
+    api.put<TriggerEvent>(`/deadlines/triggers/${triggerId}`, data),
+  deleteTrigger: (triggerId: string) =>
+    api.delete(`/deadlines/triggers/${triggerId}`),
+  getMatterDeadlines: (matterId: string) =>
+    api.get<GeneratedDeadline[]>(`/deadlines/matters/${matterId}/deadlines`),
+  // Statute of Limitations
+  createSOL: (data: { matter_id: string; description: string; expiration_date: string; statute_reference?: string; reminder_days?: number[] }) =>
+    api.post<StatuteOfLimitations>('/deadlines/sol', data),
+  getMatterSOL: (matterId: string) =>
+    api.get<StatuteOfLimitations[]>(`/deadlines/sol/${matterId}`),
+  updateSOL: (solId: string, data: Partial<StatuteOfLimitations>) =>
+    api.put<StatuteOfLimitations>(`/deadlines/sol/${solId}`, data),
+  deleteSOL: (solId: string) =>
+    api.delete(`/deadlines/sol/${solId}`),
+  getSOLWarnings: (daysAhead?: number) =>
+    api.get<StatuteOfLimitations[]>('/deadlines/sol/warnings', { params: { days_ahead: daysAhead || 90 } }),
+};
+
 // Admin
 export const adminApi = {
   listAuditLogs: (params: { page?: number; page_size?: number; entity_type?: string; action?: string; user_id?: string; severity?: string; start_date?: string; end_date?: string }) =>
@@ -196,4 +241,66 @@ export const adminApi = {
   testWebhook: () => api.post('/admin/audit-logs/webhook/test'),
   listSettings: () => api.get('/admin/settings'),
   updateSetting: (key: string, value: string) => api.put(`/admin/settings/${key}`, { value }),
+};
+
+// Templates
+export const templatesApi = {
+  list: (params: { page?: number; page_size?: number; practice_area?: string; category?: string; search?: string }) =>
+    api.get<PaginatedResponse<DocumentTemplate>>('/templates', { params }),
+  get: (id: string) => api.get<DocumentTemplate>(`/templates/${id}`),
+  upload: (formData: FormData) =>
+    api.post<DocumentTemplate>('/templates/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: string, data: { name?: string; description?: string; practice_area?: string; category?: string; is_active?: boolean }) =>
+    api.put<DocumentTemplate>(`/templates/${id}`, data),
+  delete: (id: string) => api.delete(`/templates/${id}`),
+  getVariables: (templateId: string) =>
+    api.get<{ variables: string[]; context: Record<string, string> }>(`/templates/${templateId}/variables`),
+  previewContext: (templateId: string, matterId: string) =>
+    api.post<{ variables: string[]; context: Record<string, string> }>(`/templates/${templateId}/preview-context/${matterId}`),
+  generate: (data: { template_id: string; matter_id: string; custom_overrides?: Record<string, string> }) =>
+    api.post<{ document_id: string; filename: string; matter_id: string; template_name: string }>('/templates/generate', data),
+  listGenerated: (params: { page?: number; page_size?: number; template_id?: string; matter_id?: string }) =>
+    api.get<PaginatedResponse<GeneratedDocument>>('/templates/generated', { params }),
+  downloadUrl: (templateId: string) => `/api/templates/${templateId}/download`,
+};
+
+// Portal (Staff-side)
+export const portalStaffApi = {
+  createClientUser: (data: { email: string; password: string; first_name: string; last_name: string; client_id: string }) =>
+    api.post<ClientUser>('/portal/client-users', data),
+  listClientUsers: (clientId: string) =>
+    api.get<ClientUser[]>(`/portal/client-users/${clientId}`),
+  updateClientUser: (userId: string, data: { is_active?: boolean; first_name?: string; last_name?: string }) =>
+    api.put<ClientUser>(`/portal/client-users/${userId}`, data),
+  shareDocument: (data: { document_id: string; matter_id: string; note?: string }) =>
+    api.post<SharedDocument>('/portal/share-document', data),
+  listSharedDocuments: (matterId: string, params?: { page?: number; page_size?: number }) =>
+    api.get<PaginatedResponse<SharedDocument>>(`/portal/shared-documents/${matterId}`, { params }),
+  getMessages: (matterId: string, params?: { page?: number; page_size?: number }) =>
+    api.get<PaginatedResponse<PortalMessage>>(`/portal/messages/${matterId}`, { params }),
+  sendMessage: (data: { matter_id: string; body: string; subject?: string; parent_message_id?: string }) =>
+    api.post<PortalMessage>('/portal/messages', data),
+};
+
+// Portal (Client-side) — uses separate portalApi axios instance
+export const portalClientApi = {
+  login: (email: string, password: string) =>
+    portalApi.post<{ access_token: string; refresh_token: string }>('/portal/auth/login', { email, password }),
+  me: () => portalApi.get<ClientUser>('/portal/auth/me'),
+  listMatters: (params?: { page?: number; page_size?: number }) =>
+    portalApi.get<PaginatedResponse<PortalMatter>>('/portal/my/matters', { params }),
+  getMatter: (matterId: string) =>
+    portalApi.get<PortalMatter>(`/portal/my/matters/${matterId}`),
+  getMatterDocuments: (matterId: string, params?: { page?: number; page_size?: number }) =>
+    portalApi.get<PaginatedResponse<SharedDocument>>(`/portal/my/matters/${matterId}/documents`, { params }),
+  listInvoices: (params?: { page?: number; page_size?: number }) =>
+    portalApi.get<PaginatedResponse<PortalInvoice>>('/portal/my/invoices', { params }),
+  getMessages: (matterId: string, params?: { page?: number; page_size?: number }) =>
+    portalApi.get<PaginatedResponse<PortalMessage>>(`/portal/my/matters/${matterId}/messages`, { params }),
+  sendMessage: (data: { matter_id: string; body: string; subject?: string; parent_message_id?: string }) =>
+    portalApi.post<PortalMessage>('/portal/my/messages', data),
+  markRead: (messageId: string) =>
+    portalApi.put<PortalMessage>(`/portal/my/messages/${messageId}/read`),
+  getUnreadCount: () =>
+    portalApi.get<{ unread_count: number }>('/portal/my/unread'),
 };

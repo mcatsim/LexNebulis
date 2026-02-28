@@ -63,7 +63,11 @@ async def create_new_matter(
 ):
     matter = await create_matter(db, data)
     await create_audit_log(
-        db, current_user.id, "matter", str(matter.id), "create",
+        db,
+        current_user.id,
+        "matter",
+        str(matter.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -84,7 +88,11 @@ async def update_existing_matter(
 
     updated = await update_matter(db, matter, data)
     await create_audit_log(
-        db, current_user.id, "matter", str(matter_id), "update",
+        db,
+        current_user.id,
+        "matter",
+        str(matter_id),
+        "update",
         changes_json=json.dumps(data.model_dump(exclude_unset=True), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -104,7 +112,11 @@ async def delete_existing_matter(
 
     await delete_matter(db, matter)
     await create_audit_log(
-        db, current_user.id, "matter", str(matter_id), "delete",
+        db,
+        current_user.id,
+        "matter",
+        str(matter_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
 

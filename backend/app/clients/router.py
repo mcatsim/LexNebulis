@@ -52,7 +52,11 @@ async def create_new_client(
 ):
     client = await create_client(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "client", str(client.id), "create",
+        db,
+        current_user.id,
+        "client",
+        str(client.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -73,7 +77,11 @@ async def update_existing_client(
 
     updated = await update_client(db, client, data)
     await create_audit_log(
-        db, current_user.id, "client", str(client_id), "update",
+        db,
+        current_user.id,
+        "client",
+        str(client_id),
+        "update",
         changes_json=json.dumps(data.model_dump(exclude_unset=True), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -93,6 +101,10 @@ async def delete_existing_client(
 
     await delete_client(db, client)
     await create_audit_log(
-        db, current_user.id, "client", str(client_id), "delete",
+        db,
+        current_user.id,
+        "client",
+        str(client_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )

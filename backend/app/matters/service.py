@@ -87,7 +87,9 @@ async def delete_matter(db: AsyncSession, matter: Matter) -> None:
     await db.flush()
 
 
-async def add_matter_contact(db: AsyncSession, matter_id: uuid.UUID, contact_id: uuid.UUID, relationship_type: str) -> MatterContact:
+async def add_matter_contact(
+    db: AsyncSession, matter_id: uuid.UUID, contact_id: uuid.UUID, relationship_type: str
+) -> MatterContact:
     mc = MatterContact(matter_id=matter_id, contact_id=contact_id, relationship_type=relationship_type)
     db.add(mc)
     await db.flush()

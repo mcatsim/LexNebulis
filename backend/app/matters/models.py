@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
 from sqlalchemy import Date, Enum, ForeignKey, Integer, String, Text, func
@@ -39,7 +39,9 @@ class Matter(UUIDBase, TimestampMixin):
     title: Mapped[str] = mapped_column(String(500), nullable=False)
     client_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("clients.id"), nullable=False, index=True)
     status: Mapped[MatterStatus] = mapped_column(Enum(MatterStatus), nullable=False, default=MatterStatus.open)
-    litigation_type: Mapped[LitigationType] = mapped_column(Enum(LitigationType), nullable=False, default=LitigationType.other)
+    litigation_type: Mapped[LitigationType] = mapped_column(
+        Enum(LitigationType), nullable=False, default=LitigationType.other
+    )
     jurisdiction: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     court_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     case_number: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)

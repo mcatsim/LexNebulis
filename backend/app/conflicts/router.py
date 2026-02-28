@@ -19,7 +19,6 @@ from app.conflicts.schemas import (
     EthicalWallResponse,
 )
 from app.conflicts.service import (
-    check_ethical_wall,
     create_ethical_wall,
     get_conflict_check,
     get_conflict_checks,
@@ -43,7 +42,11 @@ async def run_check(
 ):
     check = await run_conflict_check(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "conflict_check", str(check.id), "create",
+        db,
+        current_user.id,
+        "conflict_check",
+        str(check.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -93,7 +96,11 @@ async def resolve_conflict_match(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conflict match not found")
 
     await create_audit_log(
-        db, current_user.id, "conflict_match", str(match_id), "update",
+        db,
+        current_user.id,
+        "conflict_match",
+        str(match_id),
+        "update",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -109,7 +116,11 @@ async def create_wall(
 ):
     wall = await create_ethical_wall(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "ethical_wall", str(wall.id), "create",
+        db,
+        current_user.id,
+        "ethical_wall",
+        str(wall.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -138,6 +149,10 @@ async def delete_wall(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ethical wall not found")
 
     await create_audit_log(
-        db, current_user.id, "ethical_wall", str(wall_id), "delete",
+        db,
+        current_user.id,
+        "ethical_wall",
+        str(wall_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )

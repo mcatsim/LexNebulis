@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.encryption import decrypt_field, encrypt_field
+from app.common.encryption import encrypt_field
 from app.trust.models import TrustAccount, TrustEntryType, TrustLedgerEntry, TrustReconciliation
 from app.trust.schemas import TrustAccountCreate, TrustLedgerEntryCreate, TrustReconciliationCreate
 
@@ -52,7 +52,9 @@ async def get_ledger_entries(
     return result.scalars().all(), total
 
 
-async def create_ledger_entry(db: AsyncSession, data: TrustLedgerEntryCreate, created_by: uuid.UUID) -> TrustLedgerEntry:
+async def create_ledger_entry(
+    db: AsyncSession, data: TrustLedgerEntryCreate, created_by: uuid.UUID
+) -> TrustLedgerEntry:
     account = await get_trust_account(db, data.trust_account_id)
     if account is None:
         raise ValueError("Trust account not found")
@@ -88,7 +90,9 @@ async def create_ledger_entry(db: AsyncSession, data: TrustLedgerEntryCreate, cr
     return entry
 
 
-async def create_reconciliation(db: AsyncSession, data: TrustReconciliationCreate, performed_by: uuid.UUID) -> TrustReconciliation:
+async def create_reconciliation(
+    db: AsyncSession, data: TrustReconciliationCreate, performed_by: uuid.UUID
+) -> TrustReconciliation:
     account = await get_trust_account(db, data.trust_account_id)
     if account is None:
         raise ValueError("Trust account not found")

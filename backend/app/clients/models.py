@@ -1,9 +1,8 @@
 import enum
 import uuid
-from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Enum, Integer, JSON, String, Text, func
+from sqlalchemy import JSON, Enum, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.base_models import GUID, TimestampMixin, UUIDBase

@@ -14,6 +14,7 @@ class GUID(TypeDecorator):
     Uses PostgreSQL's native UUID type when available, otherwise stores
     as CHAR(36) for SQLite and other dialects.
     """
+
     impl = String(36)
     cache_ok = True
 

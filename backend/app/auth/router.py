@@ -3,7 +3,7 @@ import uuid as _uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
@@ -59,7 +59,11 @@ async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession
     if user.totp_enabled:
         temp_token = create_2fa_pending_token(str(user.id))
         await create_audit_log(
-            db, user.id, "user", str(user.id), "login_2fa_pending",
+            db,
+            user.id,
+            "user",
+            str(user.id),
+            "login_2fa_pending",
             ip_address=request.client.host if request.client else None,
         )
         return LoginResponse(requires_2fa=True, temp_token=temp_token)
@@ -67,7 +71,9 @@ async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession
     access_token = create_access_token(str(user.id), user.role.value)
     refresh_token = await create_refresh_token(db, user.id)
 
-    await create_audit_log(db, user.id, "user", str(user.id), "login", ip_address=request.client.host if request.client else None)
+    await create_audit_log(
+        db, user.id, "user", str(user.id), "login", ip_address=request.client.host if request.client else None
+    )
 
     return LoginResponse(access_token=access_token, refresh_token=refresh_token)
 
@@ -126,7 +132,11 @@ async def verify_2fa_login(data: TwoFactorLoginRequest, request: Request, db: An
         access_token = create_access_token(str(user.id), user.role.value)
         refresh_token = await create_refresh_token(db, user.id)
         await create_audit_log(
-            db, user.id, "user", str(user.id), "login_2fa_verified",
+            db,
+            user.id,
+            "user",
+            str(user.id),
+            "login_2fa_verified",
             ip_address=request.client.host if request.client else None,
         )
         return LoginResponse(access_token=access_token, refresh_token=refresh_token)
@@ -140,7 +150,11 @@ async def verify_2fa_login(data: TwoFactorLoginRequest, request: Request, db: An
             access_token = create_access_token(str(user.id), user.role.value)
             refresh_token = await create_refresh_token(db, user.id)
             await create_audit_log(
-                db, user.id, "user", str(user.id), "login_2fa_recovery_code",
+                db,
+                user.id,
+                "user",
+                str(user.id),
+                "login_2fa_recovery_code",
                 changes_json=json.dumps({"recovery_code_used": True}),
                 ip_address=request.client.host if request.client else None,
             )
@@ -167,7 +181,11 @@ async def setup_2fa_endpoint(
 
     result = await setup_2fa(db, current_user)
     await create_audit_log(
-        db, current_user.id, "user", str(current_user.id), "2fa_setup_initiated",
+        db,
+        current_user.id,
+        "user",
+        str(current_user.id),
+        "2fa_setup_initiated",
         ip_address=request.client.host if request.client else None,
     )
     return TwoFactorSetupResponse(**result)
@@ -187,7 +205,11 @@ async def verify_2fa_setup_endpoint(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     await create_audit_log(
-        db, current_user.id, "user", str(current_user.id), "2fa_enabled",
+        db,
+        current_user.id,
+        "user",
+        str(current_user.id),
+        "2fa_enabled",
         ip_address=request.client.host if request.client else None,
     )
     return TwoFactorVerifySetupResponse(recovery_codes=result["recovery_codes"])
@@ -207,7 +229,11 @@ async def disable_2fa_endpoint(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     await create_audit_log(
-        db, current_user.id, "user", str(current_user.id), "2fa_disabled",
+        db,
+        current_user.id,
+        "user",
+        str(current_user.id),
+        "2fa_disabled",
         ip_address=request.client.host if request.client else None,
     )
     return {"message": "Two-factor authentication has been disabled"}
@@ -230,7 +256,9 @@ async def list_users(
     )
     users = result.scalars().all()
     items = [UserResponse.model_validate(u) for u in users]
-    return PaginatedResponse.create(items=[i.model_dump() for i in items], total=total, page=pagination.page, page_size=pagination.page_size)
+    return PaginatedResponse.create(
+        items=[i.model_dump() for i in items], total=total, page=pagination.page, page_size=pagination.page_size
+    )
 
 
 @router.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -247,7 +275,11 @@ async def create_new_user(
 
     user = await create_user(db, data)
     await create_audit_log(
-        db, admin.id, "user", str(user.id), "create",
+        db,
+        admin.id,
+        "user",
+        str(user.id),
+        "create",
         changes_json=json.dumps({"email": data.email, "role": data.role.value}),
         ip_address=request.client.host if request.client else None,
     )
@@ -282,7 +314,11 @@ async def update_user(
 
     if changes:
         await create_audit_log(
-            db, admin.id, "user", str(user.id), "update",
+            db,
+            admin.id,
+            "user",
+            str(user.id),
+            "update",
             changes_json=json.dumps(changes),
             ip_address=request.client.host if request.client else None,
         )

@@ -5,7 +5,6 @@ from typing import Optional
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.tasks.models import (
     Task,
@@ -17,18 +16,15 @@ from app.tasks.models import (
     WorkflowTemplateStep,
 )
 from app.tasks.schemas import (
-    ChecklistItemCreate,
     TaskCreate,
     TaskUpdate,
     WorkflowTemplateCreate,
 )
 
-
 # ── Task CRUD ─────────────────────────────────────────────────────────
 
-async def create_task(
-    db: AsyncSession, data: TaskCreate, created_by: uuid.UUID
-) -> Task:
+
+async def create_task(db: AsyncSession, data: TaskCreate, created_by: uuid.UUID) -> Task:
     task = Task(
         title=data.title,
         description=data.description,
@@ -85,9 +81,7 @@ async def get_tasks(
     total = (await db.execute(count_query)).scalar_one()
     offset = (page - 1) * page_size
     result = await db.execute(
-        query.order_by(Task.sort_order.asc(), Task.created_at.desc())
-        .offset(offset)
-        .limit(page_size)
+        query.order_by(Task.sort_order.asc(), Task.created_at.desc()).offset(offset).limit(page_size)
     )
     return result.scalars().all(), total
 
@@ -122,9 +116,8 @@ async def delete_task(db: AsyncSession, task: Task) -> None:
 
 # ── Task Dependencies ─────────────────────────────────────────────────
 
-async def _has_circular_dependency(
-    db: AsyncSession, task_id: uuid.UUID, depends_on_id: uuid.UUID
-) -> bool:
+
+async def _has_circular_dependency(db: AsyncSession, task_id: uuid.UUID, depends_on_id: uuid.UUID) -> bool:
     """Check if adding this dependency would create a circular reference."""
     # If task_id == depends_on_id, that's a self-reference
     if task_id == depends_on_id:
@@ -140,9 +133,7 @@ async def _has_circular_dependency(
             continue
         visited.add(current)
 
-        result = await db.execute(
-            select(TaskDependency.depends_on_id).where(TaskDependency.task_id == current)
-        )
+        result = await db.execute(select(TaskDependency.depends_on_id).where(TaskDependency.task_id == current))
         for (dep_id,) in result.all():
             if dep_id == task_id:
                 return True
@@ -151,9 +142,7 @@ async def _has_circular_dependency(
     return False
 
 
-async def add_dependency(
-    db: AsyncSession, task_id: uuid.UUID, depends_on_id: uuid.UUID
-) -> TaskDependency:
+async def add_dependency(db: AsyncSession, task_id: uuid.UUID, depends_on_id: uuid.UUID) -> TaskDependency:
     # Validate both tasks exist
     task = await get_task(db, task_id)
     if task is None:
@@ -204,9 +193,8 @@ async def remove_dependency(db: AsyncSession, dependency_id: uuid.UUID) -> None:
 
 # ── Task Checklist ────────────────────────────────────────────────────
 
-async def create_checklist_item(
-    db: AsyncSession, task_id: uuid.UUID, title: str, sort_order: int = 0
-) -> TaskChecklist:
+
+async def create_checklist_item(db: AsyncSession, task_id: uuid.UUID, title: str, sort_order: int = 0) -> TaskChecklist:
     task = await get_task(db, task_id)
     if task is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
@@ -223,9 +211,7 @@ async def get_checklist_item(db: AsyncSession, item_id: uuid.UUID) -> Optional[T
     return result.scalar_one_or_none()
 
 
-async def update_checklist_item(
-    db: AsyncSession, item_id: uuid.UUID, is_completed: bool
-) -> TaskChecklist:
+async def update_checklist_item(db: AsyncSession, item_id: uuid.UUID, is_completed: bool) -> TaskChecklist:
     item = await get_checklist_item(db, item_id)
     if item is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Checklist item not found")
@@ -250,6 +236,7 @@ async def delete_checklist_item(db: AsyncSession, item_id: uuid.UUID) -> None:
 
 
 # ── Workflow Templates ────────────────────────────────────────────────
+
 
 async def create_workflow_template(
     db: AsyncSession, data: WorkflowTemplateCreate, created_by: uuid.UUID
@@ -280,9 +267,7 @@ async def create_workflow_template(
     return template
 
 
-async def get_workflow_templates(
-    db: AsyncSession, practice_area: Optional[str] = None
-) -> list[WorkflowTemplate]:
+async def get_workflow_templates(db: AsyncSession, practice_area: Optional[str] = None) -> list[WorkflowTemplate]:
     query = select(WorkflowTemplate).where(WorkflowTemplate.is_active == True)  # noqa: E712
     if practice_area:
         query = query.where(WorkflowTemplate.practice_area == practice_area)
@@ -291,12 +276,8 @@ async def get_workflow_templates(
     return result.scalars().all()
 
 
-async def get_workflow_template(
-    db: AsyncSession, template_id: uuid.UUID
-) -> Optional[WorkflowTemplate]:
-    result = await db.execute(
-        select(WorkflowTemplate).where(WorkflowTemplate.id == template_id)
-    )
+async def get_workflow_template(db: AsyncSession, template_id: uuid.UUID) -> Optional[WorkflowTemplate]:
+    result = await db.execute(select(WorkflowTemplate).where(WorkflowTemplate.id == template_id))
     return result.scalar_one_or_none()
 
 
@@ -313,9 +294,7 @@ async def apply_workflow_template(
 ) -> list[Task]:
     template = await get_workflow_template(db, template_id)
     if template is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Workflow template not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workflow template not found")
 
     # Map sort_order -> created task for dependency linking
     step_to_task: dict[int, Task] = {}

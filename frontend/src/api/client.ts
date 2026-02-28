@@ -47,4 +47,35 @@ api.interceptors.response.use(
   }
 );
 
+// ── Portal API client (separate auth for client portal) ──────────────
+
+import { usePortalAuthStore } from '../stores/portalAuthStore';
+
+const portalApi = axios.create({
+  baseURL: '/api',
+  headers: { 'Content-Type': 'application/json' },
+});
+
+// Request interceptor: add portal auth token
+portalApi.interceptors.request.use((config) => {
+  const token = usePortalAuthStore.getState().accessToken;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Response interceptor: handle 401 — redirect to portal login
+portalApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      usePortalAuthStore.getState().logout();
+      window.location.href = '/portal/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
+export { portalApi };
 export default api;

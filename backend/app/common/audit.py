@@ -16,16 +16,14 @@ SIEM/SOAR export formats:
 """
 
 import hashlib
-import json
-import uuid
-from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class AuditEventCEF(BaseModel):
     """Common Event Format (CEF) representation of an audit event."""
+
     version: str = "CEF:0"
     device_vendor: str = "LexNebulis"
     device_product: str = "LexNebulis"
@@ -37,11 +35,16 @@ class AuditEventCEF(BaseModel):
 
     def to_cef_string(self) -> str:
         ext_str = " ".join(f"{k}={v}" for k, v in self.extensions.items())
-        return f"{self.version}|{self.device_vendor}|{self.device_product}|{self.device_version}|{self.signature_id}|{self.name}|{self.severity}|{ext_str}"
+        return (
+            f"{self.version}|{self.device_vendor}|{self.device_product}"
+            f"|{self.device_version}|{self.signature_id}"
+            f"|{self.name}|{self.severity}|{ext_str}"
+        )
 
 
 class AuditEventJSON(BaseModel):
     """Structured JSON format for SIEM ingestion (Splunk, Elastic, etc.)."""
+
     timestamp: str
     event_id: str
     event_type: str
@@ -62,8 +65,9 @@ class AuditEventJSON(BaseModel):
 
 class AuditEventSyslog(BaseModel):
     """RFC 5424 syslog format."""
+
     facility: int = 10  # security/authorization (authpriv)
-    severity: int = 6   # informational
+    severity: int = 6  # informational
     hostname: str = "lexnebulis"
     app_name: str = "lexnebulis"
     proc_id: str = "-"
@@ -73,7 +77,11 @@ class AuditEventSyslog(BaseModel):
 
     def to_syslog_string(self) -> str:
         pri = self.facility * 8 + self.severity
-        return f"<{pri}>1 {self.structured_data} {self.hostname} {self.app_name} {self.proc_id} {self.msg_id} {self.message}"
+        return (
+            f"<{pri}>1 {self.structured_data} {self.hostname}"
+            f" {self.app_name} {self.proc_id}"
+            f" {self.msg_id} {self.message}"
+        )
 
 
 # Severity mapping
@@ -119,7 +127,11 @@ def compute_integrity_hash(
     previous_hash: Optional[str],
 ) -> str:
     """Compute SHA-256 hash chain entry for nonrepudiation."""
-    payload = f"{event_id}|{timestamp}|{user_id or ''}|{action}|{entity_type}|{entity_id}|{changes_json or ''}|{previous_hash or ''}"
+    payload = (
+        f"{event_id}|{timestamp}|{user_id or ''}|{action}"
+        f"|{entity_type}|{entity_id}"
+        f"|{changes_json or ''}|{previous_hash or ''}"
+    )
     return hashlib.sha256(payload.encode()).hexdigest()
 
 
@@ -153,6 +165,15 @@ def audit_to_syslog(event: AuditEventJSON) -> AuditEventSyslog:
     return AuditEventSyslog(
         severity=syslog_severity.get(event.severity, 6),
         msg_id=f"LF-{event.action.upper()}",
-        structured_data=f'[lexnebulis@0 eventId="{event.event_id}" action="{event.action}" entityType="{event.entity_type}" entityId="{event.entity_id}" userId="{event.user_id or "system"}" integrityHash="{event.integrity_hash}"]',
-        message=f"User {event.user_email or 'system'} performed {event.action} on {event.entity_type} {event.entity_id}",
+        structured_data=(
+            f'[lexnebulis@0 eventId="{event.event_id}"'
+            f' action="{event.action}"'
+            f' entityType="{event.entity_type}"'
+            f' entityId="{event.entity_id}"'
+            f' userId="{event.user_id or "system"}"'
+            f' integrityHash="{event.integrity_hash}"]'
+        ),
+        message=(
+            f"User {event.user_email or 'system'} performed {event.action} on {event.entity_type} {event.entity_id}"
+        ),
     )

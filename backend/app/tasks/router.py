@@ -10,7 +10,7 @@ from app.auth.service import create_audit_log
 from app.common.pagination import PaginatedResponse
 from app.database import get_db
 from app.dependencies import get_current_user, require_roles
-from app.tasks.models import TaskPriority, TaskStatus
+from app.tasks.models import Task, TaskDependency, TaskPriority, TaskStatus
 from app.tasks.schemas import (
     ApplyWorkflowRequest,
     ChecklistItemCreate,
@@ -33,8 +33,6 @@ from app.tasks.service import (
     delete_checklist_item,
     delete_task,
     delete_workflow_template,
-    get_checklist_item,
-    get_dependency,
     get_task,
     get_tasks,
     get_workflow_template,
@@ -43,7 +41,6 @@ from app.tasks.service import (
     update_checklist_item,
     update_task,
 )
-
 
 # ── Task Router ───────────────────────────────────────────────────────
 
@@ -59,7 +56,11 @@ async def create_new_task(
 ):
     task = await create_task(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "task", str(task.id), "create",
+        db,
+        current_user.id,
+        "task",
+        str(task.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -108,7 +109,11 @@ async def update_existing_task(
 
     updated = await update_task(db, task, data)
     await create_audit_log(
-        db, current_user.id, "task", str(task_id), "update",
+        db,
+        current_user.id,
+        "task",
+        str(task_id),
+        "update",
         changes_json=json.dumps(data.model_dump(exclude_unset=True), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -128,12 +133,17 @@ async def delete_existing_task(
 
     await delete_task(db, task)
     await create_audit_log(
-        db, current_user.id, "task", str(task_id), "delete",
+        db,
+        current_user.id,
+        "task",
+        str(task_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
 
 
 # ── Dependencies ──────────────────────────────────────────────────────
+
 
 @router.post("/{task_id}/dependencies", response_model=TaskDependencyResponse, status_code=status.HTTP_201_CREATED)
 async def add_task_dependency(
@@ -145,7 +155,11 @@ async def add_task_dependency(
 ):
     dep = await add_dependency(db, task_id, data.depends_on_id)
     await create_audit_log(
-        db, current_user.id, "task_dependency", str(dep.id), "create",
+        db,
+        current_user.id,
+        "task_dependency",
+        str(dep.id),
+        "create",
         changes_json=json.dumps({"task_id": str(task_id), "depends_on_id": str(data.depends_on_id)}),
         ip_address=request.client.host if request.client else None,
     )
@@ -161,12 +175,17 @@ async def remove_task_dependency(
 ):
     await remove_dependency(db, dependency_id)
     await create_audit_log(
-        db, current_user.id, "task_dependency", str(dependency_id), "delete",
+        db,
+        current_user.id,
+        "task_dependency",
+        str(dependency_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
 
 
 # ── Checklist ─────────────────────────────────────────────────────────
+
 
 @router.post("/{task_id}/checklist", response_model=TaskChecklistResponse, status_code=status.HTTP_201_CREATED)
 async def add_checklist_item(
@@ -178,7 +197,11 @@ async def add_checklist_item(
 ):
     item = await create_checklist_item(db, task_id, data.title, data.sort_order)
     await create_audit_log(
-        db, current_user.id, "task_checklist", str(item.id), "create",
+        db,
+        current_user.id,
+        "task_checklist",
+        str(item.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -195,7 +218,11 @@ async def update_checklist(
 ):
     item = await update_checklist_item(db, item_id, data.is_completed)
     await create_audit_log(
-        db, current_user.id, "task_checklist", str(item_id), "update",
+        db,
+        current_user.id,
+        "task_checklist",
+        str(item_id),
+        "update",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -211,7 +238,11 @@ async def delete_checklist(
 ):
     await delete_checklist_item(db, item_id)
     await create_audit_log(
-        db, current_user.id, "task_checklist", str(item_id), "delete",
+        db,
+        current_user.id,
+        "task_checklist",
+        str(item_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
 
@@ -240,7 +271,11 @@ async def create_new_workflow_template(
 ):
     template = await create_workflow_template(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "workflow_template", str(template.id), "create",
+        db,
+        current_user.id,
+        "workflow_template",
+        str(template.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -269,7 +304,11 @@ async def apply_template_to_matter(
 ):
     tasks = await apply_workflow_template(db, template_id, data.matter_id, current_user.id)
     await create_audit_log(
-        db, current_user.id, "workflow_template", str(template_id), "apply",
+        db,
+        current_user.id,
+        "workflow_template",
+        str(template_id),
+        "apply",
         changes_json=json.dumps({"matter_id": str(data.matter_id), "tasks_created": len(tasks)}),
         ip_address=request.client.host if request.client else None,
     )
@@ -289,28 +328,32 @@ async def delete_existing_workflow_template(
 
     await delete_workflow_template(db, template)
     await create_audit_log(
-        db, current_user.id, "workflow_template", str(template_id), "delete",
+        db,
+        current_user.id,
+        "workflow_template",
+        str(template_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
 
 
 # ── Response Helpers ──────────────────────────────────────────────────
 
+
 def _task_to_response(task: "Task") -> TaskResponse:
     """Convert a Task ORM object to a TaskResponse with nested dependencies."""
     deps = []
-    for dep in (task.dependencies or []):
-        deps.append(TaskDependencyResponse(
-            id=dep.id,
-            task_id=dep.task_id,
-            depends_on_id=dep.depends_on_id,
-            depends_on_title=dep.depends_on.title if dep.depends_on else None,
-        ))
+    for dep in task.dependencies or []:
+        deps.append(
+            TaskDependencyResponse(
+                id=dep.id,
+                task_id=dep.task_id,
+                depends_on_id=dep.depends_on_id,
+                depends_on_title=dep.depends_on.title if dep.depends_on else None,
+            )
+        )
 
-    checklist = [
-        TaskChecklistResponse.model_validate(item)
-        for item in (task.checklist or [])
-    ]
+    checklist = [TaskChecklistResponse.model_validate(item) for item in (task.checklist or [])]
 
     return TaskResponse(
         id=task.id,

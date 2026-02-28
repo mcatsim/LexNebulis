@@ -107,6 +107,7 @@ async def upload_document(
 
 def get_download_url(storage_key: str, expires_hours: int = 1) -> str:
     from datetime import timedelta
+
     client = get_minio_client()
     return client.presigned_get_object(settings.minio_bucket, storage_key, expires=timedelta(hours=expires_hours))
 

@@ -31,7 +31,9 @@ async def list_events(
     event_type: Optional[EventType] = None,
     event_status: Optional[EventStatus] = None,
 ):
-    events, total = await get_events(db, page, page_size, start_date, end_date, matter_id, assigned_to, event_type, event_status)
+    events, total = await get_events(
+        db, page, page_size, start_date, end_date, matter_id, assigned_to, event_type, event_status
+    )
     items = [CalendarEventResponse.model_validate(e).model_dump() for e in events]
     return PaginatedResponse.create(items=items, total=total, page=page, page_size=page_size)
 
@@ -66,7 +68,11 @@ async def create_new_event(
 
     event = await create_event(db, data, current_user.id)
     await create_audit_log(
-        db, current_user.id, "calendar_event", str(event.id), "create",
+        db,
+        current_user.id,
+        "calendar_event",
+        str(event.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -99,7 +105,11 @@ async def update_existing_event(
 
     updated = await update_event(db, event, data)
     await create_audit_log(
-        db, current_user.id, "calendar_event", str(event_id), "update",
+        db,
+        current_user.id,
+        "calendar_event",
+        str(event_id),
+        "update",
         changes_json=json.dumps(data.model_dump(exclude_unset=True), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -119,6 +129,10 @@ async def delete_existing_event(
 
     await delete_event(db, event)
     await create_audit_log(
-        db, current_user.id, "calendar_event", str(event_id), "delete",
+        db,
+        current_user.id,
+        "calendar_event",
+        str(event_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )

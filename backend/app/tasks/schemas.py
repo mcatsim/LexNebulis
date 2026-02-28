@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 
 from app.tasks.models import TaskPriority, TaskStatus
 
-
 # ── Checklist Schemas ─────────────────────────────────────────────────
+
 
 class ChecklistItemCreate(BaseModel):
     title: str = Field(max_length=500)
@@ -31,6 +31,7 @@ class TaskChecklistResponse(BaseModel):
 
 # ── Dependency Schemas ────────────────────────────────────────────────
 
+
 class DependencyCreate(BaseModel):
     depends_on_id: uuid.UUID
 
@@ -45,6 +46,7 @@ class TaskDependencyResponse(BaseModel):
 
 
 # ── Task Schemas ──────────────────────────────────────────────────────
+
 
 class TaskCreate(BaseModel):
     title: str = Field(max_length=500)
@@ -86,6 +88,7 @@ class TaskResponse(BaseModel):
 
 
 # ── Workflow Template Schemas ─────────────────────────────────────────
+
 
 class WorkflowTemplateStepCreate(BaseModel):
     title: str = Field(max_length=500)

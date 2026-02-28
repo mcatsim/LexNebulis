@@ -16,6 +16,8 @@ from app.documents.models import Document, DocumentTag  # noqa: F401
 from app.calendar.models import CalendarEvent  # noqa: F401
 from app.billing.models import TimeEntry, RateSchedule, Invoice, InvoiceLineItem, Payment  # noqa: F401
 from app.trust.models import TrustAccount, TrustLedgerEntry, TrustReconciliation  # noqa: F401
+from app.portal.models import ClientUser, Message, SharedDocument  # noqa: F401
+from app.templates.models import DocumentTemplate, GeneratedDocument  # noqa: F401
 
 config = context.config
 

@@ -23,7 +23,6 @@ from app.trust.service import (
     create_reconciliation,
     create_trust_account,
     get_ledger_entries,
-    get_trust_account,
     get_trust_accounts,
 )
 
@@ -48,7 +47,11 @@ async def create_new_trust_account(
 ):
     account = await create_trust_account(db, data)
     await create_audit_log(
-        db, current_user.id, "trust_account", str(account.id), "create",
+        db,
+        current_user.id,
+        "trust_account",
+        str(account.id),
+        "create",
         changes_json=json.dumps({"account_name": data.account_name, "bank_name": data.bank_name}),
         ip_address=request.client.host if request.client else None,
     )
@@ -82,7 +85,11 @@ async def create_new_ledger_entry(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     await create_audit_log(
-        db, current_user.id, "trust_ledger_entry", str(entry.id), "create",
+        db,
+        current_user.id,
+        "trust_ledger_entry",
+        str(entry.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -102,7 +109,11 @@ async def create_new_reconciliation(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
     await create_audit_log(
-        db, current_user.id, "trust_reconciliation", str(recon.id), "create",
+        db,
+        current_user.id,
+        "trust_reconciliation",
+        str(recon.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )

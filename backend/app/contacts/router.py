@@ -7,10 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
 from app.auth.service import create_audit_log
+from app.common.pagination import PaginatedResponse
 from app.contacts.models import ContactRole
 from app.contacts.schemas import ContactCreate, ContactResponse, ContactUpdate
 from app.contacts.service import create_contact, delete_contact, get_contact, get_contacts, update_contact
-from app.common.pagination import PaginatedResponse
 from app.database import get_db
 from app.dependencies import get_current_user, require_roles
 
@@ -52,7 +52,11 @@ async def create_new_contact(
 ):
     contact = await create_contact(db, data)
     await create_audit_log(
-        db, current_user.id, "contact", str(contact.id), "create",
+        db,
+        current_user.id,
+        "contact",
+        str(contact.id),
+        "create",
         changes_json=json.dumps(data.model_dump(), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -73,7 +77,11 @@ async def update_existing_contact(
 
     updated = await update_contact(db, contact, data)
     await create_audit_log(
-        db, current_user.id, "contact", str(contact_id), "update",
+        db,
+        current_user.id,
+        "contact",
+        str(contact_id),
+        "update",
         changes_json=json.dumps(data.model_dump(exclude_unset=True), default=str),
         ip_address=request.client.host if request.client else None,
     )
@@ -93,6 +101,10 @@ async def delete_existing_contact(
 
     await delete_contact(db, contact)
     await create_audit_log(
-        db, current_user.id, "contact", str(contact_id), "delete",
+        db,
+        current_user.id,
+        "contact",
+        str(contact_id),
+        "delete",
         ip_address=request.client.host if request.client else None,
     )
