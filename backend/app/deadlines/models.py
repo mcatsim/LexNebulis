@@ -3,8 +3,7 @@ import uuid
 from datetime import date, datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON, Boolean, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.base_models import GUID, TimestampMixin, UUIDBase
@@ -114,6 +113,6 @@ class StatuteOfLimitations(UUIDBase, TimestampMixin):
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     expiration_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     statute_reference: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    reminder_days: Mapped[Optional[list]] = mapped_column(JSONB, nullable=True)
+    reminder_days: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_by: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), nullable=True)

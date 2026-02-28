@@ -8,7 +8,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ENUM
+from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 revision: str = "0007"
 down_revision: Union[str, None] = "0006"
@@ -90,7 +90,7 @@ def upgrade() -> None:
         sa.Column("description", sa.String(500), nullable=False),
         sa.Column("expiration_date", sa.Date(), nullable=False, index=True),
         sa.Column("statute_reference", sa.String(255), nullable=True),
-        sa.Column("reminder_days", JSONB(), nullable=True),
+        sa.Column("reminder_days", sa.JSON(), nullable=True),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.text("true")),
         sa.Column("created_by", UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
