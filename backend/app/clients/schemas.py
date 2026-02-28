@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -8,41 +9,41 @@ from app.clients.models import ClientStatus, ClientType
 
 class ClientCreate(BaseModel):
     client_type: ClientType = ClientType.individual
-    first_name: str | None = Field(default=None, max_length=100)
-    last_name: str | None = Field(default=None, max_length=100)
-    organization_name: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = None
-    phone: str | None = Field(default=None, max_length=50)
-    address_json: dict | None = None
-    notes: str | None = None
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
+    organization_name: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(default=None, max_length=50)
+    address_json: Optional[dict] = None
+    notes: Optional[str] = None
     status: ClientStatus = ClientStatus.active
 
 
 class ClientUpdate(BaseModel):
-    client_type: ClientType | None = None
-    first_name: str | None = Field(default=None, max_length=100)
-    last_name: str | None = Field(default=None, max_length=100)
-    organization_name: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = None
-    phone: str | None = Field(default=None, max_length=50)
-    address_json: dict | None = None
-    notes: str | None = None
-    status: ClientStatus | None = None
+    client_type: Optional[ClientType] = None
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
+    organization_name: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(default=None, max_length=50)
+    address_json: Optional[dict] = None
+    notes: Optional[str] = None
+    status: Optional[ClientStatus] = None
 
 
 class ClientResponse(BaseModel):
     id: uuid.UUID
     client_number: int
     client_type: ClientType
-    first_name: str | None
-    last_name: str | None
-    organization_name: str | None
-    email: str | None
-    phone: str | None
-    address_json: dict | None
-    notes: str | None
+    first_name: Optional[str]
+    last_name: Optional[str]
+    organization_name: Optional[str]
+    email: Optional[str]
+    phone: Optional[str]
+    address_json: Optional[dict]
+    notes: Optional[str]
     status: ClientStatus
-    created_by: uuid.UUID | None
+    created_by: Optional[uuid.UUID]
     created_at: datetime
     updated_at: datetime
 

@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,11 +31,11 @@ async def list_matters(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
-    status: MatterStatus | None = None,
-    client_id: uuid.UUID | None = None,
-    attorney_id: uuid.UUID | None = None,
-    litigation_type: LitigationType | None = None,
+    search: Optional[str] = None,
+    status: Optional[MatterStatus] = None,
+    client_id: Optional[uuid.UUID] = None,
+    attorney_id: Optional[uuid.UUID] = None,
+    litigation_type: Optional[LitigationType] = None,
 ):
     matters, total = await get_matters(db, page, page_size, search, status, client_id, attorney_id, litigation_type)
     items = [MatterResponse.model_validate(m).model_dump() for m in matters]

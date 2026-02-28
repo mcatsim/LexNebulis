@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -62,7 +62,7 @@ async def list_ledger_entries(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 50,
-    client_id: uuid.UUID | None = None,
+    client_id: Optional[uuid.UUID] = None,
 ):
     entries, total = await get_ledger_entries(db, account_id, page, page_size, client_id)
     items = [TrustLedgerEntryResponse.model_validate(e).model_dump() for e in entries]

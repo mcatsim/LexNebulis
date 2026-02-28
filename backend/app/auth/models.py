@@ -1,12 +1,12 @@
 import enum
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Boolean, DateTime, Enum, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.common.base_models import TimestampMixin, UUIDBase
+from app.common.base_models import GUID, TimestampMixin, UUIDBase
 
 
 class UserRole(str, enum.Enum):
@@ -26,7 +26,7 @@ class User(UUIDBase, TimestampMixin):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), nullable=False, default=UserRole.attorney)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    locked_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
     time_entries = relationship("TimeEntry", back_populates="user", lazy="selectin")
@@ -40,7 +40,7 @@ class User(UUIDBase, TimestampMixin):
 class RefreshToken(UUIDBase):
     __tablename__ = "refresh_tokens"
 
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(GUID(), nullable=False, index=True)
     token_hash: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -56,18 +56,18 @@ class AuditLog(UUIDBase):
     """
     __tablename__ = "audit_log"
 
-    user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
-    user_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True, index=True)
+    user_email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     entity_type: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     entity_id: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     action: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
-    changes_json: Mapped[str | None] = mapped_column(Text, nullable=True)
-    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
-    user_agent: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    changes_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     outcome: Mapped[str] = mapped_column(String(20), nullable=False, default="success")
     severity: Mapped[str] = mapped_column(String(20), nullable=False, default="info")
     integrity_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
-    previous_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    previous_hash: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)
 
 
@@ -76,5 +76,5 @@ class SystemSetting(UUIDBase):
 
     key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     value: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_by: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
+    updated_by: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)

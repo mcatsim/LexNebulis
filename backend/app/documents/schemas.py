@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -12,9 +13,9 @@ class DocumentResponse(BaseModel):
     mime_type: str
     size_bytes: int
     version: int
-    parent_document_id: uuid.UUID | None
-    tags_json: list | None
-    description: str | None
+    parent_document_id: Optional[uuid.UUID]
+    tags_json: Optional[list]
+    description: Optional[str]
     created_at: datetime
 
     model_config = {"from_attributes": True}

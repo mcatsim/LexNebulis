@@ -1,6 +1,7 @@
 import hashlib
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 from jose import jwt
 from passlib.context import CryptContext
@@ -24,7 +25,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(user_id: str, role: str) -> str:
-    expire = datetime.now(UTC) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
+    expire = datetime.now(timezone.utc) + timedelta(minutes=settings.jwt_access_token_expire_minutes)
     payload = {"sub": user_id, "role": role, "type": "access", "exp": expire}
     return jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
 
@@ -37,20 +38,26 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
     if user is None:
         return None
 
-    # Check lockout
-    if user.locked_until and user.locked_until > datetime.now(UTC):
-        return None
+    # Check lockout — handle both naive and aware datetimes (SQLite
+    # may strip timezone info when round-tripping DateTime values).
+    if user.locked_until is not None:
+        now_utc = datetime.now(timezone.utc)
+        locked = user.locked_until
+        if locked.tzinfo is None:
+            locked = locked.replace(tzinfo=timezone.utc)
+        if locked > now_utc:
+            return None
 
     if not verify_password(password, user.password_hash):
         user.failed_login_attempts += 1
         if user.failed_login_attempts >= settings.max_login_attempts:
-            user.locked_until = datetime.now(UTC) + timedelta(minutes=settings.lockout_duration_minutes)
+            user.locked_until = datetime.now(timezone.utc) + timedelta(minutes=settings.lockout_duration_minutes)
         await db.flush()
         return None
 
@@ -66,20 +73,20 @@ async def create_refresh_token(db: AsyncSession, user_id: uuid.UUID) -> str:
     token = RefreshToken(
         user_id=user_id,
         token_hash=hash_token(token_value),
-        expires_at=datetime.now(UTC) + timedelta(days=settings.jwt_refresh_token_expire_days),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=settings.jwt_refresh_token_expire_days),
     )
     db.add(token)
     await db.flush()
     return token_value
 
 
-async def rotate_refresh_token(db: AsyncSession, old_token: str) -> tuple[User, str] | None:
+async def rotate_refresh_token(db: AsyncSession, old_token: str) -> Optional[tuple[User, str]]:
     token_hash = hash_token(old_token)
     result = await db.execute(
         select(RefreshToken).where(
             RefreshToken.token_hash == token_hash,
             RefreshToken.revoked == False,  # noqa: E712
-            RefreshToken.expires_at > datetime.now(UTC),
+            RefreshToken.expires_at > datetime.now(timezone.utc),
         )
     )
     token = result.scalar_one_or_none()
@@ -111,19 +118,20 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
     )
     db.add(user)
     await db.flush()
+    await db.refresh(user)
     return user
 
 
 async def create_audit_log(
     db: AsyncSession,
-    user_id: uuid.UUID | None,
+    user_id: Optional[uuid.UUID],
     entity_type: str,
     entity_id: str,
     action: str,
-    changes_json: str | None = None,
-    ip_address: str | None = None,
-    user_agent: str | None = None,
-    user_email: str | None = None,
+    changes_json: Optional[str] = None,
+    ip_address: Optional[str] = None,
+    user_agent: Optional[str] = None,
+    user_email: Optional[str] = None,
     outcome: str = "success",
 ):
     from app.common.audit import ACTION_SEVERITY, compute_integrity_hash
@@ -141,7 +149,8 @@ async def create_audit_log(
 
     # Generate entry ID and timestamp
     entry_id = str(uuid.uuid4())
-    now = datetime.now(UTC).isoformat()
+    now_dt = datetime.now(timezone.utc)
+    now = now_dt.isoformat()
 
     # Compute integrity hash (nonrepudiation chain)
     integrity_hash = compute_integrity_hash(
@@ -163,6 +172,7 @@ async def create_audit_log(
         severity=severity,
         integrity_hash=integrity_hash,
         previous_hash=previous_hash,
+        timestamp=now_dt,
     )
     db.add(entry)
     await db.flush()

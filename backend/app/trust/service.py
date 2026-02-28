@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +14,7 @@ async def get_trust_accounts(db: AsyncSession) -> list[TrustAccount]:
     return result.scalars().all()
 
 
-async def get_trust_account(db: AsyncSession, account_id: uuid.UUID) -> TrustAccount | None:
+async def get_trust_account(db: AsyncSession, account_id: uuid.UUID) -> Optional[TrustAccount]:
     result = await db.execute(select(TrustAccount).where(TrustAccount.id == account_id))
     return result.scalar_one_or_none()
 
@@ -36,7 +37,7 @@ async def get_ledger_entries(
     trust_account_id: uuid.UUID,
     page: int = 1,
     page_size: int = 50,
-    client_id: uuid.UUID | None = None,
+    client_id: Optional[uuid.UUID] = None,
 ) -> tuple[list[TrustLedgerEntry], int]:
     query = select(TrustLedgerEntry).where(TrustLedgerEntry.trust_account_id == trust_account_id)
     count_query = select(func.count(TrustLedgerEntry.id)).where(TrustLedgerEntry.trust_account_id == trust_account_id)

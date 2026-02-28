@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,8 +12,8 @@ async def get_contacts(
     db: AsyncSession,
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
-    role: ContactRole | None = None,
+    search: Optional[str] = None,
+    role: Optional[ContactRole] = None,
 ) -> tuple[list[Contact], int]:
     query = select(Contact)
     count_query = select(func.count(Contact.id))
@@ -37,7 +38,7 @@ async def get_contacts(
     return result.scalars().all(), total
 
 
-async def get_contact(db: AsyncSession, contact_id: uuid.UUID) -> Contact | None:
+async def get_contact(db: AsyncSession, contact_id: uuid.UUID) -> Optional[Contact]:
     result = await db.execute(select(Contact).where(Contact.id == contact_id))
     return result.scalar_one_or_none()
 

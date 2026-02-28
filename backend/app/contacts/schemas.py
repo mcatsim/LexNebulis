@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -10,22 +11,22 @@ class ContactCreate(BaseModel):
     first_name: str = Field(min_length=1, max_length=100)
     last_name: str = Field(min_length=1, max_length=100)
     role: ContactRole = ContactRole.other
-    organization: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = None
-    phone: str | None = Field(default=None, max_length=50)
-    address_json: dict | None = None
-    notes: str | None = None
+    organization: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(default=None, max_length=50)
+    address_json: Optional[dict] = None
+    notes: Optional[str] = None
 
 
 class ContactUpdate(BaseModel):
-    first_name: str | None = Field(default=None, min_length=1, max_length=100)
-    last_name: str | None = Field(default=None, min_length=1, max_length=100)
-    role: ContactRole | None = None
-    organization: str | None = Field(default=None, max_length=255)
-    email: EmailStr | None = None
-    phone: str | None = Field(default=None, max_length=50)
-    address_json: dict | None = None
-    notes: str | None = None
+    first_name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    last_name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    role: Optional[ContactRole] = None
+    organization: Optional[str] = Field(default=None, max_length=255)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(default=None, max_length=50)
+    address_json: Optional[dict] = None
+    notes: Optional[str] = None
 
 
 class ContactResponse(BaseModel):
@@ -33,11 +34,11 @@ class ContactResponse(BaseModel):
     first_name: str
     last_name: str
     role: ContactRole
-    organization: str | None
-    email: str | None
-    phone: str | None
-    address_json: dict | None
-    notes: str | None
+    organization: Optional[str]
+    email: Optional[str]
+    phone: Optional[str]
+    address_json: Optional[dict]
+    notes: Optional[str]
     created_at: datetime
     updated_at: datetime
 

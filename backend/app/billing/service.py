@@ -1,5 +1,6 @@
 import uuid
 from datetime import date
+from typing import Optional
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,11 +14,11 @@ async def get_time_entries(
     db: AsyncSession,
     page: int = 1,
     page_size: int = 25,
-    matter_id: uuid.UUID | None = None,
-    user_id: uuid.UUID | None = None,
-    start_date: date | None = None,
-    end_date: date | None = None,
-    billable: bool | None = None,
+    matter_id: Optional[uuid.UUID] = None,
+    user_id: Optional[uuid.UUID] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    billable: Optional[bool] = None,
 ) -> tuple[list[TimeEntry], int]:
     query = select(TimeEntry)
     count_query = select(func.count(TimeEntry.id))
@@ -44,7 +45,7 @@ async def get_time_entries(
     return result.scalars().all(), total
 
 
-async def get_time_entry(db: AsyncSession, entry_id: uuid.UUID) -> TimeEntry | None:
+async def get_time_entry(db: AsyncSession, entry_id: uuid.UUID) -> Optional[TimeEntry]:
     result = await db.execute(select(TimeEntry).where(TimeEntry.id == entry_id))
     return result.scalar_one_or_none()
 
@@ -71,7 +72,7 @@ async def delete_time_entry(db: AsyncSession, entry: TimeEntry) -> None:
 
 
 # Rate Schedules
-async def get_user_rate(db: AsyncSession, user_id: uuid.UUID, matter_id: uuid.UUID | None = None, for_date: date | None = None) -> int:
+async def get_user_rate(db: AsyncSession, user_id: uuid.UUID, matter_id: Optional[uuid.UUID] = None, for_date: Optional[date] = None) -> int:
     if for_date is None:
         for_date = date.today()
 
@@ -103,9 +104,9 @@ async def get_invoices(
     db: AsyncSession,
     page: int = 1,
     page_size: int = 25,
-    client_id: uuid.UUID | None = None,
-    matter_id: uuid.UUID | None = None,
-    status: InvoiceStatus | None = None,
+    client_id: Optional[uuid.UUID] = None,
+    matter_id: Optional[uuid.UUID] = None,
+    status: Optional[InvoiceStatus] = None,
 ) -> tuple[list[Invoice], int]:
     query = select(Invoice)
     count_query = select(func.count(Invoice.id))
@@ -126,7 +127,7 @@ async def get_invoices(
     return result.scalars().all(), total
 
 
-async def get_invoice(db: AsyncSession, invoice_id: uuid.UUID) -> Invoice | None:
+async def get_invoice(db: AsyncSession, invoice_id: uuid.UUID) -> Optional[Invoice]:
     result = await db.execute(select(Invoice).where(Invoice.id == invoice_id))
     return result.scalar_one_or_none()
 
@@ -140,6 +141,11 @@ async def create_invoice(db: AsyncSession, data: InvoiceCreate) -> Invoice:
         notes=data.notes,
     )
     db.add(invoice)
+    await db.flush()
+
+    # Auto-assign invoice_number (max + 1, starting from 1001)
+    max_num = await db.execute(select(func.coalesce(func.max(Invoice.invoice_number), 1000)))
+    invoice.invoice_number = max_num.scalar() + 1
     await db.flush()
 
     # Link time entries and create line items

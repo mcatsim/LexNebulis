@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,8 +23,8 @@ async def list_clients(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
-    status: ClientStatus | None = None,
+    search: Optional[str] = None,
+    status: Optional[ClientStatus] = None,
 ):
     clients, total = await get_clients(db, page, page_size, search, status)
     items = [ClientResponse.model_validate(c).model_dump() for c in clients]

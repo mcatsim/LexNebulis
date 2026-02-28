@@ -5,6 +5,7 @@ Covers CRUD for time entries, invoice creation from time entries,
 line item generation, payment recording, and automatic paid-status
 transition.
 """
+from __future__ import annotations
 
 import uuid
 from datetime import date

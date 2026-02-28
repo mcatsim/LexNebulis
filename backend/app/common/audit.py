@@ -19,6 +19,7 @@ import hashlib
 import json
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -47,13 +48,13 @@ class AuditEventJSON(BaseModel):
     action: str
     entity_type: str
     entity_id: str
-    user_id: str | None
-    user_email: str | None
-    ip_address: str | None
-    user_agent: str | None
-    changes: dict | None
+    user_id: Optional[str]
+    user_email: Optional[str]
+    ip_address: Optional[str]
+    user_agent: Optional[str]
+    changes: Optional[dict]
     integrity_hash: str
-    previous_hash: str | None
+    previous_hash: Optional[str]
     severity: str  # info, low, medium, high, critical
     outcome: str  # success, failure
     source: str = "lexnebulis"
@@ -104,12 +105,12 @@ CEF_SEVERITY = {
 def compute_integrity_hash(
     event_id: str,
     timestamp: str,
-    user_id: str | None,
+    user_id: Optional[str],
     action: str,
     entity_type: str,
     entity_id: str,
-    changes_json: str | None,
-    previous_hash: str | None,
+    changes_json: Optional[str],
+    previous_hash: Optional[str],
 ) -> str:
     """Compute SHA-256 hash chain entry for nonrepudiation."""
     payload = f"{event_id}|{timestamp}|{user_id or ''}|{action}|{entity_type}|{entity_id}|{changes_json or ''}|{previous_hash or ''}"

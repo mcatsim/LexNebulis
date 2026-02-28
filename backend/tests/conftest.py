@@ -5,11 +5,12 @@ Sets up an async SQLite in-memory database, overrides FastAPI dependencies,
 and provides pre-authenticated HTTP clients for admin, attorney, and
 billing_clerk roles.
 """
+from __future__ import annotations
 
 import asyncio
 import os
 import uuid
-from datetime import UTC, date, datetime
+from datetime import date, datetime, timezone
 
 import factory
 import pytest

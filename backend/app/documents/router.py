@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import RedirectResponse
@@ -21,10 +21,10 @@ router = APIRouter()
 async def list_documents(
     db: Annotated[AsyncSession, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-    matter_id: uuid.UUID | None = None,
+    matter_id: Optional[uuid.UUID] = None,
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
+    search: Optional[str] = None,
 ):
     docs, total = await get_documents(db, matter_id, page, page_size, search)
     items = [DocumentResponse.model_validate(d).model_dump() for d in docs]
@@ -38,8 +38,8 @@ async def upload_new_document(
     current_user: Annotated[User, Depends(require_roles("admin", "attorney", "paralegal"))],
     file: UploadFile = File(...),
     matter_id: uuid.UUID = Form(...),
-    description: str | None = Form(None),
-    parent_document_id: uuid.UUID | None = Form(None),
+    description: Optional[str] = Form(None),
+    parent_document_id: Optional[uuid.UUID] = Form(None),
 ):
     content = await file.read()
     if len(content) > 100 * 1024 * 1024:  # 100MB limit

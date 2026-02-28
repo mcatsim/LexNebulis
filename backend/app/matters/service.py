@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,11 +12,11 @@ async def get_matters(
     db: AsyncSession,
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
-    status: MatterStatus | None = None,
-    client_id: uuid.UUID | None = None,
-    attorney_id: uuid.UUID | None = None,
-    litigation_type: LitigationType | None = None,
+    search: Optional[str] = None,
+    status: Optional[MatterStatus] = None,
+    client_id: Optional[uuid.UUID] = None,
+    attorney_id: Optional[uuid.UUID] = None,
+    litigation_type: Optional[LitigationType] = None,
 ) -> tuple[list[Matter], int]:
     query = select(Matter)
     count_query = select(func.count(Matter.id))
@@ -51,7 +52,7 @@ async def get_matters(
     return result.scalars().all(), total
 
 
-async def get_matter(db: AsyncSession, matter_id: uuid.UUID) -> Matter | None:
+async def get_matter(db: AsyncSession, matter_id: uuid.UUID) -> Optional[Matter]:
     result = await db.execute(select(Matter).where(Matter.id == matter_id))
     return result.scalar_one_or_none()
 
@@ -63,6 +64,12 @@ async def create_matter(db: AsyncSession, data: MatterCreate) -> Matter:
     matter = Matter(**matter_data)
     db.add(matter)
     await db.flush()
+
+    # Auto-assign matter_number (max + 1, starting from 10001)
+    max_num = await db.execute(select(func.coalesce(func.max(Matter.matter_number), 10000)))
+    matter.matter_number = max_num.scalar() + 1
+    await db.flush()
+
     await db.refresh(matter)
     return matter
 

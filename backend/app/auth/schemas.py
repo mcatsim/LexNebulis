@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -30,11 +31,11 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    email: EmailStr | None = None
-    first_name: str | None = Field(default=None, min_length=1, max_length=100)
-    last_name: str | None = Field(default=None, min_length=1, max_length=100)
-    role: UserRole | None = None
-    is_active: bool | None = None
+    email: Optional[EmailStr] = None
+    first_name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    last_name: Optional[str] = Field(default=None, min_length=1, max_length=100)
+    role: Optional[UserRole] = None
+    is_active: Optional[bool] = None
 
 
 class UserResponse(BaseModel):

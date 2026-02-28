@@ -1,7 +1,7 @@
 import json
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,12 +24,12 @@ async def list_events(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 50,
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
-    matter_id: uuid.UUID | None = None,
-    assigned_to: uuid.UUID | None = None,
-    event_type: EventType | None = None,
-    event_status: EventStatus | None = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    matter_id: Optional[uuid.UUID] = None,
+    assigned_to: Optional[uuid.UUID] = None,
+    event_type: Optional[EventType] = None,
+    event_status: Optional[EventStatus] = None,
 ):
     events, total = await get_events(db, page, page_size, start_date, end_date, matter_id, assigned_to, event_type, event_status)
     items = [CalendarEventResponse.model_validate(e).model_dump() for e in events]

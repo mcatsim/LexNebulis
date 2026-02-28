@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,12 +13,12 @@ async def get_events(
     db: AsyncSession,
     page: int = 1,
     page_size: int = 25,
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
-    matter_id: uuid.UUID | None = None,
-    assigned_to: uuid.UUID | None = None,
-    event_type: EventType | None = None,
-    status: EventStatus | None = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
+    matter_id: Optional[uuid.UUID] = None,
+    assigned_to: Optional[uuid.UUID] = None,
+    event_type: Optional[EventType] = None,
+    status: Optional[EventStatus] = None,
 ) -> tuple[list[CalendarEvent], int]:
     query = select(CalendarEvent)
     count_query = select(func.count(CalendarEvent.id))
@@ -47,12 +48,12 @@ async def get_events(
     return result.scalars().all(), total
 
 
-async def get_event(db: AsyncSession, event_id: uuid.UUID) -> CalendarEvent | None:
+async def get_event(db: AsyncSession, event_id: uuid.UUID) -> Optional[CalendarEvent]:
     result = await db.execute(select(CalendarEvent).where(CalendarEvent.id == event_id))
     return result.scalar_one_or_none()
 
 
-async def check_conflicts(db: AsyncSession, assigned_to: uuid.UUID, start: datetime, end: datetime | None, exclude_id: uuid.UUID | None = None) -> list[CalendarEvent]:
+async def check_conflicts(db: AsyncSession, assigned_to: uuid.UUID, start: datetime, end: Optional[datetime], exclude_id: Optional[uuid.UUID] = None) -> list[CalendarEvent]:
     if end is None:
         return []
     query = select(CalendarEvent).where(

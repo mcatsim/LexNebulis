@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -17,11 +18,11 @@ class TimeEntryCreate(BaseModel):
 
 
 class TimeEntryUpdate(BaseModel):
-    date: date | None = None
-    duration_minutes: int | None = Field(default=None, ge=1)
-    description: str | None = Field(default=None, min_length=1)
-    billable: bool | None = None
-    rate_cents: int | None = Field(default=None, ge=0)
+    date: Optional[date] = None
+    duration_minutes: Optional[int] = Field(default=None, ge=1)
+    description: Optional[str] = Field(default=None, min_length=1)
+    billable: Optional[bool] = None
+    rate_cents: Optional[int] = Field(default=None, ge=0)
 
 
 class TimeEntryResponse(BaseModel):
@@ -33,7 +34,7 @@ class TimeEntryResponse(BaseModel):
     description: str
     billable: bool
     rate_cents: int
-    invoice_id: uuid.UUID | None
+    invoice_id: Optional[uuid.UUID]
     created_at: datetime
     updated_at: datetime
 
@@ -43,7 +44,7 @@ class TimeEntryResponse(BaseModel):
 # Rate Schedules
 class RateScheduleCreate(BaseModel):
     user_id: uuid.UUID
-    matter_id: uuid.UUID | None = None
+    matter_id: Optional[uuid.UUID] = None
     rate_cents: int = Field(ge=0)
     effective_date: date
 
@@ -51,7 +52,7 @@ class RateScheduleCreate(BaseModel):
 class RateScheduleResponse(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
-    matter_id: uuid.UUID | None
+    matter_id: Optional[uuid.UUID]
     rate_cents: int
     effective_date: date
 
@@ -62,9 +63,9 @@ class RateScheduleResponse(BaseModel):
 class InvoiceCreate(BaseModel):
     client_id: uuid.UUID
     matter_id: uuid.UUID
-    issued_date: date | None = None
-    due_date: date | None = None
-    notes: str | None = None
+    issued_date: Optional[date] = None
+    due_date: Optional[date] = None
+    notes: Optional[str] = None
     time_entry_ids: list[uuid.UUID] = []
 
 
@@ -73,7 +74,7 @@ class InvoiceLineItemCreate(BaseModel):
     quantity: int = Field(ge=1, default=1)
     rate_cents: int = Field(ge=0)
     amount_cents: int = Field(ge=0)
-    time_entry_id: uuid.UUID | None = None
+    time_entry_id: Optional[uuid.UUID] = None
 
 
 class InvoiceResponse(BaseModel):
@@ -81,14 +82,14 @@ class InvoiceResponse(BaseModel):
     invoice_number: int
     client_id: uuid.UUID
     matter_id: uuid.UUID
-    issued_date: date | None
-    due_date: date | None
+    issued_date: Optional[date]
+    due_date: Optional[date]
     subtotal_cents: int
     tax_cents: int
     total_cents: int
     status: InvoiceStatus
-    pdf_storage_key: str | None
-    notes: str | None
+    pdf_storage_key: Optional[str]
+    notes: Optional[str]
     created_at: datetime
     updated_at: datetime
 
@@ -98,7 +99,7 @@ class InvoiceResponse(BaseModel):
 class InvoiceLineItemResponse(BaseModel):
     id: uuid.UUID
     invoice_id: uuid.UUID
-    time_entry_id: uuid.UUID | None
+    time_entry_id: Optional[uuid.UUID]
     description: str
     quantity: int
     rate_cents: int
@@ -113,8 +114,8 @@ class PaymentCreate(BaseModel):
     amount_cents: int = Field(ge=1)
     payment_date: date
     method: PaymentMethod
-    reference_number: str | None = None
-    notes: str | None = None
+    reference_number: Optional[str] = None
+    notes: Optional[str] = None
 
 
 class PaymentResponse(BaseModel):
@@ -123,8 +124,8 @@ class PaymentResponse(BaseModel):
     amount_cents: int
     payment_date: date
     method: PaymentMethod
-    reference_number: str | None
-    notes: str | None
+    reference_number: Optional[str]
+    notes: Optional[str]
     created_at: datetime
 
     model_config = {"from_attributes": True}

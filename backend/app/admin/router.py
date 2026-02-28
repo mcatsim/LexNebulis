@@ -1,7 +1,7 @@
 import json
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
@@ -26,12 +26,12 @@ async def list_audit_logs(
     admin: Annotated[User, Depends(require_roles("admin"))],
     page: int = 1,
     page_size: int = 50,
-    entity_type: str | None = None,
-    action: str | None = None,
-    user_id: uuid.UUID | None = None,
-    severity: str | None = None,
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    entity_type: Optional[str] = None,
+    action: Optional[str] = None,
+    user_id: Optional[uuid.UUID] = None,
+    severity: Optional[str] = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
 ):
     query = select(AuditLog)
     count_query = select(func.count(AuditLog.id))
@@ -118,8 +118,13 @@ async def verify_audit_chain(
                 "actual": log.previous_hash,
             })
 
+        # Ensure timezone-aware timestamp for consistent hash (SQLite strips tzinfo)
+        ts = log.timestamp
+        if ts.tzinfo is None:
+            from datetime import timezone
+            ts = ts.replace(tzinfo=timezone.utc)
         recomputed = compute_integrity_hash(
-            str(log.id), log.timestamp.isoformat(), str(log.user_id) if log.user_id else None,
+            str(log.id), ts.isoformat(), str(log.user_id) if log.user_id else None,
             log.action, log.entity_type, log.entity_id, log.changes_json, log.previous_hash,
         )
         if recomputed != log.integrity_hash:
@@ -144,8 +149,8 @@ async def verify_audit_chain(
 async def export_audit_json(
     db: Annotated[AsyncSession, Depends(get_db)],
     admin: Annotated[User, Depends(require_roles("admin"))],
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
     limit: int = Query(default=1000, ge=1, le=10000),
 ):
     """Export audit logs as structured JSON for SIEM ingestion (Splunk, Elastic, etc.)."""
@@ -191,8 +196,8 @@ async def export_audit_json(
 async def export_audit_cef(
     db: Annotated[AsyncSession, Depends(get_db)],
     admin: Annotated[User, Depends(require_roles("admin"))],
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
     limit: int = Query(default=1000, ge=1, le=10000),
 ):
     """Export audit logs as CEF (Common Event Format) for ArcSight, QRadar, etc."""
@@ -244,8 +249,8 @@ async def export_audit_cef(
 async def export_audit_syslog(
     db: Annotated[AsyncSession, Depends(get_db)],
     admin: Annotated[User, Depends(require_roles("admin"))],
-    start_date: datetime | None = None,
-    end_date: datetime | None = None,
+    start_date: Optional[datetime] = None,
+    end_date: Optional[datetime] = None,
     limit: int = Query(default=1000, ge=1, le=10000),
 ):
     """Export audit logs as RFC 5424 syslog for generic SIEM ingestion."""

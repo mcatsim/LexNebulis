@@ -1,12 +1,12 @@
 import enum
 import uuid
 from datetime import date, datetime
+from typing import Optional
 
 from sqlalchemy import BigInteger, Boolean, Date, DateTime, Enum, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.common.base_models import UUIDBase
+from app.common.base_models import GUID, UUIDBase
 
 
 class TrustEntryType(str, enum.Enum):
@@ -33,16 +33,16 @@ class TrustAccount(UUIDBase):
 class TrustLedgerEntry(UUIDBase):
     __tablename__ = "trust_ledger_entries"
 
-    trust_account_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("trust_accounts.id"), nullable=False, index=True)
-    client_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("clients.id"), nullable=False, index=True)
-    matter_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("matters.id"), nullable=True)
+    trust_account_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("trust_accounts.id"), nullable=False, index=True)
+    client_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("clients.id"), nullable=False, index=True)
+    matter_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("matters.id"), nullable=True)
     entry_type: Mapped[TrustEntryType] = mapped_column(Enum(TrustEntryType), nullable=False)
     amount_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     running_balance_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    reference_number: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    reference_number: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     entry_date: Mapped[date] = mapped_column(Date, nullable=False)
-    created_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    created_by: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     trust_account = relationship("TrustAccount", back_populates="ledger_entries")
@@ -52,13 +52,13 @@ class TrustLedgerEntry(UUIDBase):
 class TrustReconciliation(UUIDBase):
     __tablename__ = "trust_reconciliations"
 
-    trust_account_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("trust_accounts.id"), nullable=False)
+    trust_account_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("trust_accounts.id"), nullable=False)
     reconciliation_date: Mapped[date] = mapped_column(Date, nullable=False)
     statement_balance_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     ledger_balance_cents: Mapped[int] = mapped_column(BigInteger, nullable=False)
     is_balanced: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    performed_by: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    performed_by: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     trust_account = relationship("TrustAccount", back_populates="reconciliations")

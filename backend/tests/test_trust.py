@@ -4,6 +4,7 @@ Tests for the trust/IOLTA accounting endpoints.
 Covers trust account creation, deposit and disbursement ledger entries,
 overdraft protection, running balance calculation, and reconciliation.
 """
+from __future__ import annotations
 
 import uuid
 from datetime import date

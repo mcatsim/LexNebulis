@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,8 +12,8 @@ async def get_clients(
     db: AsyncSession,
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
-    status: ClientStatus | None = None,
+    search: Optional[str] = None,
+    status: Optional[ClientStatus] = None,
 ) -> tuple[list[Client], int]:
     query = select(Client)
     count_query = select(func.count(Client.id))
@@ -37,7 +38,7 @@ async def get_clients(
     return result.scalars().all(), total
 
 
-async def get_client(db: AsyncSession, client_id: uuid.UUID) -> Client | None:
+async def get_client(db: AsyncSession, client_id: uuid.UUID) -> Optional[Client]:
     result = await db.execute(select(Client).where(Client.id == client_id))
     return result.scalar_one_or_none()
 
@@ -46,6 +47,12 @@ async def create_client(db: AsyncSession, data: ClientCreate, created_by: uuid.U
     client = Client(**data.model_dump(), created_by=created_by)
     db.add(client)
     await db.flush()
+
+    # Auto-assign client_number (max + 1, starting from 1001)
+    max_num = await db.execute(select(func.coalesce(func.max(Client.client_number), 1000)))
+    client.client_number = max_num.scalar() + 1
+    await db.flush()
+
     await db.refresh(client)
     return client
 

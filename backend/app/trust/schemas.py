@@ -1,5 +1,6 @@
 import uuid
 from datetime import date, datetime
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -27,11 +28,11 @@ class TrustAccountResponse(BaseModel):
 class TrustLedgerEntryCreate(BaseModel):
     trust_account_id: uuid.UUID
     client_id: uuid.UUID
-    matter_id: uuid.UUID | None = None
+    matter_id: Optional[uuid.UUID] = None
     entry_type: TrustEntryType
     amount_cents: int = Field(ge=1)
     description: str = Field(min_length=1)
-    reference_number: str | None = None
+    reference_number: Optional[str] = None
     entry_date: date
 
 
@@ -39,12 +40,12 @@ class TrustLedgerEntryResponse(BaseModel):
     id: uuid.UUID
     trust_account_id: uuid.UUID
     client_id: uuid.UUID
-    matter_id: uuid.UUID | None
+    matter_id: Optional[uuid.UUID]
     entry_type: TrustEntryType
     amount_cents: int
     running_balance_cents: int
     description: str
-    reference_number: str | None
+    reference_number: Optional[str]
     entry_date: date
     created_by: uuid.UUID
     created_at: datetime
@@ -56,7 +57,7 @@ class TrustReconciliationCreate(BaseModel):
     trust_account_id: uuid.UUID
     reconciliation_date: date
     statement_balance_cents: int
-    notes: str | None = None
+    notes: Optional[str] = None
 
 
 class TrustReconciliationResponse(BaseModel):
@@ -66,7 +67,7 @@ class TrustReconciliationResponse(BaseModel):
     statement_balance_cents: int
     ledger_balance_cents: int
     is_balanced: bool
-    notes: str | None
+    notes: Optional[str]
     performed_by: uuid.UUID
     created_at: datetime
 

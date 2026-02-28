@@ -1,5 +1,6 @@
 import uuid
 from io import BytesIO
+from typing import Optional
 
 from minio import Minio
 from sqlalchemy import func, select
@@ -28,10 +29,10 @@ def get_minio_client() -> Minio:
 
 async def get_documents(
     db: AsyncSession,
-    matter_id: uuid.UUID | None = None,
+    matter_id: Optional[uuid.UUID] = None,
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
+    search: Optional[str] = None,
 ) -> tuple[list[Document], int]:
     query = select(Document)
     count_query = select(func.count(Document.id))
@@ -50,7 +51,7 @@ async def get_documents(
     return result.scalars().all(), total
 
 
-async def get_document(db: AsyncSession, document_id: uuid.UUID) -> Document | None:
+async def get_document(db: AsyncSession, document_id: uuid.UUID) -> Optional[Document]:
     result = await db.execute(select(Document).where(Document.id == document_id))
     return result.scalar_one_or_none()
 
@@ -62,9 +63,9 @@ async def upload_document(
     filename: str,
     content: bytes,
     mime_type: str,
-    description: str | None = None,
-    tags: list | None = None,
-    parent_document_id: uuid.UUID | None = None,
+    description: Optional[str] = None,
+    tags: Optional[list] = None,
+    parent_document_id: Optional[uuid.UUID] = None,
 ) -> Document:
     storage_key = f"{matter_id}/{uuid.uuid4()}/{filename}"
 

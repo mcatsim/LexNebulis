@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,8 +23,8 @@ async def list_contacts(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 25,
-    search: str | None = None,
-    role: ContactRole | None = None,
+    search: Optional[str] = None,
+    role: Optional[ContactRole] = None,
 ):
     contacts, total = await get_contacts(db, page, page_size, search, role)
     items = [ContactResponse.model_validate(c).model_dump() for c in contacts]

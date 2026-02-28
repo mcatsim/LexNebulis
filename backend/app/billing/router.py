@@ -1,7 +1,7 @@
 import json
 import uuid
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,11 +44,11 @@ async def list_time_entries(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 25,
-    matter_id: uuid.UUID | None = None,
-    user_id: uuid.UUID | None = None,
-    start_date: date | None = None,
-    end_date: date | None = None,
-    billable: bool | None = None,
+    matter_id: Optional[uuid.UUID] = None,
+    user_id: Optional[uuid.UUID] = None,
+    start_date: Optional[date] = None,
+    end_date: Optional[date] = None,
+    billable: Optional[bool] = None,
 ):
     entries, total = await get_time_entries(db, page, page_size, matter_id, user_id, start_date, end_date, billable)
     items = [TimeEntryResponse.model_validate(e).model_dump() for e in entries]
@@ -127,9 +127,9 @@ async def list_invoices(
     current_user: Annotated[User, Depends(get_current_user)],
     page: int = 1,
     page_size: int = 25,
-    client_id: uuid.UUID | None = None,
-    matter_id: uuid.UUID | None = None,
-    invoice_status: InvoiceStatus | None = None,
+    client_id: Optional[uuid.UUID] = None,
+    matter_id: Optional[uuid.UUID] = None,
+    invoice_status: Optional[InvoiceStatus] = None,
 ):
     invoices, total = await get_invoices(db, page, page_size, client_id, matter_id, invoice_status)
     items = [InvoiceResponse.model_validate(i).model_dump() for i in invoices]

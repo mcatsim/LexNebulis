@@ -36,6 +36,9 @@ router = APIRouter()
 async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
     user = await authenticate_user(db, data.email, data.password)
     if user is None:
+        # Commit to persist failed-login counter / lockout state before
+        # raising, because the dependency's exception handler will rollback.
+        await db.commit()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
     access_token = create_access_token(str(user.id), user.role.value)
@@ -152,4 +155,5 @@ async def update_user(
         )
 
     await db.flush()
+    await db.refresh(user)
     return user
