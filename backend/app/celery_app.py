@@ -3,7 +3,7 @@ from celery import Celery
 from app.config import settings
 
 celery = Celery(
-    "legalforge",
+    "lexnebulis",
     broker=settings.redis_url,
     backend=settings.redis_url,
 )

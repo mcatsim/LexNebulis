@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN groupadd -r legalforge && useradd -r -g legalforge -d /app -s /sbin/nologin legalforge
+RUN groupadd -r lexnebulis && useradd -r -g lexnebulis -d /app -s /sbin/nologin lexnebulis
 
 WORKDIR /app
 
@@ -24,9 +24,9 @@ RUN pip install --no-cache-dir -e ".[dev]" 2>/dev/null || pip install --no-cache
 COPY . .
 
 # Set ownership
-RUN chown -R legalforge:legalforge /app
+RUN chown -R lexnebulis:lexnebulis /app
 
-USER legalforge
+USER lexnebulis
 
 EXPOSE 8000
 

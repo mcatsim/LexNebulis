@@ -18,7 +18,7 @@ export const handlers = [
 
   http.post('/api/auth/login', async ({ request }) => {
     const body = (await request.json()) as { email: string; password: string };
-    if (body.email === 'admin@legalforge.test' && body.password === 'password123') {
+    if (body.email === 'admin@lexnebulis.test' && body.password === 'password123') {
       return HttpResponse.json(mockTokenResponse);
     }
     return HttpResponse.json(

@@ -150,7 +150,7 @@ class TestGetMe:
         resp = await client.get("/api/auth/me", headers=admin_headers)
         assert resp.status_code == 200
         body = resp.json()
-        assert body["email"] == "admin@legalforge-test.com"
+        assert body["email"] == "admin@lexnebulis-test.com"
         assert body["role"] == "admin"
 
     async def test_get_me_unauthenticated(self, client: AsyncClient):

@@ -3,13 +3,13 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Application
-    app_name: str = "LegalForge"
+    app_name: str = "LexNebulis"
     app_version: str = "1.0.0"
     environment: str = "production"
     debug: bool = False
 
     # Database
-    database_url: str = "postgresql+asyncpg://legalforge:legalforge@db:5432/legalforge"
+    database_url: str = "postgresql+asyncpg://lexnebulis:lexnebulis@db:5432/lexnebulis"
 
     # Auth
     secret_key: str = "CHANGE_ME"
@@ -21,9 +21,9 @@ class Settings(BaseSettings):
 
     # MinIO
     minio_endpoint: str = "minio:9000"
-    minio_root_user: str = "legalforge"
+    minio_root_user: str = "lexnebulis"
     minio_root_password: str = "CHANGE_ME"
-    minio_bucket: str = "legalforge-documents"
+    minio_bucket: str = "lexnebulis-documents"
     minio_use_ssl: bool = False
 
     # Redis

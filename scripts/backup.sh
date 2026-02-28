@@ -1,15 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-# LegalForge Backup Script
+# LexNebulis Backup Script
 # Creates an encrypted backup of the database and MinIO documents
 
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_NAME="legalforge_backup_${TIMESTAMP}"
+BACKUP_NAME="lexnebulis_backup_${TIMESTAMP}"
 BACKUP_PATH="${BACKUP_DIR}/${BACKUP_NAME}"
 
-echo "=== LegalForge Backup ==="
+echo "=== LexNebulis Backup ==="
 echo "Timestamp: ${TIMESTAMP}"
 echo "Backup directory: ${BACKUP_PATH}"
 
@@ -17,7 +17,7 @@ mkdir -p "${BACKUP_PATH}"
 
 # 1. Database backup
 echo "Backing up PostgreSQL database..."
-docker compose exec -T db pg_dump -U "${POSTGRES_USER:-legalforge}" "${POSTGRES_DB:-legalforge}" \
+docker compose exec -T db pg_dump -U "${POSTGRES_USER:-lexnebulis}" "${POSTGRES_DB:-lexnebulis}" \
     --format=custom --compress=9 > "${BACKUP_PATH}/database.dump"
 echo "Database backup complete: $(du -h "${BACKUP_PATH}/database.dump" | cut -f1)"
 

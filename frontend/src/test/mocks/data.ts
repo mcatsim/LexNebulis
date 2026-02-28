@@ -24,7 +24,7 @@ export const mockTokenResponse: TokenResponse = {
 
 export const mockUser: User = {
   id: 'user-001',
-  email: 'admin@legalforge.test',
+  email: 'admin@lexnebulis.test',
   first_name: 'Jane',
   last_name: 'Doe',
   role: 'admin',
@@ -35,7 +35,7 @@ export const mockUser: User = {
 
 export const mockAttorney: User = {
   id: 'user-002',
-  email: 'attorney@legalforge.test',
+  email: 'attorney@lexnebulis.test',
   first_name: 'John',
   last_name: 'Smith',
   role: 'attorney',

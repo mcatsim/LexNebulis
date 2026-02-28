@@ -62,7 +62,7 @@ export default function AppLayout() {
             <Group>
               <Burger opened={opened} onClick={() => setOpened(!opened)} hiddenFrom="sm" size="sm" />
               <IconScale size={28} color="var(--mantine-color-blue-6)" />
-              <Text fw={700} size="lg">LegalForge</Text>
+              <Text fw={700} size="lg">LexNebulis</Text>
             </Group>
 
             <Group>

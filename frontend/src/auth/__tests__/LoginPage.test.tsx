@@ -25,10 +25,10 @@ describe('LoginPage', () => {
     expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
-  it('renders the LegalForge branding', () => {
+  it('renders the LexNebulis branding', () => {
     render(<LoginPage />);
 
-    expect(screen.getByText('LegalForge')).toBeInTheDocument();
+    expect(screen.getByText('LexNebulis')).toBeInTheDocument();
     expect(screen.getByText('Legal Practice Management')).toBeInTheDocument();
   });
 
@@ -53,7 +53,7 @@ describe('LoginPage', () => {
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
 
-    await user.type(emailInput, 'admin@legalforge.test');
+    await user.type(emailInput, 'admin@lexnebulis.test');
     await user.type(passwordInput, 'short');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
@@ -68,7 +68,7 @@ describe('LoginPage', () => {
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
 
-    await user.type(emailInput, 'admin@legalforge.test');
+    await user.type(emailInput, 'admin@lexnebulis.test');
     await user.type(passwordInput, 'password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
@@ -90,14 +90,14 @@ describe('LoginPage', () => {
     const emailInput = screen.getByLabelText(/email/i);
     const passwordInput = screen.getByLabelText(/password/i);
 
-    await user.type(emailInput, 'admin@legalforge.test');
+    await user.type(emailInput, 'admin@lexnebulis.test');
     await user.type(passwordInput, 'password123');
     await user.click(screen.getByRole('button', { name: /sign in/i }));
 
     await waitFor(() => {
       const state = useAuthStore.getState();
       expect(state.user).toBeDefined();
-      expect(state.user?.email).toBe('admin@legalforge.test');
+      expect(state.user?.email).toBe('admin@lexnebulis.test');
       expect(state.user?.first_name).toBe('Jane');
     });
   });

@@ -15,7 +15,7 @@ services:
         condition: service_started
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
   frontend:
     build:
@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
   backend:
     build:
@@ -57,7 +57,7 @@ services:
       start_period: 30s
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
   celery:
     build:
@@ -82,7 +82,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
   db:
     image: postgres:16-alpine
@@ -93,13 +93,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-legalforge} -d ${POSTGRES_DB:-legalforge}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lexnebulis} -d ${POSTGRES_DB:-lexnebulis}"]
       interval: 5s
       timeout: 5s
       retries: 5
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
   minio:
     image: minio/minio:latest
@@ -116,7 +116,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
   redis:
     image: redis:7-alpine
@@ -130,7 +130,7 @@ services:
       retries: 5
     restart: unless-stopped
     networks:
-      - legalforge
+      - lexnebulis
 
 volumes:
   pgdata:
@@ -138,5 +138,5 @@ volumes:
   redis-data:
 
 networks:
-  legalforge:
+  lexnebulis:
     driver: bridge

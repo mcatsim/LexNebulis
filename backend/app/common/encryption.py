@@ -15,7 +15,7 @@ def _get_fernet() -> Fernet:
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
-            salt=b"legalforge-field-encryption",
+            salt=b"lexnebulis-field-encryption",
             iterations=100_000,
         )
         key = base64.urlsafe_b64encode(kdf.derive(settings.field_encryption_key.encode()))

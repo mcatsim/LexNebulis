@@ -63,13 +63,13 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: legalforge_test
+          POSTGRES_USER: lexnebulis_test
           POSTGRES_PASSWORD: testpassword
-          POSTGRES_DB: legalforge_test
+          POSTGRES_DB: lexnebulis_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U legalforge_test -d legalforge_test"
+          --health-cmd "pg_isready -U lexnebulis_test -d lexnebulis_test"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -85,7 +85,7 @@ jobs:
           --health-retries 5
 
     env:
-      DATABASE_URL: postgresql+asyncpg://legalforge_test:testpassword@localhost:5432/legalforge_test
+      DATABASE_URL: postgresql+asyncpg://lexnebulis_test:testpassword@localhost:5432/lexnebulis_test
       REDIS_URL: redis://localhost:6379/0
       SECRET_KEY: test-secret-key-not-for-production
       MINIO_ENDPOINT: localhost:9000
@@ -232,6 +232,6 @@ jobs:
         with:
           context: ${{ matrix.service.context }}
           push: false
-          tags: legalforge-${{ matrix.service.name }}:ci-${{ github.sha }}
+          tags: lexnebulis-${{ matrix.service.name }}:ci-${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.service.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}

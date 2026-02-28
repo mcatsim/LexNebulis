@@ -26,7 +26,7 @@ export const useAuthStore = create<AuthState>()(
         set({ accessToken: null, refreshToken: null, user: null, isAuthenticated: false }),
     }),
     {
-      name: 'legalforge-auth',
+      name: 'lexnebulis-auth',
       partialize: (state) => ({
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,

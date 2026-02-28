@@ -1,17 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 
-# LegalForge CLI
-# Usage: ./legalforge.sh [command]
+# LexNebulis CLI
+# Usage: ./lexnebulis.sh [command]
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
 show_help() {
     cat << 'EOF'
-LegalForge - Legal Practice Management Platform
+LexNebulis - Legal Practice Management Platform
 
-Usage: ./legalforge.sh [command]
+Usage: ./lexnebulis.sh [command]
 
 Commands:
   setup       First-time setup: generate .env, build containers, start services
@@ -29,15 +29,15 @@ Commands:
   help        Show this help message
 
 Examples:
-  ./legalforge.sh setup        # First-time setup
-  ./legalforge.sh start        # Start the platform
-  ./legalforge.sh backup       # Create backup
-  ./legalforge.sh restore ./backups/backup.tar.gz.enc
+  ./lexnebulis.sh setup        # First-time setup
+  ./lexnebulis.sh start        # Start the platform
+  ./lexnebulis.sh backup       # Create backup
+  ./lexnebulis.sh restore ./backups/backup.tar.gz.enc
 EOF
 }
 
 cmd_setup() {
-    echo "=== LegalForge Setup ==="
+    echo "=== LexNebulis Setup ==="
 
     # Generate .env if it doesn't exist
     if [ ! -f .env ]; then
@@ -90,28 +90,28 @@ cmd_setup() {
 
     echo ""
     echo "=== Setup Complete ==="
-    echo "LegalForge is starting up at http://localhost"
+    echo "LexNebulis is starting up at http://localhost"
     echo ""
     echo "Default admin credentials are in your .env file."
     echo "Please change the admin password after first login."
 }
 
 cmd_start() {
-    echo "Starting LegalForge..."
+    echo "Starting LexNebulis..."
     docker compose up -d
-    echo "LegalForge is running at http://localhost"
+    echo "LexNebulis is running at http://localhost"
 }
 
 cmd_stop() {
-    echo "Stopping LegalForge..."
+    echo "Stopping LexNebulis..."
     docker compose down
-    echo "LegalForge stopped."
+    echo "LexNebulis stopped."
 }
 
 cmd_restart() {
-    echo "Restarting LegalForge..."
+    echo "Restarting LexNebulis..."
     docker compose restart
-    echo "LegalForge restarted."
+    echo "LexNebulis restarted."
 }
 
 cmd_status() {
@@ -129,7 +129,7 @@ cmd_backup() {
 
 cmd_restore() {
     if [ $# -lt 1 ]; then
-        echo "Usage: ./legalforge.sh restore <backup_file>"
+        echo "Usage: ./lexnebulis.sh restore <backup_file>"
         exit 1
     fi
     source .env 2>/dev/null || true
@@ -137,7 +137,7 @@ cmd_restore() {
 }
 
 cmd_update() {
-    echo "Updating LegalForge..."
+    echo "Updating LexNebulis..."
     git pull
     docker compose build
     docker compose up -d
@@ -145,7 +145,7 @@ cmd_update() {
 }
 
 cmd_dev() {
-    echo "Starting LegalForge in development mode..."
+    echo "Starting LexNebulis in development mode..."
     docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 }
 

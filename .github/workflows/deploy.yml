@@ -26,8 +26,8 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/mcatsim/legalforge-backend
-  FRONTEND_IMAGE: ghcr.io/mcatsim/legalforge-frontend
+  BACKEND_IMAGE: ghcr.io/mcatsim/lexnebulis-backend
+  FRONTEND_IMAGE: ghcr.io/mcatsim/lexnebulis-frontend
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ jobs:
       github.event.inputs.environment == 'staging'
     environment:
       name: staging
-      url: https://staging.legalforge.example.com
+      url: https://staging.lexnebulis.example.com
 
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +141,7 @@ jobs:
           # Option A: SSH to staging server
           # -----------------------------------------------------------------
           # ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_SSH_USER }}@${{ secrets.STAGING_SSH_HOST }} << 'DEPLOY'
-          #   cd /opt/legalforge
+          #   cd /opt/lexnebulis
           #   export BACKEND_IMAGE="${BACKEND_IMAGE}"
           #   export FRONTEND_IMAGE="${FRONTEND_IMAGE}"
           #   docker compose pull
@@ -168,9 +168,9 @@ jobs:
       #      - environment: staging
       #      - version: <previous-version-tag>
       #   3. Or SSH to the server and manually:
-      #      cd /opt/legalforge
-      #      export BACKEND_IMAGE=ghcr.io/mcatsim/legalforge-backend:<old-version>
-      #      export FRONTEND_IMAGE=ghcr.io/mcatsim/legalforge-frontend:<old-version>
+      #      cd /opt/lexnebulis
+      #      export BACKEND_IMAGE=ghcr.io/mcatsim/lexnebulis-backend:<old-version>
+      #      export FRONTEND_IMAGE=ghcr.io/mcatsim/lexnebulis-frontend:<old-version>
       #      docker compose pull && docker compose up -d
 
   # ---------------------------------------------------------------------------
@@ -189,7 +189,7 @@ jobs:
     # in GitHub Settings > Environments > production > Required reviewers
     environment:
       name: production
-      url: https://legalforge.example.com
+      url: https://lexnebulis.example.com
 
     steps:
       - uses: actions/checkout@v4
@@ -212,12 +212,12 @@ jobs:
           # Option A: SSH to production server
           # -----------------------------------------------------------------
           # ssh -o StrictHostKeyChecking=no ${{ secrets.PROD_SSH_USER }}@${{ secrets.PROD_SSH_HOST }} << 'DEPLOY'
-          #   cd /opt/legalforge
+          #   cd /opt/lexnebulis
           #   export BACKEND_IMAGE="${BACKEND_IMAGE}"
           #   export FRONTEND_IMAGE="${FRONTEND_IMAGE}"
           #
           #   # Create a database backup before deploying
-          #   docker compose exec db pg_dump -U legalforge legalforge > /opt/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql
+          #   docker compose exec db pg_dump -U lexnebulis lexnebulis > /opt/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql
           #
           #   docker compose pull
           #   docker compose up -d --remove-orphans
@@ -235,11 +235,11 @@ jobs:
       #      - environment: production
       #      - version: <previous-version-tag>
       #   3. Or SSH to the server and manually roll back:
-      #      cd /opt/legalforge
-      #      export BACKEND_IMAGE=ghcr.io/mcatsim/legalforge-backend:<old-version>
-      #      export FRONTEND_IMAGE=ghcr.io/mcatsim/legalforge-frontend:<old-version>
+      #      cd /opt/lexnebulis
+      #      export BACKEND_IMAGE=ghcr.io/mcatsim/lexnebulis-backend:<old-version>
+      #      export FRONTEND_IMAGE=ghcr.io/mcatsim/lexnebulis-frontend:<old-version>
       #      docker compose pull && docker compose up -d
       #   4. If database migrations need reverting:
       #      docker compose exec backend alembic downgrade -1
       #   5. Restore database from pre-deploy backup if needed:
-      #      cat /opt/backups/pre-deploy-<timestamp>.sql | docker compose exec -T db psql -U legalforge legalforge
+      #      cat /opt/backups/pre-deploy-<timestamp>.sql | docker compose exec -T db psql -U lexnebulis lexnebulis

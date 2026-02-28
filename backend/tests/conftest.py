@@ -1,5 +1,5 @@
 """
-Shared test fixtures for the LegalForge backend test suite.
+Shared test fixtures for the LexNebulis backend test suite.
 
 Sets up an async SQLite in-memory database, overrides FastAPI dependencies,
 and provides pre-authenticated HTTP clients for admin, attorney, and
@@ -149,7 +149,7 @@ def _auth_header(user: User) -> dict[str, str]:
 @pytest_asyncio.fixture
 async def admin_user() -> User:
     return await _create_test_user(
-        email="admin@legalforge-test.com",
+        email="admin@lexnebulis-test.com",
         password="AdminPass123!",
         role=UserRole.admin,
         first_name="Admin",
@@ -160,7 +160,7 @@ async def admin_user() -> User:
 @pytest_asyncio.fixture
 async def attorney_user() -> User:
     return await _create_test_user(
-        email="attorney@legalforge-test.com",
+        email="attorney@lexnebulis-test.com",
         password="AttorneyPass123!",
         role=UserRole.attorney,
         first_name="Jane",
@@ -171,7 +171,7 @@ async def attorney_user() -> User:
 @pytest_asyncio.fixture
 async def billing_user() -> User:
     return await _create_test_user(
-        email="billing@legalforge-test.com",
+        email="billing@lexnebulis-test.com",
         password="BillingPass123!",
         role=UserRole.billing_clerk,
         first_name="Bill",
@@ -229,7 +229,7 @@ class UserFactory(factory.Factory):
     class Meta:
         model = dict
 
-    email = factory.LazyFunction(lambda: f"user-{uuid.uuid4().hex[:8]}@legalforge-test.com")
+    email = factory.LazyFunction(lambda: f"user-{uuid.uuid4().hex[:8]}@lexnebulis-test.com")
     password = "SecurePass123!"
     first_name = factory.Faker("first_name")
     last_name = factory.Faker("last_name")

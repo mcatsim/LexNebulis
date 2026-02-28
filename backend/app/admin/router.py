@@ -236,7 +236,7 @@ async def export_audit_cef(
     return StreamingResponse(
         iter([content]),
         media_type="text/plain",
-        headers={"Content-Disposition": "attachment; filename=legalforge-audit-cef.log"},
+        headers={"Content-Disposition": "attachment; filename=lexnebulis-audit-cef.log"},
     )
 
 
@@ -289,7 +289,7 @@ async def export_audit_syslog(
     return StreamingResponse(
         iter([content]),
         media_type="text/plain",
-        headers={"Content-Disposition": "attachment; filename=legalforge-audit-syslog.log"},
+        headers={"Content-Disposition": "attachment; filename=lexnebulis-audit-syslog.log"},
     )
 
 
@@ -320,8 +320,8 @@ async def test_webhook(
         "user_email": admin.email,
         "severity": "info",
         "outcome": "success",
-        "source": "legalforge",
-        "message": "Webhook connectivity test from LegalForge",
+        "source": "lexnebulis",
+        "message": "Webhook connectivity test from LexNebulis",
     }
 
     try:

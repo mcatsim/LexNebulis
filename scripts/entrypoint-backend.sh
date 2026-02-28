@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== LegalForge Backend ==="
+echo "=== LexNebulis Backend ==="
 echo "Running database migrations..."
 cd /app
 alembic upgrade head

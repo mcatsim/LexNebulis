@@ -11,12 +11,12 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/mcatsim/LegalForge.git
-cd LegalForge
+git clone https://github.com/mcatsim/LexNebulis.git
+cd LexNebulis
 
 # Run setup (generates secrets, builds containers, starts services)
-chmod +x legalforge.sh
-./legalforge.sh setup
+chmod +x lexnebulis.sh
+./lexnebulis.sh setup
 ```
 
 The setup script will:
@@ -37,7 +37,7 @@ FIRST_ADMIN_EMAIL=your.email@firm.com
 FIRST_ADMIN_PASSWORD=your-secure-password
 ```
 
-Then restart: `./legalforge.sh restart`
+Then restart: `./lexnebulis.sh restart`
 
 ### 2. Configure TLS (Production)
 
@@ -53,7 +53,7 @@ For production, you should enable TLS:
    DOMAIN=legal.yourfirm.com
    ```
 
-3. Restart: `./legalforge.sh restart`
+3. Restart: `./lexnebulis.sh restart`
 
 ### 3. Configure Backups
 
@@ -66,7 +66,7 @@ BACKUP_DIR=./backups
 Schedule automated backups via cron:
 ```bash
 # Daily backup at 2 AM
-0 2 * * * cd /path/to/LegalForge && ./legalforge.sh backup
+0 2 * * * cd /path/to/LexNebulis && ./lexnebulis.sh backup
 ```
 
 ### 4. Configure SIEM Integration (Optional)
@@ -92,25 +92,25 @@ ufw allow 443/tcp
 
 ### Services won't start
 ```bash
-./legalforge.sh logs    # Check logs
-./legalforge.sh status  # Check container status
+./lexnebulis.sh logs    # Check logs
+./lexnebulis.sh status  # Check container status
 ```
 
 ### Database connection issues
 ```bash
 # Check if PostgreSQL is healthy
-docker compose exec db pg_isready -U legalforge
+docker compose exec db pg_isready -U lexnebulis
 ```
 
 ### Reset admin password
 ```bash
 # Enter the backend container
-./legalforge.sh shell
+./lexnebulis.sh shell
 # Then run Python
 python -c "
 from app.auth.service import hash_password
 print(hash_password('new-password'))
 "
 # Update in database
-docker compose exec db psql -U legalforge -c "UPDATE users SET password_hash='<hash>' WHERE email='admin@example.com';"
+docker compose exec db psql -U lexnebulis -c "UPDATE users SET password_hash='<hash>' WHERE email='admin@example.com';"
 ```

@@ -186,14 +186,14 @@ jobs:
           context: ./${{ matrix.service }}
           push: false
           load: true
-          tags: legalforge-${{ matrix.service }}:scan
+          tags: lexnebulis-${{ matrix.service }}:scan
           cache-from: type=gha,scope=${{ matrix.service }}-security
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}-security
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: legalforge-${{ matrix.service }}:scan
+          image-ref: lexnebulis-${{ matrix.service }}:scan
           format: json
           output: trivy-${{ matrix.service }}-report.json
           severity: CRITICAL,HIGH
@@ -202,7 +202,7 @@ jobs:
       - name: Trivy scan (human-readable + fail on CRITICAL)
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: legalforge-${{ matrix.service }}:scan
+          image-ref: lexnebulis-${{ matrix.service }}:scan
           format: table
           severity: CRITICAL,HIGH
           # Fail the job if CRITICAL vulnerabilities are found

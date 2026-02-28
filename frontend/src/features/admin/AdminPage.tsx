@@ -219,7 +219,7 @@ export default function AdminPage() {
                         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a');
-                        a.href = url; a.download = 'legalforge-audit.json'; a.click();
+                        a.href = url; a.download = 'lexnebulis-audit.json'; a.click();
                         URL.revokeObjectURL(url);
                       });
                     }}
@@ -233,7 +233,7 @@ export default function AdminPage() {
                       adminApi.exportAuditCEF({}).then(({ data }) => {
                         const url = URL.createObjectURL(data);
                         const a = document.createElement('a');
-                        a.href = url; a.download = 'legalforge-audit-cef.log'; a.click();
+                        a.href = url; a.download = 'lexnebulis-audit-cef.log'; a.click();
                         URL.revokeObjectURL(url);
                       });
                     }}
@@ -247,7 +247,7 @@ export default function AdminPage() {
                       adminApi.exportAuditSyslog({}).then(({ data }) => {
                         const url = URL.createObjectURL(data);
                         const a = document.createElement('a');
-                        a.href = url; a.download = 'legalforge-audit-syslog.log'; a.click();
+                        a.href = url; a.download = 'lexnebulis-audit-syslog.log'; a.click();
                         URL.revokeObjectURL(url);
                       });
                     }}

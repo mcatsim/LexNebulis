@@ -41,7 +41,7 @@ export const useTimerStore = create<TimerState>()(
         set({ isRunning: false, matterId: null, description: '', startedAt: null, elapsed: 0 }),
     }),
     {
-      name: 'legalforge-timer',
+      name: 'lexnebulis-timer',
     }
   )
 );

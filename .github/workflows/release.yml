@@ -44,8 +44,8 @@ jobs:
           ## Docker Images
 
           ```
-          docker pull ghcr.io/mcatsim/legalforge-backend:${{ github.ref_name }}
-          docker pull ghcr.io/mcatsim/legalforge-frontend:${{ github.ref_name }}
+          docker pull ghcr.io/mcatsim/lexnebulis-backend:${{ github.ref_name }}
+          docker pull ghcr.io/mcatsim/lexnebulis-frontend:${{ github.ref_name }}
           ```
 
           ## Deployment
@@ -54,7 +54,7 @@ jobs:
           2. Copy `.env.example` to `.env` and configure all values
           3. Run `docker compose up -d`
 
-          See the [deployment documentation](https://github.com/mcatsim/LegalForge#deployment) for full instructions.
+          See the [deployment documentation](https://github.com/mcatsim/LexNebulis#deployment) for full instructions.
           FOOTER
 
       - name: Prepare release assets
@@ -66,7 +66,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: LegalForge ${{ github.ref_name }}
+          name: LexNebulis ${{ github.ref_name }}
           body_path: changelog.md
           draft: false
           prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "LegalForge Backend Starting..."
+echo "LexNebulis Backend Starting..."
 
 # Run database migrations
 echo "Running database migrations..."

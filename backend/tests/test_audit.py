@@ -128,7 +128,7 @@ class TestCEFExport:
         content = resp.text
         # CEF lines start with "CEF:0|"
         assert "CEF:0|" in content
-        assert "LegalForge" in content
+        assert "LexNebulis" in content
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class TestJSONExport:
         assert "event_id" in event
         assert "action" in event
         assert "integrity_hash" in event
-        assert event["source"] == "legalforge"
+        assert event["source"] == "lexnebulis"
 
 
 # ---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ class TestSyslogExport:
         content = resp.text
         # Syslog lines start with a PRI value in angle brackets
         assert "<" in content
-        assert "legalforge" in content
+        assert "lexnebulis" in content
 
 
 # ---------------------------------------------------------------------------

@@ -46,7 +46,7 @@ export default function LoginPage() {
       <Card shadow="md" padding="xl" radius="md" w={400}>
         <Stack align="center" gap="xs" mb="lg">
           <IconScale size={48} color="var(--mantine-color-blue-6)" />
-          <Title order={2}>LegalForge</Title>
+          <Title order={2}>LexNebulis</Title>
           <Text c="dimmed" size="sm">Legal Practice Management</Text>
         </Stack>
 

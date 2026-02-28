@@ -182,14 +182,14 @@ class TestAuditFormatHelpers:
         cef = audit_to_cef(event)
         cef_str = cef.to_cef_string()
         assert cef_str.startswith("CEF:0|")
-        assert "LegalForge" in cef_str
+        assert "LexNebulis" in cef_str
         assert "create" in cef_str
 
     def test_audit_to_syslog(self):
         event = self._sample_event()
         syslog = audit_to_syslog(event)
         syslog_str = syslog.to_syslog_string()
-        assert "legalforge" in syslog_str
+        assert "lexnebulis" in syslog_str
         assert "create" in syslog_str.lower()
 
     def test_action_severity_mapping(self):

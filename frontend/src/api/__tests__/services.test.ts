@@ -56,7 +56,7 @@ describe('API Services', () => {
     it('me sends GET to /auth/me', async () => {
       const response = await authApi.me();
 
-      expect(response.data.email).toBe('admin@legalforge.test');
+      expect(response.data.email).toBe('admin@lexnebulis.test');
     });
 
     it('listUsers sends GET to /auth/users with pagination', async () => {

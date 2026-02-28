@@ -26,8 +26,8 @@ from pydantic import BaseModel, Field
 class AuditEventCEF(BaseModel):
     """Common Event Format (CEF) representation of an audit event."""
     version: str = "CEF:0"
-    device_vendor: str = "LegalForge"
-    device_product: str = "LegalForge"
+    device_vendor: str = "LexNebulis"
+    device_product: str = "LexNebulis"
     device_version: str = "1.0.0"
     signature_id: str
     name: str
@@ -56,15 +56,15 @@ class AuditEventJSON(BaseModel):
     previous_hash: str | None
     severity: str  # info, low, medium, high, critical
     outcome: str  # success, failure
-    source: str = "legalforge"
+    source: str = "lexnebulis"
 
 
 class AuditEventSyslog(BaseModel):
     """RFC 5424 syslog format."""
     facility: int = 10  # security/authorization (authpriv)
     severity: int = 6   # informational
-    hostname: str = "legalforge"
-    app_name: str = "legalforge"
+    hostname: str = "lexnebulis"
+    app_name: str = "lexnebulis"
     proc_id: str = "-"
     msg_id: str
     structured_data: str
@@ -146,6 +146,6 @@ def audit_to_syslog(event: AuditEventJSON) -> AuditEventSyslog:
     return AuditEventSyslog(
         severity=syslog_severity.get(event.severity, 6),
         msg_id=f"LF-{event.action.upper()}",
-        structured_data=f'[legalforge@0 eventId="{event.event_id}" action="{event.action}" entityType="{event.entity_type}" entityId="{event.entity_id}" userId="{event.user_id or "system"}" integrityHash="{event.integrity_hash}"]',
+        structured_data=f'[lexnebulis@0 eventId="{event.event_id}" action="{event.action}" entityType="{event.entity_type}" entityId="{event.entity_id}" userId="{event.user_id or "system"}" integrityHash="{event.integrity_hash}"]',
         message=f"User {event.user_email or 'system'} performed {event.action} on {event.entity_type} {event.entity_id}",
     )

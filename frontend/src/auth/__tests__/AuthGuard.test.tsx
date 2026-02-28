@@ -34,7 +34,7 @@ describe('AuthGuard', () => {
     // Set user so it does not have to fetch
     useAuthStore.getState().setUser({
       id: 'user-001',
-      email: 'admin@legalforge.test',
+      email: 'admin@lexnebulis.test',
       first_name: 'Jane',
       last_name: 'Doe',
       role: 'admin',
@@ -71,7 +71,7 @@ describe('AuthGuard', () => {
 
     const state = useAuthStore.getState();
     expect(state.user).toBeDefined();
-    expect(state.user?.email).toBe('admin@legalforge.test');
+    expect(state.user?.email).toBe('admin@lexnebulis.test');
   });
 
   it('redirects to /login if user profile fetch fails', async () => {

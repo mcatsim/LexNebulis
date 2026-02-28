@@ -4,7 +4,7 @@ import type { User } from '../../types';
 
 const mockUser: User = {
   id: 'user-001',
-  email: 'admin@legalforge.test',
+  email: 'admin@lexnebulis.test',
   first_name: 'Jane',
   last_name: 'Doe',
   role: 'admin',
@@ -45,7 +45,7 @@ describe('authStore', () => {
 
     const state = useAuthStore.getState();
     expect(state.user).toEqual(mockUser);
-    expect(state.user?.email).toBe('admin@legalforge.test');
+    expect(state.user?.email).toBe('admin@lexnebulis.test');
   });
 
   it('logout clears all state', () => {

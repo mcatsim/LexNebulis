@@ -2,40 +2,40 @@
 	test-backend test-frontend security-scan docker-build docker-scan
 
 setup:
-	./legalforge.sh setup
+	./lexnebulis.sh setup
 
 start:
-	./legalforge.sh start
+	./lexnebulis.sh start
 
 stop:
-	./legalforge.sh stop
+	./lexnebulis.sh stop
 
 restart:
-	./legalforge.sh restart
+	./lexnebulis.sh restart
 
 status:
-	./legalforge.sh status
+	./lexnebulis.sh status
 
 logs:
-	./legalforge.sh logs
+	./lexnebulis.sh logs
 
 backup:
-	./legalforge.sh backup
+	./lexnebulis.sh backup
 
 restore:
-	./legalforge.sh restore $(FILE)
+	./lexnebulis.sh restore $(FILE)
 
 update:
-	./legalforge.sh update
+	./lexnebulis.sh update
 
 dev:
-	./legalforge.sh dev
+	./lexnebulis.sh dev
 
 shell:
-	./legalforge.sh shell
+	./lexnebulis.sh shell
 
 migrate:
-	./legalforge.sh migrate
+	./lexnebulis.sh migrate
 
 test:
 	@echo "==> Running all tests..."
@@ -76,12 +76,12 @@ docker-build:
 
 docker-scan:
 	@echo "==> Building and scanning Docker images with Trivy..."
-	docker build -t legalforge-backend:scan ./backend
-	docker build -t legalforge-frontend:scan ./frontend
+	docker build -t lexnebulis-backend:scan ./backend
+	docker build -t lexnebulis-frontend:scan ./frontend
 	@echo "--- Scanning backend image ---"
-	trivy image --severity CRITICAL,HIGH legalforge-backend:scan
+	trivy image --severity CRITICAL,HIGH lexnebulis-backend:scan
 	@echo "--- Scanning frontend image ---"
-	trivy image --severity CRITICAL,HIGH legalforge-frontend:scan
+	trivy image --severity CRITICAL,HIGH lexnebulis-frontend:scan
 
 build:
 	docker compose build

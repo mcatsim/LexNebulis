@@ -1,6 +1,6 @@
 # API Documentation
 
-LegalForge exposes a RESTful API at `/api`. Interactive documentation is available at `/api/docs` (Swagger UI) when the backend is running.
+LexNebulis exposes a RESTful API at `/api`. Interactive documentation is available at `/api/docs` (Swagger UI) when the backend is running.
 
 ## Authentication
 

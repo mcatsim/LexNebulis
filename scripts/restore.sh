@@ -1,19 +1,19 @@
 #!/bin/bash
 set -euo pipefail
 
-# LegalForge Restore Script
+# LexNebulis Restore Script
 # Restores from an encrypted backup
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <backup_file>"
-    echo "Example: $0 ./backups/legalforge_backup_20260227_120000.tar.gz.enc"
+    echo "Example: $0 ./backups/lexnebulis_backup_20260227_120000.tar.gz.enc"
     exit 1
 fi
 
 BACKUP_FILE="$1"
-RESTORE_DIR="/tmp/legalforge_restore_$$"
+RESTORE_DIR="/tmp/lexnebulis_restore_$$"
 
-echo "=== LegalForge Restore ==="
+echo "=== LexNebulis Restore ==="
 echo "Backup file: ${BACKUP_FILE}"
 
 mkdir -p "${RESTORE_DIR}"
@@ -38,7 +38,7 @@ echo "Extracting backup..."
 tar -xzf "${BACKUP_FILE}" -C "${RESTORE_DIR}"
 
 # Find the backup directory
-BACKUP_DIR=$(find "${RESTORE_DIR}" -maxdepth 1 -type d -name "legalforge_backup_*" | head -1)
+BACKUP_DIR=$(find "${RESTORE_DIR}" -maxdepth 1 -type d -name "lexnebulis_backup_*" | head -1)
 if [ -z "${BACKUP_DIR}" ]; then
     BACKUP_DIR="${RESTORE_DIR}"
 fi
@@ -48,8 +48,8 @@ if [ -f "${BACKUP_DIR}/database.dump" ]; then
     echo "Restoring database..."
     echo "WARNING: This will overwrite the current database. Press Ctrl+C to cancel (5s)..."
     sleep 5
-    docker compose exec -T db pg_restore -U "${POSTGRES_USER:-legalforge}" \
-        -d "${POSTGRES_DB:-legalforge}" --clean --if-exists \
+    docker compose exec -T db pg_restore -U "${POSTGRES_USER:-lexnebulis}" \
+        -d "${POSTGRES_DB:-lexnebulis}" --clean --if-exists \
         < "${BACKUP_DIR}/database.dump"
     echo "Database restored."
 else

@@ -1,8 +1,8 @@
-# LegalForge
+# LexNebulis
 
 **Self-hosted legal practice management for small law firms.**
 
-LegalForge is a free, open-source platform that gives attorneys and paralegals complete control over their practice data. Deploy it on your own infrastructure with a single command.
+LexNebulis is a free, open-source platform that gives attorneys and paralegals complete control over their practice data. Deploy it on your own infrastructure with a single command.
 
 ## Features
 
@@ -22,13 +22,13 @@ LegalForge is a free, open-source platform that gives attorneys and paralegals c
 ## Quick Start
 
 ```bash
-git clone https://github.com/mcatsim/LegalForge.git
-cd LegalForge
-chmod +x legalforge.sh
-./legalforge.sh setup
+git clone https://github.com/mcatsim/LexNebulis.git
+cd LexNebulis
+chmod +x lexnebulis.sh
+./lexnebulis.sh setup
 ```
 
-LegalForge will be available at `http://localhost`. Default admin credentials are in your `.env` file.
+LexNebulis will be available at `http://localhost`. Default admin credentials are in your `.env` file.
 
 ## Requirements
 
@@ -64,15 +64,15 @@ All services run as Docker containers. Only Nginx is exposed externally.
 ## CLI Commands
 
 ```bash
-./legalforge.sh setup      # First-time setup
-./legalforge.sh start      # Start all services
-./legalforge.sh stop       # Stop all services
-./legalforge.sh backup     # Create encrypted backup
-./legalforge.sh restore    # Restore from backup
-./legalforge.sh update     # Pull updates and rebuild
-./legalforge.sh dev        # Development mode with hot reload
-./legalforge.sh logs       # View logs
-./legalforge.sh status     # Check service status
+./lexnebulis.sh setup      # First-time setup
+./lexnebulis.sh start      # Start all services
+./lexnebulis.sh stop       # Stop all services
+./lexnebulis.sh backup     # Create encrypted backup
+./lexnebulis.sh restore    # Restore from backup
+./lexnebulis.sh update     # Pull updates and rebuild
+./lexnebulis.sh dev        # Development mode with hot reload
+./lexnebulis.sh logs       # View logs
+./lexnebulis.sh status     # Check service status
 ```
 
 ## Documentation
