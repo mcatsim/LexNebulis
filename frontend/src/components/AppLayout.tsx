@@ -5,8 +5,8 @@ import {
 } from '@mantine/core';
 import {
   IconAlarm, IconAlertTriangle, IconCalendar, IconCash, IconChecklist, IconClipboardList, IconDashboard,
-  IconFileDescription, IconLogout, IconMoon, IconReceipt2, IconReportAnalytics, IconScale, IconSearch,
-  IconSettings, IconShieldLock,
+  IconFileDescription, IconKey, IconLogout, IconMail, IconMoon, IconReceipt2, IconReportAnalytics, IconScale,
+  IconSearch, IconSettings, IconShieldLock, IconSignature,
   IconSun, IconTemplate, IconUserPlus, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
 } from '@tabler/icons-react';
 import { useAuthStore } from '../stores/authStore';
@@ -20,6 +20,8 @@ const NAV_ITEMS = [
   { label: 'Contacts', icon: IconUsersGroup, path: '/contacts' },
   { label: 'Intake', icon: IconUserPlus, path: '/intake' },
   { label: 'Documents', icon: IconFileDescription, path: '/documents' },
+  { label: 'Emails', icon: IconMail, path: '/emails' },
+  { label: 'E-Sign', icon: IconSignature, path: '/esign' },
   { label: 'Calendar', icon: IconCalendar, path: '/calendar' },
   { label: 'Billing', icon: IconCash, path: '/billing' },
   { label: 'Reports', icon: IconReportAnalytics, path: '/reports' },
@@ -35,6 +37,7 @@ const NAV_ITEMS = [
 const ADMIN_ITEMS = [
   { label: 'Admin', icon: IconSettings, path: '/admin' },
   { label: 'Audit Logs', icon: IconShieldLock, path: '/admin/audit' },
+  { label: 'SSO', icon: IconKey, path: '/admin/sso' },
 ];
 
 export default function AppLayout() {

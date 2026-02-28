@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Anchor, Button, Card, Center, PinInput, Stack, Text, TextInput, Title, PasswordInput,
+  Anchor, Button, Card, Center, Divider, PinInput, Stack, Text, TextInput, Title, PasswordInput,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
-import { IconScale, IconShieldLock } from '@tabler/icons-react';
-import { authApi } from '../api/services';
+import { useQuery } from '@tanstack/react-query';
+import { IconKey, IconScale, IconShieldLock } from '@tabler/icons-react';
+import { authApi, ssoApi } from '../api/services';
 import { useAuthStore } from '../stores/authStore';
 
 export default function LoginPage() {
@@ -16,8 +17,32 @@ export default function LoginPage() {
   const [twoFaCode, setTwoFaCode] = useState('');
   const [useRecoveryCode, setUseRecoveryCode] = useState(false);
   const [recoveryCode, setRecoveryCode] = useState('');
+  const [ssoLoading, setSsoLoading] = useState<string | null>(null);
   const navigate = useNavigate();
   const { setTokens, setUser } = useAuthStore();
+
+  const { data: ssoProviders } = useQuery({
+    queryKey: ['sso-providers-public'],
+    queryFn: async () => {
+      const { data } = await ssoApi.listPublicProviders();
+      return data;
+    },
+  });
+
+  const handleSsoLogin = async (providerId: string) => {
+    setSsoLoading(providerId);
+    try {
+      const { data } = await ssoApi.initiateLogin(providerId);
+      window.location.href = data.redirect_url;
+    } catch {
+      notifications.show({
+        title: 'SSO Error',
+        message: 'Failed to initiate SSO login. Please try again.',
+        color: 'red',
+      });
+      setSsoLoading(null);
+    }
+  };
 
   const form = useForm({
     initialValues: { email: '', password: '' },
@@ -191,6 +216,26 @@ export default function LoginPage() {
             </Button>
           </Stack>
         </form>
+
+        {ssoProviders && ssoProviders.length > 0 && (
+          <>
+            <Divider my="md" label="or" labelPosition="center" />
+            <Stack gap="xs">
+              {ssoProviders.map((provider) => (
+                <Button
+                  key={provider.id}
+                  variant="outline"
+                  fullWidth
+                  leftSection={<IconKey size={16} />}
+                  loading={ssoLoading === provider.id}
+                  onClick={() => handleSsoLogin(provider.id)}
+                >
+                  Sign in with {provider.name}
+                </Button>
+              ))}
+            </Stack>
+          </>
+        )}
       </Card>
     </Center>
   );

@@ -20,6 +20,9 @@ from app.portal.models import ClientUser, Message, SharedDocument  # noqa: F401
 from app.templates.models import DocumentTemplate, GeneratedDocument  # noqa: F401
 from app.intake.models import Lead, IntakeForm, IntakeSubmission  # noqa: F401
 from app.ledes.models import UTBMSCode, BillingGuideline, TimeEntryCode  # noqa: F401
+from app.esign.models import SignatureRequest, Signer, SignatureAuditEntry  # noqa: F401
+from app.emails.models import FiledEmail, EmailAttachment, EmailMatterSuggestion  # noqa: F401
+from app.sso.models import SSOProvider, SSOSession  # noqa: F401
 
 config = context.config
 

@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     first_admin_email: str = "admin@example.com"
     first_admin_password: str = "CHANGE_ME"
 
+    # SSO
+    sso_redirect_uri: str = "http://localhost/api/sso/callback"
+
     # CORS
     backend_cors_origins: list[str] = ["http://localhost", "http://localhost:5173"]
 

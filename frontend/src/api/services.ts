@@ -3,17 +3,20 @@ import type {
   AgedReceivable, AuditLogEntry, BillableHoursSummary, BillingGuideline, BlockBillingResult,
   CalendarEvent, Client, ClientUser, CollectionReport, ComplianceResult, ConflictCheck,
   ConflictMatch, Contact,
-  CourtRuleSet, DashboardSummary, DeadlineRule, GeneratedDeadline,
+  CourtRuleSet, DashboardSummary, DeadlineRule, EmailAttachment, EmailSummary, EmailThread,
+  FiledEmail,
+  GeneratedDeadline,
   Document as LegalDocument, DocumentTemplate, EthicalWall, GeneratedDocument, Invoice,
   IntakeForm, IntakeSubmission, Lead,
-  LoginResponse, Matter, MatterProfitability, Payment,
+  LoginResponse, Matter, MatterProfitability, MatterSuggestion, Payment,
   PipelineSummaryResponse,
   PortalInvoice, PortalMatter, PortalMessage, RealizationReport,
   ReportExportType, RevenueByAttorney,
-  SharedDocument,
+  SharedDocument, SignatureAuditEntry, SignatureRequest, SigningPageInfo,
   StatuteOfLimitations, Task, TaskChecklistItem, TaskDependency, TimeEntryCode, TriggerEvent,
   TwoFactorSetupResponse,
   TwoFactorStatusResponse, TwoFactorVerifySetupResponse, UTBMSCode, UTBMSCodeType,
+  SSOLoginInitiateResponse, SSOProvider, SSOProviderPublic,
   UtilizationReport, WorkflowTemplate,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
   PaginatedResponse, SearchResult,
@@ -410,6 +413,56 @@ export const ledesApi = {
     api.get<string>(`/ledes/export/ledes/${invoiceId}`, { responseType: 'text' }),
 };
 
+// E-Signature
+export const esignApi = {
+  list: (params: { page?: number; page_size?: number; matter_id?: string; request_status?: string }) =>
+    api.get<PaginatedResponse<SignatureRequest>>('/esign', { params }),
+  get: (id: string) => api.get<SignatureRequest>(`/esign/${id}`),
+  create: (data: {
+    document_id: string; matter_id: string; title: string; message?: string;
+    expires_at?: string; signers: { name: string; email: string; role?: string; order?: number }[];
+  }) =>
+    api.post<SignatureRequest>('/esign', data),
+  send: (id: string) => api.post<SignatureRequest>(`/esign/${id}/send`),
+  cancel: (id: string) => api.post<SignatureRequest>(`/esign/${id}/cancel`),
+  getAuditTrail: (id: string) => api.get<SignatureAuditEntry[]>(`/esign/${id}/audit`),
+  getCertificateUrl: (id: string) => `/api/esign/${id}/certificate`,
+  // Public signing endpoints (no auth needed)
+  getSigningPage: (token: string) => api.get<SigningPageInfo>(`/esign/sign/${token}`),
+  sign: (token: string) => api.post<{ status: string; signer_name: string; signed_at: string }>(`/esign/sign/${token}`),
+  decline: (token: string, reason: string) =>
+    api.post<{ status: string; signer_name: string }>(`/esign/sign/${token}/decline`, { reason }),
+};
+
+// Emails
+export const emailsApi = {
+  list: (params: {
+    page?: number; page_size?: number; matter_id?: string; direction?: string;
+    search?: string; from_address?: string; start_date?: string; end_date?: string;
+    has_attachments?: boolean;
+  }) =>
+    api.get<PaginatedResponse<FiledEmail>>('/emails', { params }),
+  get: (id: string) => api.get<FiledEmail>(`/emails/${id}`),
+  create: (data: {
+    matter_id: string; direction?: string; subject?: string; from_address?: string;
+    to_addresses?: string[]; cc_addresses?: string[]; bcc_addresses?: string[];
+    date_sent?: string; body_text?: string; body_html?: string;
+    message_id?: string; in_reply_to?: string; thread_id?: string;
+    tags?: string[]; notes?: string; source?: string;
+  }) =>
+    api.post<FiledEmail>('/emails', data),
+  update: (id: string, data: { notes?: string; tags?: string[]; matter_id?: string }) =>
+    api.put<FiledEmail>(`/emails/${id}`, data),
+  delete: (id: string) => api.delete(`/emails/${id}`),
+  getThread: (id: string) => api.get<EmailThread>(`/emails/${id}/thread`),
+  addAttachment: (emailId: string, data: { filename: string; mime_type?: string; size_bytes?: number }) =>
+    api.post<EmailAttachment>(`/emails/${emailId}/attachments`, data),
+  suggestMatter: (addresses: string) =>
+    api.get<MatterSuggestion[]>('/emails/suggest-matter', { params: { addresses } }),
+  summary: (params?: { matter_id?: string }) =>
+    api.get<EmailSummary[]>('/emails/summary', { params }),
+};
+
 // Reports & Analytics
 export const reportsApi = {
   getSummary: (params: { start_date: string; end_date: string }) =>
@@ -430,4 +483,40 @@ export const reportsApi = {
     api.get<BillableHoursSummary[]>('/reports/billable-hours', { params }),
   exportCsv: (reportType: ReportExportType, params?: { start_date?: string; end_date?: string }) =>
     api.get(`/reports/export/${reportType}`, { params, responseType: 'blob' }),
+};
+
+// SSO
+export const ssoApi = {
+  // Admin endpoints
+  listProviders: () =>
+    api.get<SSOProvider[]>('/sso/providers'),
+  getProvider: (id: string) =>
+    api.get<SSOProvider>(`/sso/providers/${id}`),
+  createProvider: (data: {
+    name: string; provider_type?: string; client_id?: string; client_secret?: string;
+    discovery_url?: string; scopes?: string; email_claim?: string; name_claim?: string;
+    role_mapping?: Record<string, string>; auto_create_users?: boolean; default_role?: string;
+    saml_entity_id?: string; saml_sso_url?: string; saml_certificate?: string;
+  }) =>
+    api.post<SSOProvider>('/sso/providers', data),
+  updateProvider: (id: string, data: {
+    name?: string; provider_type?: string; is_active?: boolean; is_default?: boolean;
+    client_id?: string; client_secret?: string; discovery_url?: string;
+    authorization_endpoint?: string; token_endpoint?: string; userinfo_endpoint?: string;
+    jwks_uri?: string; scopes?: string; email_claim?: string; name_claim?: string;
+    role_mapping?: Record<string, string>; auto_create_users?: boolean; default_role?: string;
+    saml_entity_id?: string; saml_sso_url?: string; saml_certificate?: string;
+  }) =>
+    api.put<SSOProvider>(`/sso/providers/${id}`, data),
+  deleteProvider: (id: string) =>
+    api.delete(`/sso/providers/${id}`),
+  discoverEndpoints: (id: string) =>
+    api.post<SSOProvider>(`/sso/providers/${id}/discover`),
+  testConnection: (id: string) =>
+    api.post<{ status: string; message: string }>(`/sso/providers/${id}/test`),
+  // Public endpoints
+  listPublicProviders: () =>
+    api.get<SSOProviderPublic[]>('/sso/providers/public'),
+  initiateLogin: (providerId?: string) =>
+    api.post<SSOLoginInitiateResponse>('/sso/login/initiate', { provider_id: providerId }),
 };

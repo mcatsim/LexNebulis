@@ -690,6 +690,180 @@ export interface BlockBillingResult {
   confidence: string;
 }
 
+// E-Signature
+export type SignatureRequestStatus = 'draft' | 'pending' | 'partially_signed' | 'completed' | 'expired' | 'cancelled';
+export type SignerStatus = 'pending' | 'viewed' | 'signed' | 'declined';
+
+export interface Signer {
+  id: string;
+  signature_request_id: string;
+  name: string;
+  email: string;
+  role: string | null;
+  order: number;
+  status: SignerStatus;
+  access_token: string;
+  signed_at: string | null;
+  signed_ip: string | null;
+  signed_user_agent: string | null;
+  decline_reason: string | null;
+  created_at: string;
+}
+
+export interface SignatureRequest {
+  id: string;
+  document_id: string;
+  matter_id: string;
+  created_by: string;
+  title: string;
+  message: string | null;
+  status: SignatureRequestStatus;
+  expires_at: string | null;
+  completed_at: string | null;
+  certificate_storage_key: string | null;
+  signers: Signer[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SignatureAuditEntry {
+  id: string;
+  signature_request_id: string;
+  signer_id: string | null;
+  action: string;
+  ip_address: string | null;
+  user_agent: string | null;
+  details: string | null;
+  timestamp: string;
+}
+
+export interface SigningPageInfo {
+  request_title: string;
+  message: string | null;
+  signer_name: string;
+  signer_email: string;
+  signer_status: string;
+  document_download_url: string;
+}
+
+export interface CertificateSignerInfo {
+  name: string;
+  email: string;
+  signed_at: string | null;
+  ip_address: string | null;
+}
+
+export interface CertificateOfCompletion {
+  request_title: string;
+  document_name: string;
+  signers: CertificateSignerInfo[];
+  created_at: string;
+  completed_at: string;
+  document_hash: string | null;
+}
+
+// Emails
+export type EmailDirection = 'inbound' | 'outbound';
+
+export interface FiledEmail {
+  id: string;
+  matter_id: string;
+  filed_by: string;
+  filed_by_name: string | null;
+  direction: EmailDirection;
+  subject: string | null;
+  from_address: string | null;
+  to_addresses: string[] | null;
+  cc_addresses: string[] | null;
+  bcc_addresses: string[] | null;
+  date_sent: string | null;
+  body_text: string | null;
+  body_html: string | null;
+  message_id: string | null;
+  in_reply_to: string | null;
+  thread_id: string | null;
+  has_attachments: boolean;
+  attachment_count: number;
+  headers_json: Record<string, string> | null;
+  tags: string[] | null;
+  notes: string | null;
+  source: string | null;
+  attachments: EmailAttachment[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmailAttachment {
+  id: string;
+  email_id: string;
+  filename: string;
+  mime_type: string | null;
+  size_bytes: number | null;
+  storage_key: string | null;
+  document_id: string | null;
+  created_at: string;
+}
+
+export interface MatterSuggestion {
+  matter_id: string;
+  matter_title: string;
+  confidence: number;
+  use_count: number;
+}
+
+export interface EmailSummary {
+  matter_id: string;
+  matter_title: string;
+  email_count: number;
+  latest_email_date: string | null;
+}
+
+export interface EmailThread {
+  thread_id: string;
+  emails: FiledEmail[];
+}
+
+// SSO
+export type SSOProviderType = 'oidc' | 'saml';
+
+export interface SSOProvider {
+  id: string;
+  name: string;
+  provider_type: SSOProviderType;
+  is_active: boolean;
+  is_default: boolean;
+  client_id: string | null;
+  client_secret_masked: string | null;
+  discovery_url: string | null;
+  authorization_endpoint: string | null;
+  token_endpoint: string | null;
+  userinfo_endpoint: string | null;
+  jwks_uri: string | null;
+  scopes: string | null;
+  saml_entity_id: string | null;
+  saml_sso_url: string | null;
+  saml_certificate: string | null;
+  email_claim: string | null;
+  name_claim: string | null;
+  role_mapping: Record<string, string> | null;
+  auto_create_users: boolean;
+  default_role: string | null;
+  created_by: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface SSOProviderPublic {
+  id: string;
+  name: string;
+  provider_type: SSOProviderType;
+}
+
+export interface SSOLoginInitiateResponse {
+  redirect_url: string;
+  state: string;
+}
+
 // Audit
 export interface AuditLogEntry {
   id: string;

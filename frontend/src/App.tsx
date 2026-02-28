@@ -14,6 +14,9 @@ const MatterDetailPage = lazy(() => import('./features/matters/MatterDetailPage'
 const ContactListPage = lazy(() => import('./features/contacts/ContactListPage'));
 const ContactDetailPage = lazy(() => import('./features/contacts/ContactDetailPage'));
 const DocumentsPage = lazy(() => import('./features/documents/DocumentsPage'));
+const EmailsPage = lazy(() => import('./features/emails/EmailsPage'));
+const ESignPage = lazy(() => import('./features/esign/ESignPage'));
+const SigningPage = lazy(() => import('./features/esign/SigningPage'));
 const CalendarPage = lazy(() => import('./features/calendar/CalendarPage'));
 const BillingPage = lazy(() => import('./features/billing/BillingPage'));
 const TrustPage = lazy(() => import('./features/trust/TrustPage'));
@@ -28,6 +31,10 @@ const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const AuditLogPage = lazy(() => import('./features/admin/AuditLogPage'));
 const PortalManagementPage = lazy(() => import('./features/portal/PortalManagementPage'));
+const SSOSettingsPage = lazy(() => import('./features/admin/SSOSettingsPage'));
+
+// SSO Callback (outside auth guard)
+const SSOCallbackPage = lazy(() => import('./auth/SSOCallbackPage'));
 
 // Portal (client-facing) pages
 const PortalLoginPage = lazy(() => import('./portal/PortalLoginPage'));
@@ -61,6 +68,8 @@ export default function App() {
         <Route path="/contacts" element={<SuspenseWrapper><ContactListPage /></SuspenseWrapper>} />
         <Route path="/contacts/:id" element={<SuspenseWrapper><ContactDetailPage /></SuspenseWrapper>} />
         <Route path="/documents" element={<SuspenseWrapper><DocumentsPage /></SuspenseWrapper>} />
+        <Route path="/emails" element={<SuspenseWrapper><EmailsPage /></SuspenseWrapper>} />
+        <Route path="/esign" element={<SuspenseWrapper><ESignPage /></SuspenseWrapper>} />
         <Route path="/calendar" element={<SuspenseWrapper><CalendarPage /></SuspenseWrapper>} />
         <Route path="/billing" element={<SuspenseWrapper><BillingPage /></SuspenseWrapper>} />
         <Route path="/trust" element={<SuspenseWrapper><TrustPage /></SuspenseWrapper>} />
@@ -74,8 +83,15 @@ export default function App() {
         <Route path="/settings" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
         <Route path="/admin" element={<SuspenseWrapper><AdminPage /></SuspenseWrapper>} />
         <Route path="/admin/audit" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />
+        <Route path="/admin/sso" element={<SuspenseWrapper><SSOSettingsPage /></SuspenseWrapper>} />
         <Route path="/portal-admin" element={<SuspenseWrapper><PortalManagementPage /></SuspenseWrapper>} />
       </Route>
+
+      {/* SSO Callback (no auth, handles redirect from IdP) */}
+      <Route path="/sso/callback" element={<SuspenseWrapper><SSOCallbackPage /></SuspenseWrapper>} />
+
+      {/* E-Signature public signing page (no auth) */}
+      <Route path="/sign/:token" element={<SuspenseWrapper><SigningPage /></SuspenseWrapper>} />
 
       {/* Portal routes (client-facing, separate auth) */}
       <Route path="/portal/login" element={<SuspenseWrapper><PortalLoginPage /></SuspenseWrapper>} />
