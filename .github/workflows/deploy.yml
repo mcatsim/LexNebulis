@@ -46,7 +46,7 @@ jobs:
       frontend-image: ${{ steps.meta.outputs.frontend-image }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Determine version
         id: meta
@@ -121,7 +121,7 @@ jobs:
       url: https://staging.legalforge.example.com
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Deploy to staging server
         env:
@@ -192,7 +192,7 @@ jobs:
       url: https://legalforge.example.com
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Deploy to production server
         env:
