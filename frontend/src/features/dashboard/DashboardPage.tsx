@@ -66,16 +66,17 @@ export default function DashboardPage() {
             <Title order={4} mb="md">Upcoming Events</Title>
             {events?.data?.items?.length ? (
               <Stack gap="xs">
-                {events.data.items.slice(0, 5).map((e: Record<string, unknown>) => (
-                  <Group key={e.id as string} justify="space-between">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {events.data.items.slice(0, 5).map((e: any) => (
+                  <Group key={e.id} justify="space-between">
                     <div>
-                      <Text size="sm" fw={500}>{e.title as string}</Text>
+                      <Text size="sm" fw={500}>{e.title}</Text>
                       <Text size="xs" c="dimmed">
-                        {new Date(e.start_datetime as string).toLocaleDateString()}
+                        {new Date(e.start_datetime).toLocaleDateString()}
                       </Text>
                     </div>
                     <Badge size="sm" variant="light">
-                      {e.event_type as string}
+                      {e.event_type}
                     </Badge>
                   </Group>
                 ))}
@@ -91,14 +92,15 @@ export default function DashboardPage() {
             <Title order={4} mb="md">Recent Time Entries</Title>
             {recentTime?.data?.items?.length ? (
               <Stack gap="xs">
-                {recentTime.data.items.slice(0, 5).map((t: Record<string, unknown>) => (
-                  <Group key={t.id as string} justify="space-between">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                {recentTime.data.items.slice(0, 5).map((t: any) => (
+                  <Group key={t.id} justify="space-between">
                     <div>
-                      <Text size="sm" fw={500}>{t.description as string}</Text>
-                      <Text size="xs" c="dimmed">{t.date as string}</Text>
+                      <Text size="sm" fw={500}>{t.description}</Text>
+                      <Text size="xs" c="dimmed">{t.date}</Text>
                     </div>
                     <Badge size="sm" variant="light" color="grape">
-                      {t.duration_minutes as number} min
+                      {t.duration_minutes} min
                     </Badge>
                   </Group>
                 ))}

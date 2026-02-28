@@ -54,7 +54,7 @@ const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
 // Timer Button
 // ---------------------------------------------------------------------------
 function TimerButton({ onTimerStop }: { onTimerStop: (data: { matterId: string; description: string; durationMinutes: number }) => void }) {
-  const { isRunning, elapsed, matterId, description, start, stop, tick, reset } = useTimerStore();
+  const { isRunning, elapsed, start, stop, tick, reset } = useTimerStore();
   const [timerModalOpen, setTimerModalOpen] = useState(false);
 
   const timerForm = useForm({

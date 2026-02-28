@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Button, Card, Center, PasswordInput, Stack, Text, TextInput, Title,
+  Button, Card, Center, PasswordInput, Stack, Text, TextInput, Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';

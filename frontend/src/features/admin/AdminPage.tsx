@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Button, Card, Grid, Group, Modal, Select, Stack, Table, Tabs, Text, TextInput, Title, Badge,
-  ActionIcon, Tooltip, Code, Alert,
+  Code, Alert,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
@@ -10,11 +10,9 @@ import {
   IconSettings, IconUsers, IconShieldLock, IconDownload, IconCheck, IconAlertTriangle,
 } from '@tabler/icons-react';
 import { authApi, adminApi } from '../../api/services';
-import { useAuthStore } from '../../stores/authStore';
 import type { User } from '../../types';
 
 export default function AdminPage() {
-  const { user: currentUser } = useAuthStore();
   const queryClient = useQueryClient();
   const [userModalOpen, setUserModalOpen] = useState(false);
 

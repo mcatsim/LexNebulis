@@ -16,20 +16,21 @@ RUN groupadd -r lexnebulis && useradd -r -g lexnebulis -d /app -s /sbin/nologin 
 
 WORKDIR /app
 
-# Install Python dependencies
-COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e ".[dev]" 2>/dev/null || pip install --no-cache-dir .
-
-# Copy application code
+# Copy application code first
 COPY . .
+COPY scripts/entrypoint-backend.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Install Python dependencies (editable so 'app' is importable)
+RUN pip install --no-cache-dir -e . && pip install --no-cache-dir bcrypt==4.0.1 email-validator
 
 # Set ownership
 RUN chown -R lexnebulis:lexnebulis /app
 
 USER lexnebulis
 
+ENV PYTHONPATH=/app
+
 EXPOSE 8000
 
-# Entrypoint runs migrations then starts uvicorn
-COPY scripts/entrypoint-backend.sh /entrypoint.sh
 CMD ["/bin/bash", "/entrypoint.sh"]

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ActionIcon, AppShell, Badge, Burger, Button, Group, NavLink, ScrollArea, Text, TextInput, Tooltip, useMantineColorScheme,
+  ActionIcon, AppShell, Badge, Burger, Group, NavLink, ScrollArea, Text, Tooltip, useMantineColorScheme,
 } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
 import {
   IconCalendar, IconCash, IconClipboardList, IconDashboard, IconFileDescription, IconLogout, IconMoon,
   IconScale, IconSearch, IconSettings, IconShieldLock, IconSun, IconUsers, IconUsersGroup, IconBuildingBank,

@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-  Badge, Card, Code, Group, Select, Stack, Table, Text, TextInput, Title, Tooltip,
+  Badge, Code, Group, Select, Stack, Text, Title, Tooltip,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
 import { useQuery } from '@tanstack/react-query';
 import { IconShieldLock } from '@tabler/icons-react';
 import { adminApi } from '../../api/services';
 import DataTable from '../../components/DataTable';
+import type { AuditLogEntry } from '../../types';
 
 const SEVERITY_COLORS: Record<string, string> = {
   info: 'blue',
@@ -46,65 +46,65 @@ export default function AuditLogPage() {
     {
       key: 'timestamp',
       label: 'Time',
-      render: (item: Record<string, unknown>) => (
-        <Text size="xs">{new Date(item.timestamp as string).toLocaleString()}</Text>
+      render: (item: AuditLogEntry) => (
+        <Text size="xs">{new Date(item.timestamp).toLocaleString()}</Text>
       ),
     },
     {
       key: 'user_email',
       label: 'User',
-      render: (item: Record<string, unknown>) => (
-        <Text size="xs">{(item.user_email as string) || 'System'}</Text>
+      render: (item: AuditLogEntry) => (
+        <Text size="xs">{(item.user_email) || 'System'}</Text>
       ),
     },
     {
       key: 'action',
       label: 'Action',
-      render: (item: Record<string, unknown>) => (
-        <Badge variant="light" size="sm">{item.action as string}</Badge>
+      render: (item: AuditLogEntry) => (
+        <Badge variant="light" size="sm">{item.action}</Badge>
       ),
     },
     {
       key: 'entity_type',
       label: 'Entity',
-      render: (item: Record<string, unknown>) => (
+      render: (item: AuditLogEntry) => (
         <Group gap={4}>
-          <Text size="xs">{item.entity_type as string}</Text>
-          <Code>{(item.entity_id as string)?.substring(0, 8)}...</Code>
+          <Text size="xs">{item.entity_type}</Text>
+          <Code>{(item.entity_id)?.substring(0, 8)}...</Code>
         </Group>
       ),
     },
     {
       key: 'severity',
       label: 'Severity',
-      render: (item: Record<string, unknown>) => (
-        <Badge color={SEVERITY_COLORS[item.severity as string] || 'gray'} size="sm" variant="filled">
-          {item.severity as string}
+      render: (item: AuditLogEntry) => (
+        <Badge color={SEVERITY_COLORS[item.severity] || 'gray'} size="sm" variant="filled">
+          {item.severity}
         </Badge>
       ),
     },
     {
       key: 'outcome',
       label: 'Outcome',
-      render: (item: Record<string, unknown>) => (
-        <Badge color={OUTCOME_COLORS[item.outcome as string] || 'gray'} size="sm" variant="dot">
-          {item.outcome as string}
+      render: (item: AuditLogEntry) => (
+        <Badge color={OUTCOME_COLORS[item.outcome] || 'gray'} size="sm" variant="dot">
+          {item.outcome}
         </Badge>
       ),
     },
     {
       key: 'ip_address',
       label: 'IP',
-      render: (item: Record<string, unknown>) => (
-        <Text size="xs" c="dimmed">{(item.ip_address as string) || '-'}</Text>
+      render: (item: AuditLogEntry) => (
+        <Text size="xs" c="dimmed">{(item.ip_address) || '-'}</Text>
       ),
     },
     {
       key: 'integrity_hash',
       label: 'Hash',
-      render: (item: Record<string, unknown>) => (
-        <Tooltip label={item.integrity_hash as string}>
-          <Code>{(item.integrity_hash as string)?.substring(0, 12)}...</Code>
+      render: (item: AuditLogEntry) => (
+        <Tooltip label={item.integrity_hash}>
+          <Code>{(item.integrity_hash)?.substring(0, 12)}...</Code>
         </Tooltip>
       ),
     },
@@ -148,7 +148,7 @@ export default function AuditLogPage() {
         />
       </Group>
 
-      <DataTable
+      <DataTable<AuditLogEntry>
         columns={columns}
         data={logs}
         total={total}
