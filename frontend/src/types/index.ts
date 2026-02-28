@@ -18,6 +18,28 @@ export interface TokenResponse {
   token_type: string;
 }
 
+export interface LoginResponse {
+  access_token?: string;
+  refresh_token?: string;
+  token_type?: string;
+  requires_2fa?: boolean;
+  temp_token?: string;
+}
+
+export interface TwoFactorSetupResponse {
+  secret: string;
+  provisioning_uri: string;
+  qr_code_base64: string;
+}
+
+export interface TwoFactorVerifySetupResponse {
+  recovery_codes: string[];
+}
+
+export interface TwoFactorStatusResponse {
+  enabled: boolean;
+}
+
 // Clients
 export type ClientType = 'individual' | 'organization';
 export type ClientStatus = 'active' | 'inactive' | 'archived';
@@ -204,6 +226,109 @@ export interface SearchResult {
   id: string;
   title: string;
   subtitle: string;
+}
+
+// Conflicts
+export type ConflictStatus = 'clear' | 'potential_conflict' | 'confirmed_conflict';
+export type MatchType = 'exact' | 'fuzzy' | 'phonetic' | 'email';
+export type MatchResolution = 'not_reviewed' | 'cleared' | 'flagged' | 'waiver_obtained';
+
+export interface ConflictCheck {
+  id: string;
+  checked_by: string;
+  search_name: string;
+  search_organization: string | null;
+  matter_id: string | null;
+  status: ConflictStatus;
+  notes: string | null;
+  matches: ConflictMatch[];
+  match_count?: number;
+  created_at: string;
+}
+
+export interface ConflictMatch {
+  id: string;
+  conflict_check_id: string;
+  matched_entity_type: string;
+  matched_entity_id: string;
+  matched_name: string;
+  match_type: MatchType;
+  match_score: number;
+  relationship_context: string | null;
+  resolution: MatchResolution;
+  resolved_by: string | null;
+  resolved_at: string | null;
+  notes: string | null;
+}
+
+export interface EthicalWall {
+  id: string;
+  matter_id: string;
+  user_id: string;
+  reason: string;
+  created_by: string;
+  created_at: string;
+  is_active: boolean;
+}
+
+// Tasks
+export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  matter_id: string | null;
+  assigned_to: string | null;
+  created_by: string;
+  status: TaskStatus;
+  priority: TaskPriority;
+  due_date: string | null;
+  completed_at: string | null;
+  sort_order: number;
+  checklist: TaskChecklistItem[];
+  dependencies: TaskDependency[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskChecklistItem {
+  id: string;
+  task_id: string;
+  title: string;
+  is_completed: boolean;
+  completed_at: string | null;
+  sort_order: number;
+}
+
+export interface TaskDependency {
+  id: string;
+  task_id: string;
+  depends_on_id: string;
+  depends_on_title?: string;
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  practice_area: string | null;
+  is_active: boolean;
+  steps: WorkflowTemplateStep[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkflowTemplateStep {
+  id: string;
+  workflow_template_id: string;
+  title: string;
+  description: string | null;
+  assigned_role: string | null;
+  relative_due_days: number | null;
+  sort_order: number;
+  depends_on_step_order: number | null;
 }
 
 // Audit

@@ -28,6 +28,12 @@ class User(UUIDBase, TimestampMixin):
     failed_login_attempts: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     locked_until: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    # Two-Factor Authentication
+    totp_secret: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    totp_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    totp_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    recovery_codes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     # Relationships
     time_entries = relationship("TimeEntry", back_populates="user", lazy="selectin")
     calendar_events = relationship("CalendarEvent", back_populates="assigned_user", foreign_keys="CalendarEvent.assigned_to", lazy="selectin")

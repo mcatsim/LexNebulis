@@ -1,6 +1,9 @@
 import api from './client';
 import type {
-  AuditLogEntry, CalendarEvent, Client, Contact, Document as LegalDocument, Invoice, Matter, Payment,
+  AuditLogEntry, CalendarEvent, Client, ConflictCheck, ConflictMatch, Contact,
+  Document as LegalDocument, EthicalWall, Invoice, LoginResponse, Matter, Payment,
+  Task, TaskChecklistItem, TaskDependency, TwoFactorSetupResponse,
+  TwoFactorStatusResponse, TwoFactorVerifySetupResponse, WorkflowTemplate,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
   PaginatedResponse, SearchResult,
 } from '../types';
@@ -8,7 +11,7 @@ import type {
 // Auth
 export const authApi = {
   login: (email: string, password: string) =>
-    api.post<TokenResponse>('/auth/login', { email, password }),
+    api.post<LoginResponse>('/auth/login', { email, password }),
   refresh: (refresh_token: string) =>
     api.post<TokenResponse>('/auth/refresh', { refresh_token }),
   me: () => api.get<User>('/auth/me'),
@@ -20,6 +23,17 @@ export const authApi = {
     api.post<User>('/auth/users', data),
   updateUser: (id: string, data: Partial<User>) =>
     api.put<User>(`/auth/users/${id}`, data),
+  // Two-Factor Authentication
+  setup2fa: () =>
+    api.post<TwoFactorSetupResponse>('/auth/2fa/setup'),
+  verify2faSetup: (code: string) =>
+    api.post<TwoFactorVerifySetupResponse>('/auth/2fa/setup/verify', { code }),
+  verify2faLogin: (temp_token: string, code: string) =>
+    api.post<LoginResponse>('/auth/2fa/verify', { temp_token, code }),
+  disable2fa: (code: string) =>
+    api.post('/auth/2fa/disable', { code }),
+  get2faStatus: () =>
+    api.get<TwoFactorStatusResponse>('/auth/2fa/status'),
 };
 
 // Clients
@@ -116,6 +130,55 @@ export const trustApi = {
 export const searchApi = {
   search: (q: string, limit = 20) =>
     api.get<{ query: string; results: SearchResult[] }>('/search', { params: { q, limit } }),
+};
+
+// Conflicts
+export const conflictsApi = {
+  runCheck: (data: { search_name: string; search_organization?: string; matter_id?: string }) =>
+    api.post<ConflictCheck>('/conflicts/check', data),
+  listChecks: (params: { page?: number; page_size?: number; matter_id?: string; status?: string }) =>
+    api.get<PaginatedResponse<ConflictCheck>>('/conflicts/checks', { params }),
+  getCheck: (id: string) => api.get<ConflictCheck>(`/conflicts/checks/${id}`),
+  resolveMatch: (matchId: string, data: { resolution: string; notes?: string }) =>
+    api.put<ConflictMatch>(`/conflicts/matches/${matchId}/resolve`, data),
+  createWall: (data: { matter_id: string; user_id: string; reason: string }) =>
+    api.post<EthicalWall>('/conflicts/ethical-walls', data),
+  getWalls: (matterId: string) => api.get<EthicalWall[]>(`/conflicts/ethical-walls/${matterId}`),
+  removeWall: (wallId: string) => api.delete(`/conflicts/ethical-walls/${wallId}`),
+};
+
+// Tasks
+export const tasksApi = {
+  list: (params: { page?: number; page_size?: number; matter_id?: string; assigned_to?: string; status?: string; priority?: string }) =>
+    api.get<PaginatedResponse<Task>>('/tasks', { params }),
+  get: (id: string) => api.get<Task>(`/tasks/${id}`),
+  create: (data: { title: string; description?: string; matter_id?: string; assigned_to?: string; priority: string; due_date?: string; checklist_items?: { title: string; sort_order: number }[] }) =>
+    api.post<Task>('/tasks', data),
+  update: (id: string, data: Partial<{ title: string; description: string; assigned_to: string; status: string; priority: string; due_date: string }>) =>
+    api.put<Task>(`/tasks/${id}`, data),
+  delete: (id: string) => api.delete(`/tasks/${id}`),
+  addDependency: (taskId: string, dependsOnId: string) =>
+    api.post<TaskDependency>(`/tasks/${taskId}/dependencies`, { depends_on_id: dependsOnId }),
+  removeDependency: (dependencyId: string) =>
+    api.delete(`/tasks/dependencies/${dependencyId}`),
+  addChecklistItem: (taskId: string, data: { title: string; sort_order: number }) =>
+    api.post<TaskChecklistItem>(`/tasks/${taskId}/checklist`, data),
+  updateChecklistItem: (itemId: string, data: { is_completed: boolean }) =>
+    api.put<TaskChecklistItem>(`/tasks/checklist/${itemId}`, data),
+  deleteChecklistItem: (itemId: string) =>
+    api.delete(`/tasks/checklist/${itemId}`),
+};
+
+// Workflows
+export const workflowsApi = {
+  list: (params?: { practice_area?: string }) =>
+    api.get<WorkflowTemplate[]>('/workflows', { params }),
+  get: (id: string) => api.get<WorkflowTemplate>(`/workflows/${id}`),
+  create: (data: { name: string; description?: string; practice_area?: string; steps: { title: string; description?: string; assigned_role?: string; relative_due_days?: number; sort_order: number; depends_on_step_order?: number }[] }) =>
+    api.post<WorkflowTemplate>('/workflows', data),
+  apply: (templateId: string, matterId: string) =>
+    api.post<Task[]>(`/workflows/${templateId}/apply`, { matter_id: matterId }),
+  delete: (id: string) => api.delete(`/workflows/${id}`),
 };
 
 // Admin

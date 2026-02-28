@@ -17,6 +17,9 @@ const DocumentsPage = lazy(() => import('./features/documents/DocumentsPage'));
 const CalendarPage = lazy(() => import('./features/calendar/CalendarPage'));
 const BillingPage = lazy(() => import('./features/billing/BillingPage'));
 const TrustPage = lazy(() => import('./features/trust/TrustPage'));
+const ConflictsPage = lazy(() => import('./features/conflicts/ConflictsPage'));
+const TasksPage = lazy(() => import('./features/tasks/TasksPage'));
+const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const AuditLogPage = lazy(() => import('./features/admin/AuditLogPage'));
 
@@ -46,6 +49,9 @@ export default function App() {
         <Route path="/calendar" element={<SuspenseWrapper><CalendarPage /></SuspenseWrapper>} />
         <Route path="/billing" element={<SuspenseWrapper><BillingPage /></SuspenseWrapper>} />
         <Route path="/trust" element={<SuspenseWrapper><TrustPage /></SuspenseWrapper>} />
+        <Route path="/conflicts" element={<SuspenseWrapper><ConflictsPage /></SuspenseWrapper>} />
+        <Route path="/tasks" element={<SuspenseWrapper><TasksPage /></SuspenseWrapper>} />
+        <Route path="/settings" element={<SuspenseWrapper><SettingsPage /></SuspenseWrapper>} />
         <Route path="/admin" element={<SuspenseWrapper><AdminPage /></SuspenseWrapper>} />
         <Route path="/admin/audit" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />
       </Route>

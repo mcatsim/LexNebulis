@@ -13,6 +13,9 @@ from app.billing.router import router as billing_router
 from app.trust.router import router as trust_router
 from app.admin.router import router as admin_router
 from app.search.router import router as search_router
+from app.conflicts.router import router as conflicts_router
+from app.tasks.router import router as tasks_router
+from app.tasks.router import workflow_router
 from app.config import settings
 from app.middleware import CorrelationIDMiddleware
 
@@ -54,6 +57,9 @@ app.include_router(billing_router, prefix="/api/billing", tags=["Billing"])
 app.include_router(trust_router, prefix="/api/trust", tags=["Trust"])
 app.include_router(admin_router, prefix="/api/admin", tags=["Admin"])
 app.include_router(search_router, prefix="/api/search", tags=["Search"])
+app.include_router(conflicts_router, prefix="/api/conflicts", tags=["Conflicts"])
+app.include_router(tasks_router, prefix="/api/tasks", tags=["Tasks"])
+app.include_router(workflow_router, prefix="/api/workflows", tags=["Workflows"])
 
 
 @app.get("/api/health")

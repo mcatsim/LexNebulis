@@ -4,8 +4,9 @@ import {
   ActionIcon, AppShell, Badge, Burger, Group, NavLink, ScrollArea, Text, Tooltip, useMantineColorScheme,
 } from '@mantine/core';
 import {
-  IconCalendar, IconCash, IconClipboardList, IconDashboard, IconFileDescription, IconLogout, IconMoon,
-  IconScale, IconSearch, IconSettings, IconShieldLock, IconSun, IconUsers, IconUsersGroup, IconBuildingBank,
+  IconAlertTriangle, IconCalendar, IconCash, IconChecklist, IconClipboardList, IconDashboard,
+  IconFileDescription, IconLogout, IconMoon, IconScale, IconSearch, IconSettings, IconShieldLock,
+  IconSun, IconUsers, IconUsersGroup, IconBuildingBank,
 } from '@tabler/icons-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTimerStore } from '../stores/timerStore';
@@ -19,7 +20,9 @@ const NAV_ITEMS = [
   { label: 'Documents', icon: IconFileDescription, path: '/documents' },
   { label: 'Calendar', icon: IconCalendar, path: '/calendar' },
   { label: 'Billing', icon: IconCash, path: '/billing' },
+  { label: 'Tasks', icon: IconChecklist, path: '/tasks' },
   { label: 'Trust Accounts', icon: IconBuildingBank, path: '/trust' },
+  { label: 'Conflicts', icon: IconAlertTriangle, path: '/conflicts' },
 ];
 
 const ADMIN_ITEMS = [
@@ -81,6 +84,11 @@ export default function AppLayout() {
                 </ActionIcon>
               </Tooltip>
               <Text size="sm" c="dimmed">{user?.first_name} {user?.last_name}</Text>
+              <Tooltip label="Account Settings">
+                <ActionIcon variant="default" size="lg" onClick={() => navigate('/settings')}>
+                  <IconSettings size={18} />
+                </ActionIcon>
+              </Tooltip>
               <Tooltip label="Logout">
                 <ActionIcon variant="subtle" color="red" onClick={handleLogout}>
                   <IconLogout size={18} />

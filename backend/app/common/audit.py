@@ -80,6 +80,12 @@ class AuditEventSyslog(BaseModel):
 ACTION_SEVERITY = {
     "login": "info",
     "login_failed": "medium",
+    "login_2fa_pending": "info",
+    "login_2fa_verified": "info",
+    "login_2fa_recovery_code": "medium",
+    "2fa_setup_initiated": "medium",
+    "2fa_enabled": "high",
+    "2fa_disabled": "high",
     "logout": "info",
     "create": "info",
     "update": "low",

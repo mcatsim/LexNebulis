@@ -54,3 +54,37 @@ class UserResponse(BaseModel):
 class PasswordChange(BaseModel):
     current_password: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+# Two-Factor Authentication schemas
+
+
+class LoginResponse(BaseModel):
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    token_type: str = "bearer"
+    requires_2fa: bool = False
+    temp_token: Optional[str] = None
+
+
+class TwoFactorSetupResponse(BaseModel):
+    secret: str
+    provisioning_uri: str
+    qr_code_base64: str
+
+
+class TwoFactorVerifyRequest(BaseModel):
+    code: str = Field(min_length=6, max_length=8)
+
+
+class TwoFactorVerifySetupResponse(BaseModel):
+    recovery_codes: list[str]
+
+
+class TwoFactorLoginRequest(BaseModel):
+    temp_token: str
+    code: str = Field(min_length=6, max_length=8)
+
+
+class TwoFactorStatusResponse(BaseModel):
+    enabled: bool
