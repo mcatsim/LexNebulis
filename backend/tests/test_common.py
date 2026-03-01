@@ -19,10 +19,10 @@ from app.common.audit import (
 from app.common.encryption import decrypt_field, encrypt_field
 from app.common.pagination import PaginatedResponse, PaginationParams
 
-
 # ---------------------------------------------------------------------------
 # Encryption
 # ---------------------------------------------------------------------------
+
 
 class TestEncryption:
     """encrypt_field / decrypt_field roundtrip."""
@@ -58,6 +58,7 @@ class TestEncryption:
 # Pagination
 # ---------------------------------------------------------------------------
 
+
 class TestPaginationParams:
     """PaginationParams model."""
 
@@ -84,7 +85,10 @@ class TestPaginatedResponse:
 
     def test_create_with_items(self):
         resp = PaginatedResponse.create(
-            items=[{"id": 1}, {"id": 2}], total=10, page=1, page_size=2,
+            items=[{"id": 1}, {"id": 2}],
+            total=10,
+            page=1,
+            page_size=2,
         )
         assert resp.total == 10
         assert resp.page == 1
@@ -109,6 +113,7 @@ class TestPaginatedResponse:
 # ---------------------------------------------------------------------------
 # Integrity hash
 # ---------------------------------------------------------------------------
+
 
 class TestComputeIntegrityHash:
     """compute_integrity_hash produces consistent SHA-256 digests."""
@@ -154,6 +159,7 @@ class TestComputeIntegrityHash:
 # ---------------------------------------------------------------------------
 # Audit format helpers
 # ---------------------------------------------------------------------------
+
 
 class TestAuditFormatHelpers:
     """audit_to_cef and audit_to_syslog converters."""

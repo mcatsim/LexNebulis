@@ -5,16 +5,15 @@ Covers login, token refresh, account lockout, /me, password change,
 and admin-only user CRUD.
 """
 
-import pytest
 from httpx import AsyncClient
 
-from tests.conftest import UserFactory, _create_test_user
 from app.auth.models import UserRole
-
+from tests.conftest import UserFactory, _create_test_user
 
 # ---------------------------------------------------------------------------
 # Login
 # ---------------------------------------------------------------------------
+
 
 class TestLogin:
     """POST /api/auth/login"""
@@ -26,10 +25,13 @@ class TestLogin:
             password="GoodPassword1!",
             role=UserRole.attorney,
         )
-        resp = await client.post("/api/auth/login", json={
-            "email": "login-ok@test.com",
-            "password": "GoodPassword1!",
-        })
+        resp = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "login-ok@test.com",
+                "password": "GoodPassword1!",
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert "access_token" in body
@@ -43,19 +45,25 @@ class TestLogin:
             password="CorrectPassword1!",
             role=UserRole.attorney,
         )
-        resp = await client.post("/api/auth/login", json={
-            "email": "login-bad@test.com",
-            "password": "WrongPassword1!",
-        })
+        resp = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "login-bad@test.com",
+                "password": "WrongPassword1!",
+            },
+        )
         assert resp.status_code == 401
         assert resp.json()["detail"] == "Invalid credentials"
 
     async def test_login_nonexistent_user(self, client: AsyncClient):
         """Nonexistent email returns 401."""
-        resp = await client.post("/api/auth/login", json={
-            "email": "nobody@test.com",
-            "password": "Whatever123!",
-        })
+        resp = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "nobody@test.com",
+                "password": "Whatever123!",
+            },
+        )
         assert resp.status_code == 401
 
     async def test_account_lockout_after_failed_attempts(self, client: AsyncClient):
@@ -66,23 +74,30 @@ class TestLogin:
             role=UserRole.attorney,
         )
         for _ in range(5):
-            resp = await client.post("/api/auth/login", json={
-                "email": "lockout@test.com",
-                "password": "BadGuess12345",
-            })
+            resp = await client.post(
+                "/api/auth/login",
+                json={
+                    "email": "lockout@test.com",
+                    "password": "BadGuess12345",
+                },
+            )
             assert resp.status_code == 401
 
         # After lockout, even the correct password should fail
-        resp = await client.post("/api/auth/login", json={
-            "email": "lockout@test.com",
-            "password": "RealPassword1!",
-        })
+        resp = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "lockout@test.com",
+                "password": "RealPassword1!",
+            },
+        )
         assert resp.status_code == 401
 
 
 # ---------------------------------------------------------------------------
 # Token refresh
 # ---------------------------------------------------------------------------
+
 
 class TestTokenRefresh:
     """POST /api/auth/refresh"""
@@ -94,15 +109,21 @@ class TestTokenRefresh:
             password="RefreshPass1!",
             role=UserRole.attorney,
         )
-        login = await client.post("/api/auth/login", json={
-            "email": "refresh-ok@test.com",
-            "password": "RefreshPass1!",
-        })
+        login = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "refresh-ok@test.com",
+                "password": "RefreshPass1!",
+            },
+        )
         refresh_token = login.json()["refresh_token"]
 
-        resp = await client.post("/api/auth/refresh", json={
-            "refresh_token": refresh_token,
-        })
+        resp = await client.post(
+            "/api/auth/refresh",
+            json={
+                "refresh_token": refresh_token,
+            },
+        )
         assert resp.status_code == 200
         body = resp.json()
         assert "access_token" in body
@@ -112,9 +133,12 @@ class TestTokenRefresh:
 
     async def test_refresh_invalid_token(self, client: AsyncClient):
         """An invalid refresh token returns 401."""
-        resp = await client.post("/api/auth/refresh", json={
-            "refresh_token": "bogus-token-value",
-        })
+        resp = await client.post(
+            "/api/auth/refresh",
+            json={
+                "refresh_token": "bogus-token-value",
+            },
+        )
         assert resp.status_code == 401
 
     async def test_refresh_token_cannot_be_reused(self, client: AsyncClient):
@@ -124,10 +148,13 @@ class TestTokenRefresh:
             password="ReusePass123!",
             role=UserRole.attorney,
         )
-        login = await client.post("/api/auth/login", json={
-            "email": "refresh-reuse@test.com",
-            "password": "ReusePass123!",
-        })
+        login = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "refresh-reuse@test.com",
+                "password": "ReusePass123!",
+            },
+        )
         old_refresh = login.json()["refresh_token"]
 
         # First rotation succeeds
@@ -141,6 +168,7 @@ class TestTokenRefresh:
 # ---------------------------------------------------------------------------
 # GET /me
 # ---------------------------------------------------------------------------
+
 
 class TestGetMe:
     """GET /api/auth/me"""
@@ -163,6 +191,7 @@ class TestGetMe:
 # Password change
 # ---------------------------------------------------------------------------
 
+
 class TestPasswordChange:
     """PUT /api/auth/me/password"""
 
@@ -173,10 +202,13 @@ class TestPasswordChange:
             password="OldPassword1!",
             role=UserRole.attorney,
         )
-        login = await client.post("/api/auth/login", json={
-            "email": "chpw@test.com",
-            "password": "OldPassword1!",
-        })
+        login = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "chpw@test.com",
+                "password": "OldPassword1!",
+            },
+        )
         token = login.json()["access_token"]
 
         resp = await client.put(
@@ -188,17 +220,23 @@ class TestPasswordChange:
         assert resp.json()["message"] == "Password updated"
 
         # Old password should no longer work
-        resp2 = await client.post("/api/auth/login", json={
-            "email": "chpw@test.com",
-            "password": "OldPassword1!",
-        })
+        resp2 = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "chpw@test.com",
+                "password": "OldPassword1!",
+            },
+        )
         assert resp2.status_code == 401
 
         # New password should work
-        resp3 = await client.post("/api/auth/login", json={
-            "email": "chpw@test.com",
-            "password": "NewPassword2!",
-        })
+        resp3 = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "chpw@test.com",
+                "password": "NewPassword2!",
+            },
+        )
         assert resp3.status_code == 200
 
     async def test_change_password_wrong_current(self, client: AsyncClient, admin_headers):
@@ -214,6 +252,7 @@ class TestPasswordChange:
 # ---------------------------------------------------------------------------
 # Admin user management
 # ---------------------------------------------------------------------------
+
 
 class TestAdminUserCRUD:
     """Admin-only endpoints: GET/POST/PUT /api/auth/users"""
@@ -253,10 +292,13 @@ class TestAdminUserCRUD:
         user_id = create_resp.json()["id"]
 
         # Update the user
-        resp = await admin_client.put(f"/api/auth/users/{user_id}", json={
-            "first_name": "Updated",
-            "last_name": "Name",
-        })
+        resp = await admin_client.put(
+            f"/api/auth/users/{user_id}",
+            json={
+                "first_name": "Updated",
+                "last_name": "Name",
+            },
+        )
         assert resp.status_code == 200
         assert resp.json()["first_name"] == "Updated"
         assert resp.json()["last_name"] == "Name"
@@ -266,8 +308,11 @@ class TestAdminUserCRUD:
         create_resp = await admin_client.post("/api/auth/users", json=payload)
         user_id = create_resp.json()["id"]
 
-        resp = await admin_client.put(f"/api/auth/users/{user_id}", json={
-            "is_active": False,
-        })
+        resp = await admin_client.put(
+            f"/api/auth/users/{user_id}",
+            json={
+                "is_active": False,
+            },
+        )
         assert resp.status_code == 200
         assert resp.json()["is_active"] is False

@@ -2,27 +2,30 @@ import asyncio
 import os
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-# Import all models so they register with Base.metadata
-from app.database import Base
-from app.auth.models import User, RefreshToken, AuditLog, SystemSetting  # noqa: F401
+from alembic import context
+from app.accounting.models import AccountMapping, ChartOfAccounts, ExportHistory  # noqa: F401
+from app.auth.models import AuditLog, RefreshToken, SystemSetting, User  # noqa: F401
+from app.billing.models import Invoice, InvoiceLineItem, Payment, RateSchedule, TimeEntry  # noqa: F401
+from app.calendar.models import CalendarEvent  # noqa: F401
 from app.clients.models import Client  # noqa: F401
 from app.contacts.models import Contact  # noqa: F401
-from app.matters.models import Matter, MatterContact  # noqa: F401
+
+# Import all models so they register with Base.metadata
+from app.database import Base
 from app.documents.models import Document, DocumentTag  # noqa: F401
-from app.calendar.models import CalendarEvent  # noqa: F401
-from app.billing.models import TimeEntry, RateSchedule, Invoice, InvoiceLineItem, Payment  # noqa: F401
-from app.trust.models import TrustAccount, TrustLedgerEntry, TrustReconciliation  # noqa: F401
+from app.emails.models import EmailAttachment, EmailMatterSuggestion, FiledEmail  # noqa: F401
+from app.esign.models import SignatureAuditEntry, SignatureRequest, Signer  # noqa: F401
+from app.intake.models import IntakeForm, IntakeSubmission, Lead  # noqa: F401
+from app.ledes.models import BillingGuideline, TimeEntryCode, UTBMSCode  # noqa: F401
+from app.matters.models import Matter, MatterContact  # noqa: F401
+from app.payments.models import PaymentLink, PaymentSettings, WebhookEvent  # noqa: F401
 from app.portal.models import ClientUser, Message, SharedDocument  # noqa: F401
-from app.templates.models import DocumentTemplate, GeneratedDocument  # noqa: F401
-from app.intake.models import Lead, IntakeForm, IntakeSubmission  # noqa: F401
-from app.ledes.models import UTBMSCode, BillingGuideline, TimeEntryCode  # noqa: F401
-from app.esign.models import SignatureRequest, Signer, SignatureAuditEntry  # noqa: F401
-from app.emails.models import FiledEmail, EmailAttachment, EmailMatterSuggestion  # noqa: F401
 from app.sso.models import SSOProvider, SSOSession  # noqa: F401
+from app.templates.models import DocumentTemplate, GeneratedDocument  # noqa: F401
+from app.trust.models import TrustAccount, TrustLedgerEntry, TrustReconciliation  # noqa: F401
 
 config = context.config
 
@@ -39,7 +42,9 @@ if database_url:
 
 def run_migrations_offline() -> None:
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={"paramstyle": "named"})
+    context.configure(
+        url=url, target_metadata=target_metadata, literal_binds=True, dialect_opts={"paramstyle": "named"}
+    )
     with context.begin_transaction():
         context.run_migrations()
 

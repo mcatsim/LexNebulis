@@ -32,6 +32,9 @@ const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const AuditLogPage = lazy(() => import('./features/admin/AuditLogPage'));
 const PortalManagementPage = lazy(() => import('./features/portal/PortalManagementPage'));
 const SSOSettingsPage = lazy(() => import('./features/admin/SSOSettingsPage'));
+const PaymentsPage = lazy(() => import('./features/payments/PaymentsPage'));
+const PaymentPage = lazy(() => import('./features/payments/PaymentPage'));
+const AccountingPage = lazy(() => import('./features/accounting/AccountingPage'));
 
 // SSO Callback (outside auth guard)
 const SSOCallbackPage = lazy(() => import('./auth/SSOCallbackPage'));
@@ -84,6 +87,8 @@ export default function App() {
         <Route path="/admin" element={<SuspenseWrapper><AdminPage /></SuspenseWrapper>} />
         <Route path="/admin/audit" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />
         <Route path="/admin/sso" element={<SuspenseWrapper><SSOSettingsPage /></SuspenseWrapper>} />
+        <Route path="/payments" element={<SuspenseWrapper><PaymentsPage /></SuspenseWrapper>} />
+        <Route path="/accounting" element={<SuspenseWrapper><AccountingPage /></SuspenseWrapper>} />
         <Route path="/portal-admin" element={<SuspenseWrapper><PortalManagementPage /></SuspenseWrapper>} />
       </Route>
 
@@ -92,6 +97,9 @@ export default function App() {
 
       {/* E-Signature public signing page (no auth) */}
       <Route path="/sign/:token" element={<SuspenseWrapper><SigningPage /></SuspenseWrapper>} />
+
+      {/* Public payment page (no auth) */}
+      <Route path="/pay/:token" element={<SuspenseWrapper><PaymentPage /></SuspenseWrapper>} />
 
       {/* Portal routes (client-facing, separate auth) */}
       <Route path="/portal/login" element={<SuspenseWrapper><PortalLoginPage /></SuspenseWrapper>} />

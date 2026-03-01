@@ -4,11 +4,14 @@ Revision ID: 0001
 Revises: None
 Create Date: 2026-02-28
 """
-from typing import Sequence, Union
 
-from alembic import op
+from collections.abc import Sequence
+from typing import Union
+
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 revision: str = "0001"
 down_revision: Union[str, None] = None

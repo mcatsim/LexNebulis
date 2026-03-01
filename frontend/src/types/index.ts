@@ -864,6 +864,147 @@ export interface SSOLoginInitiateResponse {
   state: string;
 }
 
+// Payment Processing
+export type PaymentProcessorType = 'stripe' | 'lawpay' | 'manual';
+export type PaymentLinkStatus = 'active' | 'paid' | 'expired' | 'cancelled';
+export type PaymentAccountType = 'operating' | 'trust';
+
+export interface PaymentSettings {
+  id: string;
+  processor: PaymentProcessorType;
+  is_active: boolean;
+  api_key_masked: string | null;
+  webhook_secret_masked: string | null;
+  publishable_key: string | null;
+  account_type: PaymentAccountType;
+  surcharge_enabled: boolean;
+  surcharge_rate: number;
+  webhook_url: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentLink {
+  id: string;
+  invoice_id: string;
+  client_id: string;
+  matter_id: string | null;
+  created_by: string;
+  amount_cents: number;
+  description: string | null;
+  status: PaymentLinkStatus;
+  access_token: string;
+  processor: PaymentProcessorType;
+  processor_session_id: string | null;
+  expires_at: string | null;
+  paid_at: string | null;
+  paid_amount_cents: number | null;
+  surcharge_cents: number;
+  processor_fee_cents: number;
+  payer_email: string | null;
+  payer_name: string | null;
+  processor_reference: string | null;
+  payment_url: string | null;
+  invoice_number: number | null;
+  client_name: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PublicPaymentInfo {
+  invoice_number: number | null;
+  amount_cents: number;
+  surcharge_cents: number;
+  total_cents: number;
+  description: string | null;
+  client_name: string | null;
+  firm_name: string;
+  processor: PaymentProcessorType;
+  status: PaymentLinkStatus;
+  expires_at: string | null;
+}
+
+export interface ProcessorBreakdown {
+  processor: PaymentProcessorType;
+  count: number;
+  total_cents: number;
+  fees_cents: number;
+}
+
+export interface PaymentSummary {
+  total_processed_cents: number;
+  total_fees_cents: number;
+  count: number;
+  by_processor: ProcessorBreakdown[];
+}
+
+export interface WebhookEvent {
+  id: string;
+  processor: PaymentProcessorType;
+  event_type: string;
+  event_id: string | null;
+  processed: boolean;
+  error_message: string | null;
+  created_at: string;
+}
+
+// Accounting / QuickBooks / Xero Integration
+export type ExportFormat = 'iif' | 'csv' | 'qbo_json';
+export type AccountType = 'income' | 'expense' | 'asset' | 'liability' | 'equity';
+
+export interface ChartOfAccount {
+  id: string;
+  code: string;
+  name: string;
+  account_type: AccountType;
+  parent_code: string | null;
+  description: string | null;
+  is_active: boolean;
+  quickbooks_account_name: string | null;
+  xero_account_code: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AccountMapping {
+  id: string;
+  source_type: string;
+  account_id: string;
+  description: string | null;
+  is_default: boolean;
+  created_at: string;
+  account_name: string | null;
+  account_code: string | null;
+}
+
+export interface ExportHistory {
+  id: string;
+  export_format: ExportFormat;
+  export_type: string;
+  start_date: string;
+  end_date: string;
+  record_count: number;
+  file_name: string | null;
+  storage_key: string | null;
+  exported_by: string;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ExportPreviewRow {
+  values: Record<string, string>;
+}
+
+export interface ExportPreview {
+  row_count: number;
+  total_amount_cents: number;
+  sample_rows: ExportPreviewRow[];
+  export_type: string;
+  format: ExportFormat;
+}
+
 // Audit
 export interface AuditLogEntry {
   id: string;

@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.accounting.router import router as accounting_router
 from app.admin.router import router as admin_router
 from app.auth.router import router as auth_router
 from app.billing.router import router as billing_router
@@ -19,6 +20,7 @@ from app.intake.router import router as intake_router
 from app.ledes.router import router as ledes_router
 from app.matters.router import router as matters_router
 from app.middleware import CorrelationIDMiddleware
+from app.payments.router import router as payments_router
 from app.portal.router import client_router as portal_client_router
 from app.portal.router import staff_router as portal_staff_router
 from app.reports.router import router as reports_router
@@ -80,7 +82,9 @@ app.include_router(reports_router, prefix="/api/reports", tags=["Reports"])
 app.include_router(ledes_router, prefix="/api/ledes", tags=["LEDES"])
 app.include_router(esign_router, prefix="/api/esign", tags=["E-Signature"])
 app.include_router(emails_router, prefix="/api/emails", tags=["Emails"])
+app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
 app.include_router(sso_router, prefix="/api/sso", tags=["SSO"])
+app.include_router(accounting_router, prefix="/api/accounting", tags=["Accounting"])
 
 
 @app.get("/api/health")

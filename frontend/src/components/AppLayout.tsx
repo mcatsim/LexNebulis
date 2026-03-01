@@ -4,7 +4,8 @@ import {
   ActionIcon, AppShell, Badge, Burger, Group, NavLink, ScrollArea, Text, Tooltip, useMantineColorScheme,
 } from '@mantine/core';
 import {
-  IconAlarm, IconAlertTriangle, IconCalendar, IconCash, IconChecklist, IconClipboardList, IconDashboard,
+  IconAlarm, IconAlertTriangle, IconCalculator, IconCalendar, IconCash, IconChecklist, IconClipboardList,
+  IconCreditCard, IconDashboard,
   IconFileDescription, IconKey, IconLogout, IconMail, IconMoon, IconReceipt2, IconReportAnalytics, IconScale,
   IconSearch, IconSettings, IconShieldLock, IconSignature,
   IconSun, IconTemplate, IconUserPlus, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
@@ -24,11 +25,13 @@ const NAV_ITEMS = [
   { label: 'E-Sign', icon: IconSignature, path: '/esign' },
   { label: 'Calendar', icon: IconCalendar, path: '/calendar' },
   { label: 'Billing', icon: IconCash, path: '/billing' },
+  { label: 'Payments', icon: IconCreditCard, path: '/payments' },
   { label: 'Reports', icon: IconReportAnalytics, path: '/reports' },
   { label: 'Tasks', icon: IconChecklist, path: '/tasks' },
   { label: 'Templates', icon: IconTemplate, path: '/templates' },
   { label: 'Trust Accounts', icon: IconBuildingBank, path: '/trust' },
   { label: 'E-Billing', icon: IconReceipt2, path: '/ledes' },
+  { label: 'Accounting', icon: IconCalculator, path: '/accounting' },
   { label: 'Deadlines', icon: IconAlarm, path: '/deadlines' },
   { label: 'Conflicts', icon: IconAlertTriangle, path: '/conflicts' },
   { label: 'Portal', icon: IconWorld, path: '/portal-admin' },

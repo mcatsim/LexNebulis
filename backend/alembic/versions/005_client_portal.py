@@ -4,11 +4,14 @@ Revision ID: 0005
 Revises: 0004
 Create Date: 2026-02-28
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
+from typing import Union
+
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 revision: str = "0005"
 down_revision: Union[str, None] = "0004"

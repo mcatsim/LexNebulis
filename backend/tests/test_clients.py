@@ -5,15 +5,14 @@ Covers create (individual + organization), list with pagination/search,
 get by ID, update, and admin-only delete.
 """
 
-import pytest
 from httpx import AsyncClient
 
 from tests.conftest import ClientFactory, OrganizationClientFactory
 
-
 # ---------------------------------------------------------------------------
 # Create
 # ---------------------------------------------------------------------------
+
 
 class TestCreateClient:
     """POST /api/clients"""
@@ -52,6 +51,7 @@ class TestCreateClient:
 # ---------------------------------------------------------------------------
 # List
 # ---------------------------------------------------------------------------
+
 
 class TestListClients:
     """GET /api/clients"""
@@ -99,6 +99,7 @@ class TestListClients:
 # Get by ID
 # ---------------------------------------------------------------------------
 
+
 class TestGetClient:
     """GET /api/clients/{client_id}"""
 
@@ -109,6 +110,7 @@ class TestGetClient:
 
     async def test_get_nonexistent_client(self, admin_client: AsyncClient):
         import uuid
+
         fake_id = str(uuid.uuid4())
         resp = await admin_client.get(f"/api/clients/{fake_id}")
         assert resp.status_code == 404
@@ -117,6 +119,7 @@ class TestGetClient:
 # ---------------------------------------------------------------------------
 # Update
 # ---------------------------------------------------------------------------
+
 
 class TestUpdateClient:
     """PUT /api/clients/{client_id}"""
@@ -143,6 +146,7 @@ class TestUpdateClient:
 # ---------------------------------------------------------------------------
 # Delete (admin only)
 # ---------------------------------------------------------------------------
+
 
 class TestDeleteClient:
     """DELETE /api/clients/{client_id}"""

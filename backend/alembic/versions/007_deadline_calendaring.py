@@ -4,11 +4,14 @@ Revision ID: 0007
 Revises: 0006
 Create Date: 2026-02-28
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
+from typing import Union
+
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 revision: str = "0007"
 down_revision: Union[str, None] = "0006"
@@ -36,12 +39,23 @@ def upgrade() -> None:
     op.create_table(
         "deadline_rules",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("rule_set_id", UUID(as_uuid=True), sa.ForeignKey("court_rule_sets.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "rule_set_id",
+            UUID(as_uuid=True),
+            sa.ForeignKey("court_rule_sets.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("name", sa.String(500), nullable=False),
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("trigger_event", sa.String(255), nullable=False, index=True),
         sa.Column("offset_days", sa.Integer(), nullable=False),
-        sa.Column("offset_type", ENUM("calendar_days", "business_days", name="offsettype", create_type=False), nullable=False, server_default="calendar_days"),
+        sa.Column(
+            "offset_type",
+            ENUM("calendar_days", "business_days", name="offsettype", create_type=False),
+            nullable=False,
+            server_default="calendar_days",
+        ),
         sa.Column("creates_event_type", sa.String(100), nullable=False, server_default="deadline"),
         sa.Column("is_active", sa.Boolean(), nullable=False, server_default=sa.text("true")),
         sa.Column("sort_order", sa.Integer(), nullable=False, server_default=sa.text("0")),
@@ -51,8 +65,16 @@ def upgrade() -> None:
     op.create_table(
         "matter_deadline_configs",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("rule_set_id", UUID(as_uuid=True), sa.ForeignKey("court_rule_sets.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True
+        ),
+        sa.Column(
+            "rule_set_id",
+            UUID(as_uuid=True),
+            sa.ForeignKey("court_rule_sets.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
         sa.Column("created_by", UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
@@ -61,7 +83,9 @@ def upgrade() -> None:
     op.create_table(
         "trigger_events",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True
+        ),
         sa.Column("trigger_name", sa.String(255), nullable=False, index=True),
         sa.Column("trigger_date", sa.Date(), nullable=False),
         sa.Column("notes", sa.Text(), nullable=True),
@@ -74,10 +98,30 @@ def upgrade() -> None:
     op.create_table(
         "generated_deadlines",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("calendar_event_id", UUID(as_uuid=True), sa.ForeignKey("calendar_events.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("trigger_event_id", UUID(as_uuid=True), sa.ForeignKey("trigger_events.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("deadline_rule_id", UUID(as_uuid=True), sa.ForeignKey("deadline_rules.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "calendar_event_id",
+            UUID(as_uuid=True),
+            sa.ForeignKey("calendar_events.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column(
+            "trigger_event_id",
+            UUID(as_uuid=True),
+            sa.ForeignKey("trigger_events.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column(
+            "deadline_rule_id",
+            UUID(as_uuid=True),
+            sa.ForeignKey("deadline_rules.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
+        ),
+        sa.Column(
+            "matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True
+        ),
         sa.Column("computed_date", sa.Date(), nullable=False),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
@@ -86,7 +130,9 @@ def upgrade() -> None:
     op.create_table(
         "statutes_of_limitations",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
-        sa.Column("matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True),
+        sa.Column(
+            "matter_id", UUID(as_uuid=True), sa.ForeignKey("matters.id", ondelete="CASCADE"), nullable=False, index=True
+        ),
         sa.Column("description", sa.String(500), nullable=False),
         sa.Column("expiration_date", sa.Date(), nullable=False, index=True),
         sa.Column("statute_reference", sa.String(255), nullable=True),

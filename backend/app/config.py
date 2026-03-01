@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     # SSO
     sso_redirect_uri: str = "http://localhost/api/sso/callback"
 
+    # Payment Processing
+    payment_success_url: str = "http://localhost/payment/success"
+    payment_cancel_url: str = "http://localhost/payment/cancel"
+
     # CORS
     backend_cors_origins: list[str] = ["http://localhost", "http://localhost:5173"]
 

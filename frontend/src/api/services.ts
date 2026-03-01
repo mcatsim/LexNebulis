@@ -9,6 +9,7 @@ import type {
   Document as LegalDocument, DocumentTemplate, EthicalWall, GeneratedDocument, Invoice,
   IntakeForm, IntakeSubmission, Lead,
   LoginResponse, Matter, MatterProfitability, MatterSuggestion, Payment,
+  PaymentLink, PaymentSettings, PaymentSummary, PublicPaymentInfo, WebhookEvent,
   PipelineSummaryResponse,
   PortalInvoice, PortalMatter, PortalMessage, RealizationReport,
   ReportExportType, RevenueByAttorney,
@@ -20,6 +21,7 @@ import type {
   UtilizationReport, WorkflowTemplate,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
   PaginatedResponse, SearchResult,
+  ChartOfAccount, AccountMapping, ExportHistory, ExportPreview, ExportFormat, AccountType,
 } from '../types';
 
 // Auth
@@ -485,6 +487,46 @@ export const reportsApi = {
     api.get(`/reports/export/${reportType}`, { params, responseType: 'blob' }),
 };
 
+// Payment Processing
+export const paymentProcessingApi = {
+  // Settings (admin)
+  getSettings: () =>
+    api.get<PaymentSettings>('/payments/settings'),
+  upsertSettings: (data: {
+    processor?: string; is_active?: boolean; api_key?: string; webhook_secret?: string;
+    publishable_key?: string; account_type?: string; surcharge_enabled?: boolean; surcharge_rate?: number;
+  }) =>
+    api.post<PaymentSettings>('/payments/settings', data),
+  // Payment Links
+  listLinks: (params: { page?: number; page_size?: number; link_status?: string; client_id?: string; invoice_id?: string }) =>
+    api.get<PaginatedResponse<PaymentLink>>('/payments/links', { params }),
+  createLink: (data: { invoice_id: string; description?: string; expires_in_days?: number }) =>
+    api.post<PaymentLink>('/payments/links', data),
+  getLink: (id: string) =>
+    api.get<PaymentLink>(`/payments/links/${id}`),
+  cancelLink: (id: string) =>
+    api.post<PaymentLink>(`/payments/links/${id}/cancel`),
+  sendLink: (id: string, data: { recipient_email?: string; message?: string }) =>
+    api.post<{ status: string; message: string }>(`/payments/links/${id}/send`, data),
+  // Public payment page (no auth)
+  getPaymentInfo: (token: string) =>
+    api.get<PublicPaymentInfo>(`/payments/pay/${token}`),
+  completePayment: (token: string, data: { payer_email?: string; payer_name?: string; processor_reference?: string; paid_amount_cents?: number }) =>
+    api.post<PaymentLink>(`/payments/pay/${token}/complete`, data),
+  // Summary
+  getSummary: () =>
+    api.get<PaymentSummary>('/payments/summary'),
+  // Webhooks
+  listWebhooks: (params: { page?: number; page_size?: number }) =>
+    api.get<PaginatedResponse<WebhookEvent>>('/payments/webhooks', { params }),
+};
+
+// Alias for convenience
+export const paymentsApi = {
+  ...paymentProcessingApi,
+  saveSettings: paymentProcessingApi.upsertSettings,
+};
+
 // SSO
 export const ssoApi = {
   // Admin endpoints
@@ -519,4 +561,43 @@ export const ssoApi = {
     api.get<SSOProviderPublic[]>('/sso/providers/public'),
   initiateLogin: (providerId?: string) =>
     api.post<SSOLoginInitiateResponse>('/sso/login/initiate', { provider_id: providerId }),
+};
+
+// Accounting / QuickBooks / Xero Integration
+export const accountingApi = {
+  // Chart of Accounts
+  listAccounts: (params: {
+    page?: number; page_size?: number; account_type?: AccountType; search?: string; is_active?: boolean;
+  }) =>
+    api.get<PaginatedResponse<ChartOfAccount>>('/accounting/accounts', { params }),
+  createAccount: (data: {
+    code: string; name: string; account_type: AccountType; parent_code?: string;
+    description?: string; is_active?: boolean; quickbooks_account_name?: string; xero_account_code?: string;
+  }) =>
+    api.post<ChartOfAccount>('/accounting/accounts', data),
+  updateAccount: (id: string, data: {
+    code?: string; name?: string; account_type?: AccountType; parent_code?: string;
+    description?: string; is_active?: boolean; quickbooks_account_name?: string; xero_account_code?: string;
+  }) =>
+    api.put<ChartOfAccount>(`/accounting/accounts/${id}`, data),
+  deleteAccount: (id: string) =>
+    api.delete(`/accounting/accounts/${id}`),
+  seedAccounts: (template?: string) =>
+    api.post<{ message: string; accounts_created: number }>('/accounting/accounts/seed', { template: template || 'law_firm_default' }),
+  // Account Mappings
+  listMappings: (params: { source_type?: string }) =>
+    api.get<AccountMapping[]>('/accounting/mappings', { params }),
+  createMapping: (data: { source_type: string; account_id: string; description?: string; is_default?: boolean }) =>
+    api.post<AccountMapping>('/accounting/mappings', data),
+  updateMapping: (id: string, data: { source_type?: string; account_id?: string; description?: string; is_default?: boolean }) =>
+    api.put<AccountMapping>(`/accounting/mappings/${id}`, data),
+  deleteMapping: (id: string) =>
+    api.delete(`/accounting/mappings/${id}`),
+  // Export
+  previewExport: (data: { format: ExportFormat; export_type: string; start_date: string; end_date: string }) =>
+    api.post<ExportPreview>('/accounting/export/preview', data),
+  generateExport: (data: { format: ExportFormat; export_type: string; start_date: string; end_date: string }) =>
+    api.post('/accounting/export/generate', data, { responseType: 'blob' }),
+  listExportHistory: (params: { page?: number; page_size?: number }) =>
+    api.get<PaginatedResponse<ExportHistory>>('/accounting/export/history', { params }),
 };

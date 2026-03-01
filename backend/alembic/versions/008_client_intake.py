@@ -4,11 +4,14 @@ Revision ID: 0008
 Revises: 0007
 Create Date: 2026-02-28
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
+from typing import Union
+
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 revision: str = "0008"
 down_revision: Union[str, None] = "0007"
@@ -38,16 +41,34 @@ def upgrade() -> None:
         sa.Column("organization", sa.String(255), nullable=True),
         sa.Column(
             "source",
-            ENUM("website", "referral", "social_media", "advertisement", "walk_in", "phone", "other",
-                 name="leadsource", create_type=False),
+            ENUM(
+                "website",
+                "referral",
+                "social_media",
+                "advertisement",
+                "walk_in",
+                "phone",
+                "other",
+                name="leadsource",
+                create_type=False,
+            ),
             nullable=False,
             server_default="other",
         ),
         sa.Column("source_detail", sa.String(500), nullable=True),
         sa.Column(
             "stage",
-            ENUM("new", "contacted", "qualified", "proposal_sent", "retained", "declined", "lost",
-                 name="pipelinestage", create_type=False),
+            ENUM(
+                "new",
+                "contacted",
+                "qualified",
+                "proposal_sent",
+                "retained",
+                "declined",
+                "lost",
+                name="pipelinestage",
+                create_type=False,
+            ),
             nullable=False,
             server_default="new",
             index=True,
@@ -85,8 +106,11 @@ def upgrade() -> None:
         "intake_submissions",
         sa.Column("id", UUID(as_uuid=True), primary_key=True),
         sa.Column(
-            "form_id", UUID(as_uuid=True),
-            sa.ForeignKey("intake_forms.id", ondelete="CASCADE"), nullable=False, index=True,
+            "form_id",
+            UUID(as_uuid=True),
+            sa.ForeignKey("intake_forms.id", ondelete="CASCADE"),
+            nullable=False,
+            index=True,
         ),
         sa.Column("lead_id", UUID(as_uuid=True), sa.ForeignKey("leads.id"), nullable=True),
         sa.Column("data_json", sa.JSON(), nullable=False),

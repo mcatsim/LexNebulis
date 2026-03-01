@@ -4,11 +4,14 @@ Revision ID: 0010
 Revises: 0009
 Create Date: 2026-02-28
 """
-from typing import Sequence, Union
+
+from collections.abc import Sequence
+from typing import Union
+
+import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID, ENUM
 
 revision: str = "0010"
 down_revision: Union[str, None] = "0009"
@@ -48,7 +51,12 @@ def upgrade() -> None:
         sa.Column(
             "status",
             ENUM(
-                "draft", "pending", "partially_signed", "completed", "expired", "cancelled",
+                "draft",
+                "pending",
+                "partially_signed",
+                "completed",
+                "expired",
+                "cancelled",
                 name="signaturerequeststatus",
                 create_type=False,
             ),

@@ -6,26 +6,23 @@ integrity hash chain verification, and SIEM export formats
 (CEF, JSON, Syslog).
 """
 
-import json
-import uuid
-from datetime import date
-
-import pytest
 from httpx import AsyncClient
 
 from app.auth.models import User
 from tests.conftest import ClientFactory
 
-
 # ---------------------------------------------------------------------------
 # Audit log creation
 # ---------------------------------------------------------------------------
+
 
 class TestAuditLogCreation:
     """Verify that CRUD operations create audit log entries."""
 
     async def test_audit_log_created_on_client_create(
-        self, admin_client: AsyncClient, admin_user: User,
+        self,
+        admin_client: AsyncClient,
+        admin_user: User,
     ):
         """Creating a client should produce an audit log entry."""
         data = ClientFactory()
@@ -48,18 +45,21 @@ class TestAuditLogCreation:
 
     async def test_audit_log_created_on_login(self, client: AsyncClient):
         """Login generates an audit log entry."""
-        from tests.conftest import _create_test_user
         from app.auth.models import UserRole
+        from tests.conftest import _create_test_user
 
         await _create_test_user(
             email="audit-login@test.com",
             password="AuditPass123!",
             role=UserRole.admin,
         )
-        login_resp = await client.post("/api/auth/login", json={
-            "email": "audit-login@test.com",
-            "password": "AuditPass123!",
-        })
+        login_resp = await client.post(
+            "/api/auth/login",
+            json={
+                "email": "audit-login@test.com",
+                "password": "AuditPass123!",
+            },
+        )
         assert login_resp.status_code == 200
         token = login_resp.json()["access_token"]
 
@@ -76,11 +76,13 @@ class TestAuditLogCreation:
 # Hash chain integrity
 # ---------------------------------------------------------------------------
 
+
 class TestAuditHashChain:
     """Verify the SHA-256 integrity hash chain."""
 
     async def test_hash_chain_integrity(
-        self, admin_client: AsyncClient,
+        self,
+        admin_client: AsyncClient,
     ):
         """After creating several entities, the hash chain should verify."""
         # Create a few entities to build the chain
@@ -88,7 +90,8 @@ class TestAuditHashChain:
             await admin_client.post("/api/clients", json=ClientFactory())
 
         resp = await admin_client.get(
-            "/api/admin/audit-logs/verify-chain", params={"limit": 100},
+            "/api/admin/audit-logs/verify-chain",
+            params={"limit": 100},
         )
         assert resp.status_code == 200
         body = resp.json()
@@ -96,14 +99,16 @@ class TestAuditHashChain:
         assert body["errors"] == []
 
     async def test_first_entry_has_no_previous_hash(
-        self, admin_client: AsyncClient,
+        self,
+        admin_client: AsyncClient,
     ):
         """The very first audit entry should have previous_hash = null."""
         # Create something to generate an audit log
         await admin_client.post("/api/clients", json=ClientFactory())
 
         logs_resp = await admin_client.get(
-            "/api/admin/audit-logs", params={"page_size": 50},
+            "/api/admin/audit-logs",
+            params={"page_size": 50},
         )
         body = logs_resp.json()
         # Sort ascending by timestamp to find the first entry
@@ -115,6 +120,7 @@ class TestAuditHashChain:
 # ---------------------------------------------------------------------------
 # SIEM export: CEF
 # ---------------------------------------------------------------------------
+
 
 class TestCEFExport:
     """GET /api/admin/audit-logs/export/cef"""
@@ -134,6 +140,7 @@ class TestCEFExport:
 # ---------------------------------------------------------------------------
 # SIEM export: JSON
 # ---------------------------------------------------------------------------
+
 
 class TestJSONExport:
     """GET /api/admin/audit-logs/export/json"""
@@ -160,6 +167,7 @@ class TestJSONExport:
 # SIEM export: Syslog
 # ---------------------------------------------------------------------------
 
+
 class TestSyslogExport:
     """GET /api/admin/audit-logs/export/syslog"""
 
@@ -177,6 +185,7 @@ class TestSyslogExport:
 # ---------------------------------------------------------------------------
 # Chain verification endpoint
 # ---------------------------------------------------------------------------
+
 
 class TestChainVerification:
     """GET /api/admin/audit-logs/verify-chain"""

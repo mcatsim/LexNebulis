@@ -2,7 +2,6 @@
 Tests for the health check endpoint.
 """
 
-import pytest
 from httpx import AsyncClient
 
 

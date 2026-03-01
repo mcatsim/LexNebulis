@@ -7,22 +7,23 @@ and matter-contact linking.
 
 import uuid
 
-import pytest
 from httpx import AsyncClient
 
 from app.auth.models import User
-from tests.conftest import ClientFactory
-
 
 # ---------------------------------------------------------------------------
 # Create
 # ---------------------------------------------------------------------------
 
+
 class TestCreateMatter:
     """POST /api/matters"""
 
     async def test_create_matter_linked_to_client(
-        self, admin_client: AsyncClient, sample_client: dict, attorney_user: User,
+        self,
+        admin_client: AsyncClient,
+        sample_client: dict,
+        attorney_user: User,
     ):
         data = {
             "title": "Smith v. Jones",
@@ -41,7 +42,9 @@ class TestCreateMatter:
         assert "matter_number" in body
 
     async def test_create_matter_with_defaults(
-        self, admin_client: AsyncClient, sample_client: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_client: dict,
     ):
         data = {"title": "Default Matter", "client_id": sample_client["id"]}
         resp = await admin_client.post("/api/matters", json=data)
@@ -51,8 +54,11 @@ class TestCreateMatter:
         assert body["litigation_type"] == "other"
 
     async def test_create_matter_requires_auth(self, sample_client: dict):
-        from httpx import ASGITransport, AsyncClient as AC
+        from httpx import ASGITransport
+        from httpx import AsyncClient as AC
+
         from app.main import app
+
         transport = ASGITransport(app=app)
         async with AC(transport=transport, base_url="http://test") as unauthed:
             data = {"title": "No Auth", "client_id": sample_client["id"]}
@@ -64,11 +70,14 @@ class TestCreateMatter:
 # List with filters
 # ---------------------------------------------------------------------------
 
+
 class TestListMatters:
     """GET /api/matters"""
 
     async def test_list_matters_returns_paginated(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         resp = await admin_client.get("/api/matters")
         assert resp.status_code == 200
@@ -77,7 +86,9 @@ class TestListMatters:
         assert "items" in body
 
     async def test_filter_by_status(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         resp = await admin_client.get("/api/matters", params={"status": "open"})
         assert resp.status_code == 200
@@ -85,7 +96,10 @@ class TestListMatters:
             assert item["status"] == "open"
 
     async def test_filter_by_client_id(
-        self, admin_client: AsyncClient, sample_client: dict, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_client: dict,
+        sample_matter: dict,
     ):
         resp = await admin_client.get("/api/matters", params={"client_id": sample_client["id"]})
         assert resp.status_code == 200
@@ -95,17 +109,23 @@ class TestListMatters:
             assert item["client_id"] == sample_client["id"]
 
     async def test_filter_by_attorney_id(
-        self, admin_client: AsyncClient, attorney_user: User, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        attorney_user: User,
+        sample_matter: dict,
     ):
         resp = await admin_client.get(
-            "/api/matters", params={"attorney_id": str(attorney_user.id)},
+            "/api/matters",
+            params={"attorney_id": str(attorney_user.id)},
         )
         assert resp.status_code == 200
         body = resp.json()
         assert body["total"] >= 1
 
     async def test_filter_by_litigation_type(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         resp = await admin_client.get("/api/matters", params={"litigation_type": "civil"})
         assert resp.status_code == 200
@@ -117,11 +137,14 @@ class TestListMatters:
 # Get by ID
 # ---------------------------------------------------------------------------
 
+
 class TestGetMatter:
     """GET /api/matters/{matter_id}"""
 
     async def test_get_matter_by_id(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         resp = await admin_client.get(f"/api/matters/{sample_matter['id']}")
         assert resp.status_code == 200
@@ -136,11 +159,14 @@ class TestGetMatter:
 # Update
 # ---------------------------------------------------------------------------
 
+
 class TestUpdateMatter:
     """PUT /api/matters/{matter_id}"""
 
     async def test_update_matter_title(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         resp = await admin_client.put(
             f"/api/matters/{sample_matter['id']}",
@@ -150,7 +176,9 @@ class TestUpdateMatter:
         assert resp.json()["title"] == "Revised Title"
 
     async def test_update_matter_status(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         resp = await admin_client.put(
             f"/api/matters/{sample_matter['id']}",
@@ -163,6 +191,7 @@ class TestUpdateMatter:
 # ---------------------------------------------------------------------------
 # Matter Contacts
 # ---------------------------------------------------------------------------
+
 
 class TestMatterContacts:
     """POST/DELETE /api/matters/{matter_id}/contacts"""
@@ -179,7 +208,9 @@ class TestMatterContacts:
         return resp.json()
 
     async def test_add_contact_to_matter(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         contact = await self._create_contact(admin_client)
         resp = await admin_client.post(
@@ -192,7 +223,9 @@ class TestMatterContacts:
         assert body["relationship_type"] == "witness"
 
     async def test_remove_contact_from_matter(
-        self, admin_client: AsyncClient, sample_matter: dict,
+        self,
+        admin_client: AsyncClient,
+        sample_matter: dict,
     ):
         contact = await self._create_contact(admin_client)
         add_resp = await admin_client.post(
