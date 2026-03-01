@@ -1,108 +1,48 @@
-# LexNebulis Roadmap v2
+# LexNebulis Roadmap v3
 
-## Current State (v1.0.0)
-Fully deployed Docker Compose stack with 7 services. Core modules: Auth/RBAC, Clients, Contacts, Matters, Documents (MinIO), Calendar, Billing (time + invoices), Trust/IOLTA, Audit Logging (SHA-256 hash chain), SIEM Export, Global Search, Dark Mode.
+## Current State (v1.1.0)
 
----
+Fully deployed Docker Compose stack with 7 services. All Phase 1 and Phase 2 features shipped, plus enterprise integration suite (SAML, WebAuthn, SIEM hardening, Cloud Storage, SCIM). 99 backend tests, 127 frontend tests passing.
 
-## Phase 1: Dealbreaker Features (v1.1 - v1.3)
+**Core modules:** Auth/RBAC, Clients, Contacts, Matters, Documents (MinIO), Calendar, Billing (time + invoices), Trust/IOLTA, Audit Logging (SHA-256 hash chain), Global Search, Dark Mode.
 
-These features are **ethically required** or **table-stakes** -- without them, attorneys will not adopt.
+**Phase 1 features (v1.0):** Conflict checking + ethical walls, client portal with secure messaging, document templates & generation, rules-based deadline calendaring, task management & workflows, TOTP 2FA.
 
-### 1.1 Conflict of Interest Checking + Ethical Walls
-- Cross-entity search (clients, contacts, matters, opposing parties)
-- Fuzzy name matching (Soundex/Metaphone)
-- Conflict report with audit trail
-- Matter-level access restrictions (ethical walls)
-- *ABA Model Rules 1.7-1.10 require this*
+**Phase 2 features (v1.0):** Email integration, e-signature, client intake/CRM pipeline, reporting & analytics, LEDES e-billing, online payments (Stripe/LawPay), OIDC SSO, accounting export (IIF/CSV/QBO).
 
-### 1.2 Client Portal with Secure Messaging
-- Client-facing login (separate from staff)
-- View matter status and timeline
-- View/download shared documents
-- View/pay invoices online
-- Threaded secure messaging (attached to matter)
-- Email notifications for new messages
-
-### 1.3 Document Templates & Automation
-- Variable substitution from matter/client/contact fields
-- DOCX template format (python-docx-template)
-- Template management UI (upload, categorize, version by practice area)
-- Phase 2: Conditional logic in templates
-
-### 1.4 Rules-Based Deadline Calendaring
-- Court rules database (federal + top 10 states)
-- Auto-generate dependent deadlines from trigger events
-- Auto-recalculate when trigger dates change
-- Statute of limitations tracking per matter
-- Multi-level reminders (90/60/30/7/1 day)
-
-### 1.5 Task Management & Workflow Automation
-- Tasks linked to matters with assignments and deadlines
-- Workflow templates per practice area
-- Auto-generate task sequences when matters are created
-- Task dependencies (B cannot start until A completes)
-- Checklist support
-
-### 1.6 Two-Factor Authentication
-- TOTP-based 2FA (Google Authenticator / Authy compatible)
-- Enforce MFA per role (admin required, optional for others)
-- Recovery codes
+**Enterprise features (v1.1):** SAML 2.0 SSO, WebAuthn/FIDO2 MFA, HMAC webhook signing + real-time syslog + SOAR API, cloud storage link mode (Google Drive/Dropbox/Box/OneDrive), SCIM 2.0 provisioning.
 
 ---
 
-## Phase 2: High-Value Differentiators (v1.4 - v1.6)
+## ~~Phase 1: Dealbreaker Features~~ — SHIPPED (v1.0.0)
 
-Features that drive adoption and compete with Clio/PracticePanther.
+All items delivered:
 
-### 2.1 Email Integration (Outlook / Gmail)
-- File emails to matters from inbox (browser extension)
-- Store email metadata + content linked to matters
-- Auto-suggest matter association by email address
-- Built-in email view within application (IMAP)
+- [x] Conflict of Interest Checking + Ethical Walls
+- [x] Client Portal with Secure Messaging
+- [x] Document Templates & Automation
+- [x] Rules-Based Deadline Calendaring
+- [x] Task Management & Workflow Automation
+- [x] Two-Factor Authentication (TOTP)
 
-### 2.2 E-Signature (Self-Hosted)
-- PDF annotation with legally-valid audit trails
-- Signer identity, timestamp, IP, certificate of completion
-- ESIGN Act / UETA compliant
-- Alternative: DocuSign/HelloSign API integration
+---
 
-### 2.3 Client Intake / CRM Pipeline
-- Leads module with Kanban pipeline
-- Public-facing intake forms (embeddable)
-- Auto-create contacts/matters on conversion
-- Source attribution tracking
-- Phase 2: Automated follow-up sequences
+## ~~Phase 2: High-Value Differentiators~~ — SHIPPED (v1.0.0–v1.1.0)
 
-### 2.4 Reporting & Analytics Dashboard
-- Utilization rate, realization rate, collection rate
-- Revenue per attorney, aged AR (30/60/90/120+)
-- WIP by matter, matter profitability
-- Billable hours by attorney/practice area
-- Export to CSV/PDF, scheduled email reports
+All items delivered:
 
-### 2.5 LEDES Billing / E-Billing
-- LEDES 1998B and 1998BI export
-- UTBMS activity codes (Litigation, Counseling, IP, Bankruptcy)
-- Block-billing detection/prevention
-- Per-client billing guidelines (rate caps, task restrictions)
-
-### 2.6 Online Payment Processing
-- Integration with Stripe or LawPay API
-- Trust-account compliant (fees to operating, not trust)
-- Credit/debit, ACH/eCheck support
-- Payment links via email/SMS
-- Auto-update invoice status on payment
-
-### 2.7 SSO (SAML 2.0 / OIDC)
-- Enterprise SSO integration (Azure AD, Okta, Google Workspace)
-- SCIM for automated user provisioning
-- Extend existing JWT auth
-
-### 2.8 QuickBooks / Xero Integration
-- Chart of accounts mapping
-- Invoice/payment data export (QBO/IIF/CSV)
-- Phase 2: Direct API sync with QuickBooks Online and Xero
+- [x] Email Integration (file emails to matters, threading, auto-suggest)
+- [x] E-Signature (self-hosted, ESIGN/UETA compliant)
+- [x] Client Intake / CRM Pipeline (leads, intake forms, conversion)
+- [x] Reporting & Analytics Dashboard (utilization, realization, revenue, profitability)
+- [x] LEDES Billing / E-Billing (1998B/2000, UTBMS codes)
+- [x] Online Payment Processing (Stripe, LawPay)
+- [x] SSO — OIDC (v1.0) + SAML 2.0 (v1.1)
+- [x] SCIM 2.0 Provisioning (v1.1)
+- [x] QuickBooks / Accounting Integration (IIF/QBO/CSV export)
+- [x] WebAuthn / FIDO2 MFA (v1.1)
+- [x] SIEM Hardening — HMAC webhooks, real-time syslog, SOAR API (v1.1)
+- [x] Cloud Storage — Google Drive, Dropbox, Box, OneDrive (v1.1)
 
 ---
 
@@ -195,7 +135,7 @@ Production-grade deployment for firms needing uptime guarantees.
 
 ---
 
-## Competitive Advantages to Leverage
+## Competitive Advantages
 
 | Advantage | Why It Matters |
 |-----------|---------------|
@@ -204,6 +144,9 @@ Production-grade deployment for firms needing uptime guarantees.
 | **Encrypted trust data** | Bank account numbers encrypted at rest. Exceeds competitor standards. |
 | **Zero vendor lock-in** | No annual contracts, no per-user pricing, no data hostage. Apache 2.0. |
 | **On-prem AI** | Self-hosted LLM support means client data never leaves the firm's infrastructure. |
+| **Enterprise SSO + SCIM** | SAML 2.0 + OIDC + SCIM provisioning — matches enterprise SaaS vendors. |
+| **Phishing-resistant MFA** | WebAuthn/FIDO2 support exceeds most legal SaaS competitors. |
+| **Cloud storage interop** | Link files from Google Drive, Dropbox, Box, OneDrive without full migration. |
 | **Open source** | Community contributions, transparency, no hidden costs. |
 
 ---
