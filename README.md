@@ -77,6 +77,7 @@ All services run as Docker containers. Only Nginx is exposed externally.
 
 ## Documentation
 
+- [User Guide (Wiki)](https://github.com/mcatsim/LexNebulis/wiki)
 - [Installation Guide](docs/INSTALL.md)
 - [Upgrade Guide](docs/UPGRADE.md)
 - [API Documentation](docs/API.md)
