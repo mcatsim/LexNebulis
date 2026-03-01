@@ -33,6 +33,7 @@ import {
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { billingApi, paymentsApi } from '../../api/services';
+import type { Invoice, PaymentLink, WebhookEvent } from '../../types';
 
 const formatMoney = (cents: number) => '$' + (cents / 100).toFixed(2);
 
@@ -110,7 +111,7 @@ function PaymentLinksTab() {
   const totalPages = linksData?.total_pages ?? 1;
 
   const invoices = invoicesData?.items ?? [];
-  const invoiceOptions = invoices.map((inv: any) => ({
+  const invoiceOptions = invoices.map((inv: Invoice) => ({
     value: inv.id,
     label: `#${inv.invoice_number} - ${formatMoney(inv.total_cents)}`,
   }));
@@ -161,7 +162,7 @@ function PaymentLinksTab() {
                 </Table.Td>
               </Table.Tr>
             )}
-            {links.map((link: any) => (
+            {links.map((link: PaymentLink) => (
               <Table.Tr key={link.id}>
                 <Table.Td>#{link.invoice_number ?? '---'}</Table.Td>
                 <Table.Td>{link.client_name ?? '---'}</Table.Td>
@@ -306,7 +307,16 @@ function SettingsTab() {
   }
 
   const saveMutation = useMutation({
-    mutationFn: (data: any) => paymentsApi.saveSettings(data),
+    mutationFn: (data: {
+      processor?: string;
+      is_active?: boolean;
+      api_key?: string;
+      webhook_secret?: string;
+      publishable_key?: string;
+      account_type?: string;
+      surcharge_enabled?: boolean;
+      surcharge_rate?: number;
+    }) => paymentsApi.saveSettings(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['payment-settings'] });
       setApiKey('');
@@ -320,11 +330,11 @@ function SettingsTab() {
 
   const handleSave = () => {
     saveMutation.mutate({
-      processor,
+      processor: processor ?? undefined,
       api_key: apiKey || undefined,
       webhook_secret: webhookSecret || undefined,
       publishable_key: publishableKey || undefined,
-      account_type: accountType,
+      account_type: accountType ?? undefined,
       surcharge_enabled: surchargeEnabled,
       surcharge_rate: typeof surchargeRate === 'number' ? surchargeRate : 0,
     });
@@ -466,7 +476,7 @@ function WebhooksTab() {
               </Table.Td>
             </Table.Tr>
           )}
-          {webhooks.map((wh: any) => (
+          {webhooks.map((wh: WebhookEvent) => (
             <Table.Tr key={wh.id}>
               <Table.Td>{wh.processor}</Table.Td>
               <Table.Td>{wh.event_type}</Table.Td>
@@ -483,8 +493,8 @@ function WebhooksTab() {
                 )}
               </Table.Td>
               <Table.Td>
-                <Text size="sm" c={wh.error ? 'red' : 'dimmed'}>
-                  {wh.error ?? '---'}
+                <Text size="sm" c={wh.error_message ? 'red' : 'dimmed'}>
+                  {wh.error_message ?? '---'}
                 </Text>
               </Table.Td>
               <Table.Td>{new Date(wh.created_at).toLocaleString()}</Table.Td>

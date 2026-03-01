@@ -33,6 +33,16 @@ import {
 } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { accountingApi } from '../../api/services';
+import type {
+  AccountMapping,
+  AccountType,
+  ChartOfAccount,
+  ExportFormat,
+  ExportHistory,
+  ExportPreview,
+  ExportPreviewRow,
+  PaginatedResponse,
+} from '../../types';
 
 const formatMoney = (cents: number) => '$' + (cents / 100).toFixed(2);
 
@@ -80,7 +90,7 @@ function ChartOfAccountsTab() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<any>(null);
+  const [editingAccount, setEditingAccount] = useState<ChartOfAccount | null>(null);
 
   const form = useForm({
     initialValues: {
@@ -110,7 +120,10 @@ function ChartOfAccountsTab() {
   const totalPages = accountsData?.total_pages ?? 1;
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => accountingApi.createAccount(data),
+    mutationFn: (data: {
+      code: string; name: string; account_type: AccountType; parent_code?: string;
+      description?: string; is_active?: boolean; quickbooks_account_name?: string; xero_account_code?: string;
+    }) => accountingApi.createAccount(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chart-of-accounts'] });
       notifications.show({ title: 'Success', message: 'Account created', color: 'green' });
@@ -122,7 +135,10 @@ function ChartOfAccountsTab() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => accountingApi.updateAccount(id, data),
+    mutationFn: ({ id, data }: { id: string; data: {
+      code?: string; name?: string; account_type?: AccountType; parent_code?: string;
+      description?: string; is_active?: boolean; quickbooks_account_name?: string; xero_account_code?: string;
+    } }) => accountingApi.updateAccount(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chart-of-accounts'] });
       notifications.show({ title: 'Success', message: 'Account updated', color: 'green' });
@@ -145,7 +161,7 @@ function ChartOfAccountsTab() {
   });
 
   const seedMutation = useMutation({
-    mutationFn: (data: any) => accountingApi.seedAccounts(data),
+    mutationFn: (data: { template: string }) => accountingApi.seedAccounts(data.template),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chart-of-accounts'] });
       notifications.show({ title: 'Success', message: 'Default accounts seeded', color: 'green' });
@@ -167,7 +183,7 @@ function ChartOfAccountsTab() {
     setModalOpen(true);
   };
 
-  const openEdit = (account: any) => {
+  const openEdit = (account: ChartOfAccount) => {
     setEditingAccount(account);
     form.setValues({
       code: account.code,
@@ -185,7 +201,7 @@ function ChartOfAccountsTab() {
     const payload = {
       code: values.code,
       name: values.name,
-      account_type: values.account_type,
+      account_type: values.account_type as AccountType,
       description: values.description || undefined,
       quickbooks_account_name: values.quickbooks_account_name || undefined,
       xero_account_code: values.xero_account_code || undefined,
@@ -244,7 +260,7 @@ function ChartOfAccountsTab() {
                 </Table.Td>
               </Table.Tr>
             )}
-            {accounts.map((account: any) => (
+            {accounts.map((account: ChartOfAccount) => (
               <Table.Tr key={account.id}>
                 <Table.Td>{account.code}</Table.Td>
                 <Table.Td>{account.name}</Table.Td>
@@ -349,7 +365,7 @@ function ChartOfAccountsTab() {
 function AccountMappingsTab() {
   const queryClient = useQueryClient();
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingMapping, setEditingMapping] = useState<any>(null);
+  const [editingMapping, setEditingMapping] = useState<AccountMapping | null>(null);
 
   const form = useForm({
     initialValues: {
@@ -379,16 +395,16 @@ function AccountMappingsTab() {
     },
   });
 
-  const mappings = Array.isArray(mappingsData) ? mappingsData : (mappingsData as any)?.items ?? [];
+  const mappings = Array.isArray(mappingsData) ? mappingsData : (mappingsData as PaginatedResponse<AccountMapping> | undefined)?.items ?? [];
   const allAccounts = accountsData?.items ?? [];
 
-  const accountOptions = allAccounts.map((a: any) => ({
+  const accountOptions = allAccounts.map((a: ChartOfAccount) => ({
     value: a.id,
     label: `${a.code} - ${a.name}`,
   }));
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => accountingApi.createMapping(data),
+    mutationFn: (data: { source_type: string; account_id: string; description?: string; is_default?: boolean }) => accountingApi.createMapping(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['account-mappings'] });
       notifications.show({ title: 'Success', message: 'Mapping created', color: 'green' });
@@ -400,7 +416,7 @@ function AccountMappingsTab() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) => accountingApi.updateMapping(id, data),
+    mutationFn: ({ id, data }: { id: string; data: { source_type?: string; account_id?: string; description?: string; is_default?: boolean } }) => accountingApi.updateMapping(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['account-mappings'] });
       notifications.show({ title: 'Success', message: 'Mapping updated', color: 'green' });
@@ -434,7 +450,7 @@ function AccountMappingsTab() {
     setModalOpen(true);
   };
 
-  const openEdit = (mapping: any) => {
+  const openEdit = (mapping: AccountMapping) => {
     setEditingMapping(mapping);
     form.setValues({
       source_type: mapping.source_type,
@@ -490,7 +506,7 @@ function AccountMappingsTab() {
                 </Table.Td>
               </Table.Tr>
             )}
-            {mappings.map((mapping: any) => (
+            {mappings.map((mapping: AccountMapping) => (
               <Table.Tr key={mapping.id}>
                 <Table.Td>
                   <Badge variant="light">{mapping.source_type}</Badge>
@@ -572,12 +588,12 @@ function ExportTab() {
   const [exportType, setExportType] = useState<string | null>('invoices');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [preview, setPreview] = useState<any>(null);
+  const [preview, setPreview] = useState<ExportPreview | null>(null);
 
   const previewMutation = useMutation({
-    mutationFn: (data: any) => accountingApi.previewExport(data),
+    mutationFn: (data: { format: ExportFormat; export_type: string; start_date: string; end_date: string }) => accountingApi.previewExport(data),
     onSuccess: (res) => {
-      setPreview(res.data ?? res);
+      setPreview(res.data);
       notifications.show({ title: 'Preview Ready', message: 'Export preview generated', color: 'blue' });
     },
     onError: () => {
@@ -586,7 +602,7 @@ function ExportTab() {
   });
 
   const exportMutation = useMutation({
-    mutationFn: (data: any) => accountingApi.generateExport(data),
+    mutationFn: (data: { format: ExportFormat; export_type: string; start_date: string; end_date: string }) => accountingApi.generateExport(data),
     onSuccess: (res) => {
       const blob = res instanceof Blob ? res : new Blob([res.data ?? res]);
       const ext = exportFormat === 'json' ? 'json' : exportFormat ?? 'csv';
@@ -607,9 +623,9 @@ function ExportTab() {
   const canSubmit = exportFormat && exportType && startDate && endDate;
 
   const handlePreview = () => {
-    if (!canSubmit) return;
+    if (!exportFormat || !exportType || !startDate || !endDate) return;
     previewMutation.mutate({
-      format: exportFormat,
+      format: exportFormat as ExportFormat,
       export_type: exportType,
       start_date: startDate,
       end_date: endDate,
@@ -617,9 +633,9 @@ function ExportTab() {
   };
 
   const handleExport = () => {
-    if (!canSubmit) return;
+    if (!exportFormat || !exportType || !startDate || !endDate) return;
     exportMutation.mutate({
-      format: exportFormat,
+      format: exportFormat as ExportFormat,
       export_type: exportType,
       start_date: startDate,
       end_date: endDate,
@@ -627,11 +643,9 @@ function ExportTab() {
   };
 
   const previewData = preview;
-  const sampleRows: any[] = previewData?.sample_rows ?? previewData?.sample_data ?? [];
-  const sampleKeys =
-    sampleRows.length > 0
-      ? Object.keys(sampleRows[0].values ?? sampleRows[0])
-      : [];
+  const sampleRows: ExportPreviewRow[] = previewData?.sample_rows ?? [];
+  const firstRow = sampleRows.length > 0 ? sampleRows[0] : undefined;
+  const sampleKeys = firstRow ? Object.keys(firstRow.values) : [];
 
   return (
     <Stack>
@@ -701,7 +715,7 @@ function ExportTab() {
                   {previewData.row_count ?? 0} records
                 </Badge>
                 <Badge variant="light" color="green" size="lg">
-                  Total: {formatMoney(previewData.total_amount_cents ?? previewData.total_amount ?? 0)}
+                  Total: {formatMoney(previewData.total_amount_cents ?? 0)}
                 </Badge>
               </Group>
             </Group>
@@ -716,8 +730,8 @@ function ExportTab() {
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                  {sampleRows.map((row: any, i: number) => {
-                    const rowValues = row.values ?? row;
+                  {sampleRows.map((row: ExportPreviewRow, i: number) => {
+                    const rowValues = row.values;
                     return (
                       <Table.Tr key={i}>
                         {sampleKeys.map((key) => (
@@ -797,7 +811,7 @@ function ExportHistoryTab() {
               </Table.Td>
             </Table.Tr>
           )}
-          {history.map((entry: any) => (
+          {history.map((entry: ExportHistory) => (
             <Table.Tr key={entry.id}>
               <Table.Td>{new Date(entry.created_at).toLocaleString()}</Table.Td>
               <Table.Td>
@@ -810,7 +824,7 @@ function ExportHistoryTab() {
                 {entry.start_date} - {entry.end_date}
               </Table.Td>
               <Table.Td>{entry.record_count}</Table.Td>
-              <Table.Td>{entry.exported_by ?? entry.user_name ?? '---'}</Table.Td>
+              <Table.Td>{entry.exported_by ?? '---'}</Table.Td>
             </Table.Tr>
           ))}
         </Table.Tbody>

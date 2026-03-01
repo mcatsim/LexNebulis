@@ -5,8 +5,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import httpx
+import jwt as jose_jwt
 from cryptography.fernet import Fernet, InvalidToken
-from jose import jwt as jose_jwt
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -291,7 +291,11 @@ async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[
         # against JWKS here (the token was just received directly from the IdP
         # over HTTPS). In production, you'd verify the signature using the JWKS.
         try:
-            claims = jose_jwt.get_unverified_claims(id_token)
+            claims = jose_jwt.decode(
+                id_token,
+                options={"verify_signature": False},
+                algorithms=["RS256", "HS256"],
+            )
         except Exception:
             claims = {}
 

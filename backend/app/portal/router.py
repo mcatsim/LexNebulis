@@ -2,9 +2,10 @@ import json
 import uuid as _uuid
 from typing import Annotated
 
+import jwt
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError, jwt
+from jwt.exceptions import PyJWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -75,7 +76,7 @@ async def get_current_client_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid client token",
             )
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid client token",
