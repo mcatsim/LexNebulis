@@ -35,10 +35,23 @@ class SSOProvider(UUIDBase, TimestampMixin):
     jwks_uri: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     scopes: Mapped[Optional[str]] = mapped_column(String(500), default="openid email profile", nullable=True)
 
-    # SAML fields (for future use)
+    # SAML IdP fields
     saml_entity_id: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     saml_sso_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
     saml_certificate: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # SAML SP fields
+    saml_sp_entity_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    saml_idp_metadata_url: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    saml_idp_metadata_xml: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    saml_name_id_format: Mapped[Optional[str]] = mapped_column(
+        String(200), nullable=True, default="urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"
+    )
+    saml_sign_requests: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=False)
+    saml_sp_certificate: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    saml_sp_private_key_encrypted: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    saml_attribute_mapping: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    saml_want_assertions_signed: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True, default=True)
 
     # Mapping fields
     email_claim: Mapped[Optional[str]] = mapped_column(String(100), default="email", nullable=True)

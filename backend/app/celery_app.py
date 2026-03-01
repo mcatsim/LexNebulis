@@ -19,4 +19,4 @@ celery.conf.update(
     worker_prefetch_multiplier=1,
 )
 
-celery.autodiscover_tasks(["app.billing", "app.documents", "app.admin"])
+celery.autodiscover_tasks(["app.billing", "app.documents", "app.admin", "app.common", "app.cloud_storage"])

@@ -1,7 +1,8 @@
 import api, { portalApi } from './client';
 import type {
   AgedReceivable, AuditLogEntry, BillableHoursSummary, BillingGuideline, BlockBillingResult,
-  CalendarEvent, Client, ClientUser, CollectionReport, ComplianceResult, ConflictCheck,
+  CalendarEvent, Client, ClientUser, CloudFileBrowserResponse, CloudStorageConnection,
+  CloudStorageLink, CollectionReport, ComplianceResult, ConflictCheck,
   ConflictMatch, Contact,
   CourtRuleSet, DashboardSummary, DeadlineRule, EmailAttachment, EmailSummary, EmailThread,
   FiledEmail,
@@ -14,9 +15,10 @@ import type {
   PortalInvoice, PortalMatter, PortalMessage, RealizationReport,
   ReportExportType, RevenueByAttorney,
   SharedDocument, SignatureAuditEntry, SignatureRequest, SigningPageInfo,
+  SiemConfig, SoarActionResponse,
   StatuteOfLimitations, Task, TaskChecklistItem, TaskDependency, TimeEntryCode, TriggerEvent,
   TwoFactorSetupResponse,
-  TwoFactorStatusResponse, TwoFactorVerifySetupResponse, UTBMSCode, UTBMSCodeType,
+  TwoFactorStatusResponse, TwoFactorVerifySetupResponse, UTBMSCode, UTBMSCodeType, WebAuthnCredential,
   SSOLoginInitiateResponse, SSOProvider, SSOProviderPublic,
   UtilizationReport, WorkflowTemplate,
   TimeEntry, TokenResponse, TrustAccount, TrustLedgerEntry, User,
@@ -50,6 +52,19 @@ export const authApi = {
     api.post('/auth/2fa/disable', { code }),
   get2faStatus: () =>
     api.get<TwoFactorStatusResponse>('/auth/2fa/status'),
+  // WebAuthn / FIDO2
+  webauthnRegisterBegin: () =>
+    api.post<{ options: Record<string, unknown> }>('/auth/webauthn/register/begin'),
+  webauthnRegisterComplete: (data: { credential: Record<string, unknown>; name: string }) =>
+    api.post<WebAuthnCredential>('/auth/webauthn/register/complete', data),
+  webauthnAuthBegin: (tempToken: string) =>
+    api.post<{ options: Record<string, unknown> }>('/auth/webauthn/authenticate/begin', { temp_token: tempToken }),
+  webauthnAuthComplete: (data: { temp_token: string; credential: Record<string, unknown> }) =>
+    api.post<LoginResponse>('/auth/webauthn/authenticate/complete', data),
+  listWebauthnCredentials: () =>
+    api.get<WebAuthnCredential[]>('/auth/webauthn/credentials'),
+  deleteWebauthnCredential: (id: string) =>
+    api.delete(`/auth/webauthn/credentials/${id}`),
 };
 
 // Clients
@@ -539,6 +554,10 @@ export const ssoApi = {
     discovery_url?: string; scopes?: string; email_claim?: string; name_claim?: string;
     role_mapping?: Record<string, string>; auto_create_users?: boolean; default_role?: string;
     saml_entity_id?: string; saml_sso_url?: string; saml_certificate?: string;
+    saml_sp_entity_id?: string; saml_idp_metadata_url?: string; saml_idp_metadata_xml?: string;
+    saml_name_id_format?: string; saml_sign_requests?: boolean; saml_sp_certificate?: string;
+    saml_sp_private_key?: string; saml_attribute_mapping?: Record<string, string>;
+    saml_want_assertions_signed?: boolean;
   }) =>
     api.post<SSOProvider>('/sso/providers', data),
   updateProvider: (id: string, data: {
@@ -548,6 +567,10 @@ export const ssoApi = {
     jwks_uri?: string; scopes?: string; email_claim?: string; name_claim?: string;
     role_mapping?: Record<string, string>; auto_create_users?: boolean; default_role?: string;
     saml_entity_id?: string; saml_sso_url?: string; saml_certificate?: string;
+    saml_sp_entity_id?: string; saml_idp_metadata_url?: string; saml_idp_metadata_xml?: string;
+    saml_name_id_format?: string; saml_sign_requests?: boolean; saml_sp_certificate?: string;
+    saml_sp_private_key?: string; saml_attribute_mapping?: Record<string, string>;
+    saml_want_assertions_signed?: boolean;
   }) =>
     api.put<SSOProvider>(`/sso/providers/${id}`, data),
   deleteProvider: (id: string) =>
@@ -561,6 +584,43 @@ export const ssoApi = {
     api.get<SSOProviderPublic[]>('/sso/providers/public'),
   initiateLogin: (providerId?: string) =>
     api.post<SSOLoginInitiateResponse>('/sso/login/initiate', { provider_id: providerId }),
+  getSpMetadata: (id: string) =>
+    api.get<string>(`/sso/saml/metadata/${id}`, { responseType: 'text' }),
+  getSpMetadataUrl: (id: string) => `/api/sso/saml/metadata/${id}`,
+};
+
+// SCIM Token Management
+export const scimApi = {
+  listTokens: () =>
+    api.get('/admin/scim/tokens'),
+  createToken: (data: { description: string; expires_in_days: number | null }) =>
+    api.post('/admin/scim/tokens', data),
+  revokeToken: (id: string) =>
+    api.delete(`/admin/scim/tokens/${id}`),
+};
+
+// SIEM Config
+export const siemApi = {
+  getConfig: () =>
+    api.get<SiemConfig>('/admin/siem/config'),
+  saveConfig: (data: Record<string, unknown>) =>
+    api.put<SiemConfig>('/admin/siem/config', data),
+  testWebhook: () =>
+    api.post('/admin/siem/test-webhook'),
+  testSyslog: () =>
+    api.post('/admin/siem/test-syslog'),
+};
+
+// SOAR Security Response
+export const securityApi = {
+  disableUser: (id: string) =>
+    api.post<SoarActionResponse>(`/admin/security/disable-user/${id}`),
+  revokeSessions: (id: string) =>
+    api.post<SoarActionResponse>(`/admin/security/revoke-sessions/${id}`),
+  lockMatter: (id: string) =>
+    api.post<SoarActionResponse>(`/admin/security/lock-matter/${id}`),
+  forceLogoutAll: () =>
+    api.post<SoarActionResponse>('/admin/security/force-logout-all'),
 };
 
 // Accounting / QuickBooks / Xero Integration
@@ -600,4 +660,30 @@ export const accountingApi = {
     api.post('/accounting/export/generate', data, { responseType: 'blob' }),
   listExportHistory: (params: { page?: number; page_size?: number }) =>
     api.get<PaginatedResponse<ExportHistory>>('/accounting/export/history', { params }),
+};
+
+// Cloud Storage
+export const cloudStorageApi = {
+  listConnections: () =>
+    api.get<CloudStorageConnection[]>('/cloud-storage/connections'),
+  authorize: (provider: string, data: { provider: string; display_name: string }) =>
+    api.post<{ authorization_url: string; connection_id: string }>(`/cloud-storage/connections/${provider}/authorize`, data),
+  disconnect: (id: string) =>
+    api.delete(`/cloud-storage/connections/${id}`),
+  browse: (connectionId: string, folderId?: string) =>
+    api.get<CloudFileBrowserResponse>(`/cloud-storage/browse/${connectionId}`, { params: { folder_id: folderId } }),
+  createLink: (data: {
+    matter_id: string; connection_id: string; cloud_file_id: string; cloud_file_name: string;
+    cloud_file_url?: string; cloud_mime_type?: string; cloud_size_bytes?: number;
+    cloud_modified_at?: string; link_type?: string;
+  }) =>
+    api.post<CloudStorageLink>('/cloud-storage/link', data),
+  importFile: (data: { connection_id: string; cloud_file_id: string; matter_id: string; description?: string }) =>
+    api.post<CloudStorageLink>('/cloud-storage/import', data),
+  exportFile: (data: { document_id: string; connection_id: string; folder_id?: string }) =>
+    api.post<CloudStorageLink>('/cloud-storage/export', data),
+  listLinks: (matterId: string) =>
+    api.get<CloudStorageLink[]>('/cloud-storage/links', { params: { matter_id: matterId } }),
+  deleteLink: (id: string) =>
+    api.delete(`/cloud-storage/links/${id}`),
 };

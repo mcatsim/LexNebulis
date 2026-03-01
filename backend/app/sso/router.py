@@ -1,8 +1,8 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User
@@ -22,8 +22,10 @@ from app.sso.service import (
     apply_discovery_to_provider,
     create_sso_provider,
     delete_sso_provider,
+    generate_sp_metadata,
     get_default_provider,
     get_sso_provider,
+    handle_saml_callback,
     handle_sso_callback,
     initiate_sso_login,
     list_active_sso_providers,
@@ -37,7 +39,6 @@ router = APIRouter()
 
 
 def _provider_to_response(provider) -> SSOProviderResponse:
-    """Convert an SSOProvider model to its response schema."""
     return SSOProviderResponse(
         id=provider.id,
         name=provider.name,
@@ -54,6 +55,15 @@ def _provider_to_response(provider) -> SSOProviderResponse:
         scopes=provider.scopes,
         saml_entity_id=provider.saml_entity_id,
         saml_sso_url=provider.saml_sso_url,
+        saml_certificate=provider.saml_certificate,
+        saml_sp_entity_id=provider.saml_sp_entity_id,
+        saml_idp_metadata_url=provider.saml_idp_metadata_url,
+        saml_idp_metadata_xml=provider.saml_idp_metadata_xml,
+        saml_name_id_format=provider.saml_name_id_format,
+        saml_sign_requests=provider.saml_sign_requests,
+        saml_sp_certificate=provider.saml_sp_certificate,
+        saml_attribute_mapping=provider.saml_attribute_mapping,
+        saml_want_assertions_signed=provider.saml_want_assertions_signed,
         email_claim=provider.email_claim,
         name_claim=provider.name_claim,
         role_mapping=provider.role_mapping,
@@ -142,6 +152,107 @@ async def sso_callback(
     frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
     callback_url = f"{frontend_base}/sso/callback?access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=callback_url, status_code=302)
+
+
+# ── SAML Endpoints ───────────────────────────────────────────────────
+
+
+@router.post("/saml/callback")
+async def saml_callback(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    SAMLResponse: str = Form(...),
+    RelayState: str = Form(default=""),
+):
+    # RelayState contains the provider_id
+    if not RelayState:
+        frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
+        return RedirectResponse(
+            url=f"{frontend_base}/sso/callback?error=Missing+RelayState", status_code=302
+        )
+
+    try:
+        provider_id = uuid.UUID(RelayState)
+    except (ValueError, AttributeError):
+        frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
+        return RedirectResponse(
+            url=f"{frontend_base}/sso/callback?error=Invalid+RelayState", status_code=302
+        )
+
+    provider = await get_sso_provider(db, provider_id)
+    if provider is None:
+        frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
+        return RedirectResponse(
+            url=f"{frontend_base}/sso/callback?error=Provider+not+found", status_code=302
+        )
+
+    saml_response_data = {"SAMLResponse": SAMLResponse, "RelayState": RelayState}
+
+    try:
+        user, access_token, refresh_token = await handle_saml_callback(saml_response_data, provider, db)
+    except ValueError as e:
+        await create_audit_log(
+            db,
+            None,
+            "user",
+            "unknown",
+            "saml_login_failed",
+            changes_json=str(e),
+            ip_address=request.client.host if request.client else None,
+            outcome="failure",
+        )
+        frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
+        return RedirectResponse(
+            url=f"{frontend_base}/sso/callback?error={str(e)}", status_code=302
+        )
+    except Exception:
+        await create_audit_log(
+            db,
+            None,
+            "user",
+            "unknown",
+            "saml_login_failed",
+            changes_json="Unexpected SAML authentication error",
+            ip_address=request.client.host if request.client else None,
+            outcome="failure",
+        )
+        frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
+        return RedirectResponse(
+            url=f"{frontend_base}/sso/callback?error=Authentication+failed", status_code=302
+        )
+
+    await create_audit_log(
+        db,
+        user.id,
+        "user",
+        str(user.id),
+        "saml_login",
+        ip_address=request.client.host if request.client else None,
+    )
+
+    frontend_base = settings.backend_cors_origins[0] if settings.backend_cors_origins else "http://localhost"
+    callback_url = f"{frontend_base}/sso/callback?access_token={access_token}&refresh_token={refresh_token}"
+    return RedirectResponse(url=callback_url, status_code=302)
+
+
+@router.get("/saml/metadata/{provider_id}")
+async def saml_metadata(
+    provider_id: uuid.UUID,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    provider = await get_sso_provider(db, provider_id)
+    if provider is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SSO provider not found")
+
+    try:
+        metadata_xml = generate_sp_metadata(provider)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate SP metadata: {e}",
+        )
+
+    return Response(content=metadata_xml, media_type="application/xml")
 
 
 # ── Admin Endpoints ──────────────────────────────────────────────────

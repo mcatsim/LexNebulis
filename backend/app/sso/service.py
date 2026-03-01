@@ -1,4 +1,5 @@
 import base64
+import logging
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
@@ -7,6 +8,8 @@ from typing import Optional
 import httpx
 import jwt as jose_jwt
 from cryptography.fernet import Fernet, InvalidToken
+from onelogin.saml2.auth import OneLogin_Saml2_Auth
+from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,6 +17,8 @@ from app.auth.models import User, UserRole
 from app.auth.service import create_access_token, create_refresh_token, hash_password
 from app.config import settings
 from app.sso.models import SSOProvider, SSOSession
+
+logger = logging.getLogger(__name__)
 
 
 def _derive_fernet_key(encryption_key: str) -> bytes:
@@ -56,7 +61,6 @@ def mask_secret(encrypted_secret: Optional[str]) -> Optional[str]:
 
 
 async def create_sso_provider(db: AsyncSession, data: dict, created_by: Optional[uuid.UUID] = None) -> SSOProvider:
-    """Create a new SSO provider."""
     provider = SSOProvider(
         name=data["name"],
         provider_type=data.get("provider_type", "oidc"),
@@ -71,6 +75,16 @@ async def create_sso_provider(db: AsyncSession, data: dict, created_by: Optional
         saml_entity_id=data.get("saml_entity_id"),
         saml_sso_url=data.get("saml_sso_url"),
         saml_certificate=data.get("saml_certificate"),
+        saml_sp_entity_id=data.get("saml_sp_entity_id"),
+        saml_idp_metadata_url=data.get("saml_idp_metadata_url"),
+        saml_idp_metadata_xml=data.get("saml_idp_metadata_xml"),
+        saml_name_id_format=data.get(
+            "saml_name_id_format", "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"
+        ),
+        saml_sign_requests=data.get("saml_sign_requests", False),
+        saml_sp_certificate=data.get("saml_sp_certificate"),
+        saml_attribute_mapping=data.get("saml_attribute_mapping"),
+        saml_want_assertions_signed=data.get("saml_want_assertions_signed", True),
         created_by=created_by,
     )
 
@@ -78,6 +92,11 @@ async def create_sso_provider(db: AsyncSession, data: dict, created_by: Optional
     client_secret = data.get("client_secret")
     if client_secret:
         provider.client_secret_encrypted = encrypt_value(client_secret)
+
+    # Encrypt SAML SP private key if provided
+    saml_sp_private_key = data.get("saml_sp_private_key")
+    if saml_sp_private_key:
+        provider.saml_sp_private_key_encrypted = encrypt_value(saml_sp_private_key)
 
     db.add(provider)
     await db.flush()
@@ -106,11 +125,14 @@ async def list_active_sso_providers(db: AsyncSession) -> list[SSOProvider]:
 
 
 async def update_sso_provider(db: AsyncSession, provider: SSOProvider, data: dict) -> SSOProvider:
-    """Update an existing SSO provider."""
     for field, value in data.items():
         if field == "client_secret" and value is not None:
             provider.client_secret_encrypted = encrypt_value(value)
         elif field == "client_secret":
+            continue
+        elif field == "saml_sp_private_key" and value is not None:
+            provider.saml_sp_private_key_encrypted = encrypt_value(value)
+        elif field == "saml_sp_private_key":
             continue
         elif hasattr(provider, field) and value is not None:
             setattr(provider, field, value)
@@ -179,11 +201,9 @@ async def get_default_provider(db: AsyncSession) -> Optional[SSOProvider]:
 
 
 async def initiate_sso_login(db: AsyncSession, provider: SSOProvider) -> tuple[str, str]:
-    """
-    Initiate an SSO login flow.
+    if provider.provider_type == "saml" or provider.provider_type.value == "saml":
+        return await initiate_saml_login(db, provider)
 
-    Returns (redirect_url, state).
-    """
     if not provider.authorization_endpoint:
         raise ValueError("Provider has no authorization_endpoint configured. Run discovery first.")
 
@@ -221,6 +241,205 @@ async def initiate_sso_login(db: AsyncSession, provider: SSOProvider) -> tuple[s
     )
 
     return redirect_url, state
+
+
+# ── SAML Functions ───────────────────────────────────────────────────
+
+
+def _build_saml_settings(provider: SSOProvider) -> dict:
+    base_url = settings.sso_redirect_uri.rsplit("/callback", 1)[0]
+    acs_url = f"{base_url}/saml/callback"
+    sp_entity_id = provider.saml_sp_entity_id or f"{base_url}/saml/metadata/{provider.id}"
+
+    idp_settings = {}
+
+    # Try parsing IdP metadata first
+    if provider.saml_idp_metadata_url:
+        idp_settings = OneLogin_Saml2_IdPMetadataParser.parse_remote(provider.saml_idp_metadata_url)
+    elif provider.saml_idp_metadata_xml:
+        idp_settings = OneLogin_Saml2_IdPMetadataParser.parse(provider.saml_idp_metadata_xml)
+
+    # Build IdP config from parsed metadata or individual fields
+    if "idp" in idp_settings:
+        idp_config = idp_settings["idp"]
+    else:
+        idp_config = {
+            "entityId": provider.saml_entity_id or "",
+            "singleSignOnService": {
+                "url": provider.saml_sso_url or "",
+                "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
+            },
+        }
+        if provider.saml_certificate:
+            idp_config["x509cert"] = provider.saml_certificate
+
+    # Build SP config
+    sp_config = {
+        "entityId": sp_entity_id,
+        "assertionConsumerService": {
+            "url": acs_url,
+            "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
+        },
+        "NameIDFormat": provider.saml_name_id_format
+        or "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress",
+    }
+
+    if provider.saml_sp_certificate:
+        sp_config["x509cert"] = provider.saml_sp_certificate
+
+    if provider.saml_sp_private_key_encrypted:
+        sp_config["privateKey"] = decrypt_value(provider.saml_sp_private_key_encrypted)
+
+    saml_settings = {
+        "strict": True,
+        "debug": settings.debug,
+        "sp": sp_config,
+        "idp": idp_config,
+        "security": {
+            "authnRequestsSigned": provider.saml_sign_requests or False,
+            "wantAssertionsSigned": provider.saml_want_assertions_signed
+            if provider.saml_want_assertions_signed is not None
+            else True,
+            "wantNameIdEncrypted": False,
+        },
+    }
+
+    return saml_settings
+
+
+def _prepare_saml_request_data(url: str, post_data: Optional[dict] = None) -> dict:
+    from urllib.parse import urlparse
+
+    parsed = urlparse(url)
+    return {
+        "https": "on" if parsed.scheme == "https" else "off",
+        "http_host": parsed.hostname or "localhost",
+        "server_port": str(parsed.port) if parsed.port else ("443" if parsed.scheme == "https" else "80"),
+        "script_name": parsed.path,
+        "get_data": {},
+        "post_data": post_data or {},
+    }
+
+
+async def initiate_saml_login(db: AsyncSession, provider: SSOProvider) -> tuple[str, str]:
+    saml_settings = _build_saml_settings(provider)
+    base_url = settings.sso_redirect_uri.rsplit("/callback", 1)[0]
+    acs_url = saml_settings["sp"]["assertionConsumerService"]["url"]
+    request_data = _prepare_saml_request_data(acs_url)
+
+    auth = OneLogin_Saml2_Auth(request_data, saml_settings)
+
+    # Use provider_id as RelayState so the callback can find the provider
+    relay_state = str(provider.id)
+    redirect_url = auth.login(return_to=relay_state)
+
+    # Create SSO session to track the login attempt
+    state = secrets.token_urlsafe(32)
+    sso_session = SSOSession(
+        provider_id=provider.id,
+        state=state,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10),
+    )
+    db.add(sso_session)
+    await db.flush()
+
+    return redirect_url, state
+
+
+async def handle_saml_callback(
+    saml_response_data: dict,
+    provider: SSOProvider,
+    db: AsyncSession,
+) -> tuple:
+    from app.auth.service import create_audit_log
+
+    saml_settings = _build_saml_settings(provider)
+    base_url = settings.sso_redirect_uri.rsplit("/callback", 1)[0]
+    acs_url = saml_settings["sp"]["assertionConsumerService"]["url"]
+
+    request_data = _prepare_saml_request_data(acs_url, post_data=saml_response_data)
+
+    auth = OneLogin_Saml2_Auth(request_data, saml_settings)
+    auth.process_response()
+
+    errors = auth.get_errors()
+    if errors:
+        error_reason = auth.get_last_error_reason() or ", ".join(errors)
+        logger.warning("SAML response validation failed: %s", error_reason)
+        raise ValueError(f"SAML authentication failed: {error_reason}")
+
+    if not auth.is_authenticated():
+        raise ValueError("SAML authentication was not successful")
+
+    # Extract NameID and attributes
+    name_id = auth.get_nameid()
+    attributes = auth.get_attributes()
+    session_index = auth.get_session_index()
+
+    # Map attributes to user fields using attribute_mapping or defaults
+    attr_mapping = provider.saml_attribute_mapping or {}
+    email_attr = attr_mapping.get("email", provider.email_claim or "email")
+    name_attr = attr_mapping.get("name", provider.name_claim or "name")
+    groups_attr = attr_mapping.get("groups", "groups")
+
+    # Try to get email from attributes first, then fall back to NameID
+    email = None
+    if email_attr in attributes:
+        email_values = attributes[email_attr]
+        email = email_values[0] if email_values else None
+    if not email:
+        email = name_id
+
+    if not email:
+        raise ValueError("Could not extract email from SAML response")
+
+    # Get full name from attributes
+    full_name = ""
+    if name_attr in attributes:
+        name_values = attributes[name_attr]
+        full_name = name_values[0] if name_values else ""
+
+    # Build claims dict for compatibility with _find_or_create_user
+    claims = {"email": email, "name": full_name, "sub": name_id}
+    if groups_attr in attributes:
+        claims["groups"] = attributes[groups_attr]
+
+    # Find or create user
+    user = await _find_or_create_user(db, provider, email, full_name, claims)
+
+    # Create/update SSO session
+    sso_session = SSOSession(
+        provider_id=provider.id,
+        user_id=user.id,
+        external_id=name_id or "",
+        state=secrets.token_urlsafe(32),
+        id_token_claims=claims,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=8),
+    )
+    db.add(sso_session)
+    await db.flush()
+
+    # Issue app JWT tokens
+    access_token = create_access_token(str(user.id), user.role.value)
+    refresh_token = await create_refresh_token(db, user.id)
+
+    return user, access_token, refresh_token
+
+
+def generate_sp_metadata(provider: SSOProvider) -> str:
+    saml_settings = _build_saml_settings(provider)
+    base_url = settings.sso_redirect_uri.rsplit("/callback", 1)[0]
+    acs_url = saml_settings["sp"]["assertionConsumerService"]["url"]
+
+    request_data = _prepare_saml_request_data(acs_url)
+    auth = OneLogin_Saml2_Auth(request_data, saml_settings)
+    metadata = auth.get_settings().get_sp_metadata()
+
+    errors = auth.get_settings().validate_metadata(metadata)
+    if errors:
+        logger.warning("SP metadata validation errors: %s", errors)
+
+    return metadata
 
 
 async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[User, str, str]:

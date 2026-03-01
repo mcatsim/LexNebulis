@@ -1,5 +1,6 @@
 import { Stack, Title, Text } from '@mantine/core';
 import TwoFactorSetup from '../admin/TwoFactorSetup';
+import WebAuthnSetup from './WebAuthnSetup';
 
 export default function SettingsPage() {
   return (
@@ -9,6 +10,7 @@ export default function SettingsPage() {
         <Text c="dimmed" size="sm">Manage your account security and preferences</Text>
       </div>
       <TwoFactorSetup />
+      <WebAuthnSetup />
     </Stack>
   );
 }

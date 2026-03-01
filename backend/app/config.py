@@ -36,12 +36,28 @@ class Settings(BaseSettings):
     first_admin_email: str = "admin@example.com"
     first_admin_password: str = "CHANGE_ME"
 
+    # WebAuthn / FIDO2
+    webauthn_rp_id: str = "localhost"
+    webauthn_rp_name: str = "LexNebulis"
+    webauthn_origin: str = "http://localhost"
+
     # SSO
     sso_redirect_uri: str = "http://localhost/api/sso/callback"
 
     # Payment Processing
     payment_success_url: str = "http://localhost/payment/success"
     payment_cancel_url: str = "http://localhost/payment/cancel"
+
+    # Cloud Storage OAuth
+    google_drive_client_id: str = ""
+    google_drive_client_secret: str = ""
+    dropbox_app_key: str = ""
+    dropbox_app_secret: str = ""
+    box_client_id: str = ""
+    box_client_secret: str = ""
+    onedrive_client_id: str = ""
+    onedrive_client_secret: str = ""
+    cloud_storage_oauth_redirect_uri: str = "http://localhost/api/cloud-storage/connections/callback"
 
     # CORS
     backend_cors_origins: list[str] = ["http://localhost", "http://localhost:5173"]

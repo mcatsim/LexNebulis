@@ -32,12 +32,18 @@ const AdminPage = lazy(() => import('./features/admin/AdminPage'));
 const AuditLogPage = lazy(() => import('./features/admin/AuditLogPage'));
 const PortalManagementPage = lazy(() => import('./features/portal/PortalManagementPage'));
 const SSOSettingsPage = lazy(() => import('./features/admin/SSOSettingsPage'));
+const ScimSettingsPage = lazy(() => import('./features/admin/ScimSettingsPage'));
+const SiemSettingsPage = lazy(() => import('./features/admin/SiemSettingsPage'));
 const PaymentsPage = lazy(() => import('./features/payments/PaymentsPage'));
 const PaymentPage = lazy(() => import('./features/payments/PaymentPage'));
 const AccountingPage = lazy(() => import('./features/accounting/AccountingPage'));
+const CloudStoragePage = lazy(() => import('./features/admin/CloudStoragePage'));
 
 // SSO Callback (outside auth guard)
 const SSOCallbackPage = lazy(() => import('./auth/SSOCallbackPage'));
+
+// Cloud Storage OAuth Callback (no auth guard)
+const CloudStorageCallbackPage = lazy(() => import('./features/auth/CloudStorageCallbackPage'));
 
 // Portal (client-facing) pages
 const PortalLoginPage = lazy(() => import('./portal/PortalLoginPage'));
@@ -77,6 +83,9 @@ const ROUTE_NAMES: Record<string, string> = {
   '/admin': 'Administration',
   '/admin/audit': 'Audit Logs',
   '/admin/sso': 'SSO Settings',
+  '/admin/scim': 'SCIM Provisioning',
+  '/admin/siem': 'SIEM Settings',
+  '/admin/cloud-storage': 'Cloud Storage',
   '/login': 'Login',
 };
 
@@ -149,6 +158,9 @@ export default function App() {
         <Route path="/admin" element={<SuspenseWrapper><AdminPage /></SuspenseWrapper>} />
         <Route path="/admin/audit" element={<SuspenseWrapper><AuditLogPage /></SuspenseWrapper>} />
         <Route path="/admin/sso" element={<SuspenseWrapper><SSOSettingsPage /></SuspenseWrapper>} />
+        <Route path="/admin/scim" element={<SuspenseWrapper><ScimSettingsPage /></SuspenseWrapper>} />
+        <Route path="/admin/siem" element={<SuspenseWrapper><SiemSettingsPage /></SuspenseWrapper>} />
+        <Route path="/admin/cloud-storage" element={<SuspenseWrapper><CloudStoragePage /></SuspenseWrapper>} />
         <Route path="/payments" element={<SuspenseWrapper><PaymentsPage /></SuspenseWrapper>} />
         <Route path="/accounting" element={<SuspenseWrapper><AccountingPage /></SuspenseWrapper>} />
         <Route path="/portal-admin" element={<SuspenseWrapper><PortalManagementPage /></SuspenseWrapper>} />
@@ -156,6 +168,9 @@ export default function App() {
 
       {/* SSO Callback (no auth, handles redirect from IdP) */}
       <Route path="/sso/callback" element={<SuspenseWrapper><SSOCallbackPage /></SuspenseWrapper>} />
+
+      {/* Cloud Storage OAuth Callback (no auth) */}
+      <Route path="/cloud-storage/callback" element={<SuspenseWrapper><CloudStorageCallbackPage /></SuspenseWrapper>} />
 
       {/* E-Signature public signing page (no auth) */}
       <Route path="/sign/:token" element={<SuspenseWrapper><SigningPage /></SuspenseWrapper>} />

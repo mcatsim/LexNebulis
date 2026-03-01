@@ -1,6 +1,6 @@
 import json
 import uuid as _uuid
-from typing import Annotated
+from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import func, select
@@ -21,6 +21,13 @@ from app.auth.schemas import (
     UserCreate,
     UserResponse,
     UserUpdate,
+    WebAuthnAuthBeginRequest,
+    WebAuthnAuthBeginResponse,
+    WebAuthnAuthCompleteRequest,
+    WebAuthnCredentialResponse,
+    WebAuthnRegistrationBeginResponse,
+    WebAuthnRegistrationCompleteRequest,
+    WebAuthnRegistrationCompleteResponse,
 )
 from app.auth.service import (
     authenticate_user,
@@ -29,7 +36,9 @@ from app.auth.service import (
     create_audit_log,
     create_refresh_token,
     create_user,
+    delete_webauthn_credential,
     disable_2fa,
+    get_user_webauthn_credentials,
     hash_password,
     rotate_refresh_token,
     setup_2fa,
@@ -38,6 +47,10 @@ from app.auth.service import (
     verify_password,
     verify_recovery_code,
     verify_totp_code,
+    webauthn_auth_begin,
+    webauthn_auth_complete,
+    webauthn_registration_begin,
+    webauthn_registration_complete,
 )
 from app.common.pagination import PaginatedResponse, PaginationParams
 from app.database import get_db
@@ -55,8 +68,14 @@ async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession
         await db.commit()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 
-    # If 2FA is enabled, return a temporary token instead of full credentials
+    # If any MFA method is enabled, return a temporary token instead of full credentials
+    mfa_methods: List[str] = []
     if user.totp_enabled:
+        mfa_methods.append("totp")
+    if user.webauthn_enabled:
+        mfa_methods.append("webauthn")
+
+    if mfa_methods:
         temp_token = create_2fa_pending_token(str(user.id))
         await create_audit_log(
             db,
@@ -66,7 +85,7 @@ async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession
             "login_2fa_pending",
             ip_address=request.client.host if request.client else None,
         )
-        return LoginResponse(requires_2fa=True, temp_token=temp_token)
+        return LoginResponse(requires_2fa=True, temp_token=temp_token, mfa_methods=mfa_methods)
 
     access_token = create_access_token(str(user.id), user.role.value)
     refresh_token = await create_refresh_token(db, user.id)
@@ -237,6 +256,178 @@ async def disable_2fa_endpoint(
         ip_address=request.client.host if request.client else None,
     )
     return {"message": "Two-factor authentication has been disabled"}
+
+
+# ── WebAuthn / FIDO2 ───────────────────────────────────────────────
+
+
+@router.post("/webauthn/register/begin", response_model=WebAuthnRegistrationBeginResponse)
+async def webauthn_register_begin(
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    try:
+        options = await webauthn_registration_begin(current_user)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return WebAuthnRegistrationBeginResponse(options=options)
+
+
+@router.post("/webauthn/register/complete", response_model=WebAuthnRegistrationCompleteResponse)
+async def webauthn_register_complete_endpoint(
+    data: WebAuthnRegistrationCompleteRequest,
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    try:
+        credential = await webauthn_registration_complete(
+            current_user, data.credential, data.name, db
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    await create_audit_log(
+        db,
+        current_user.id,
+        "user",
+        str(current_user.id),
+        "webauthn_registered",
+        changes_json=json.dumps({"credential_name": data.name}),
+        ip_address=request.client.host if request.client else None,
+    )
+
+    return WebAuthnRegistrationCompleteResponse(
+        id=str(credential.id),
+        name=credential.name,
+        created_at=credential.created_at,
+    )
+
+
+@router.post("/webauthn/authenticate/begin", response_model=WebAuthnAuthBeginResponse)
+async def webauthn_authenticate_begin(
+    data: WebAuthnAuthBeginRequest,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = verify_2fa_pending_token(data.temp_token)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired 2FA token")
+
+    result = await db.execute(select(User).where(User.id == _uuid.UUID(user_id)))
+    user = result.scalar_one_or_none()
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")
+    if not user.webauthn_enabled:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="WebAuthn is not enabled for this user")
+
+    try:
+        options = await webauthn_auth_begin(user)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    return WebAuthnAuthBeginResponse(options=options)
+
+
+@router.post("/webauthn/authenticate/complete", response_model=LoginResponse)
+async def webauthn_authenticate_complete(
+    data: WebAuthnAuthCompleteRequest,
+    request: Request,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    user_id = verify_2fa_pending_token(data.temp_token)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired 2FA token")
+
+    result = await db.execute(select(User).where(User.id == _uuid.UUID(user_id)))
+    user = result.scalar_one_or_none()
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")
+
+    try:
+        success = await webauthn_auth_complete(user, data.credential, db)
+    except ValueError as e:
+        await create_audit_log(
+            db,
+            user.id,
+            "user",
+            str(user.id),
+            "webauthn_login_failed",
+            changes_json=json.dumps({"error": str(e)}),
+            ip_address=request.client.host if request.client else None,
+            outcome="failure",
+        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
+    except Exception as e:
+        await create_audit_log(
+            db,
+            user.id,
+            "user",
+            str(user.id),
+            "webauthn_login_failed",
+            changes_json=json.dumps({"error": str(e)}),
+            ip_address=request.client.host if request.client else None,
+            outcome="failure",
+        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="WebAuthn verification failed")
+
+    access_token = create_access_token(str(user.id), user.role.value)
+    refresh_token = await create_refresh_token(db, user.id)
+
+    await create_audit_log(
+        db,
+        user.id,
+        "user",
+        str(user.id),
+        "webauthn_login",
+        ip_address=request.client.host if request.client else None,
+    )
+
+    return LoginResponse(access_token=access_token, refresh_token=refresh_token)
+
+
+@router.get("/webauthn/credentials", response_model=List[WebAuthnCredentialResponse])
+async def list_webauthn_credentials(
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    credentials = await get_user_webauthn_credentials(current_user.id, db)
+    return [
+        WebAuthnCredentialResponse(
+            id=str(c.id),
+            name=c.name,
+            transports=c.transports,
+            created_at=c.created_at,
+        )
+        for c in credentials
+    ]
+
+
+@router.delete("/webauthn/credentials/{credential_id}")
+async def delete_webauthn_credential_endpoint(
+    credential_id: str,
+    request: Request,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    try:
+        await delete_webauthn_credential(_uuid.UUID(credential_id), current_user.id, db)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+    await create_audit_log(
+        db,
+        current_user.id,
+        "user",
+        str(current_user.id),
+        "webauthn_removed",
+        changes_json=json.dumps({"credential_id": credential_id}),
+        ip_address=request.client.host if request.client else None,
+    )
+
+    return {"message": "WebAuthn credential removed"}
 
 
 # Admin-only user management

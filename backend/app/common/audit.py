@@ -105,6 +105,17 @@ ACTION_SEVERITY = {
     "backup": "info",
     "restore": "critical",
     "export": "medium",
+    "sso_login": "info",
+    "saml_login": "info",
+    "saml_login_failed": "medium",
+    "webauthn_registered": "high",
+    "webauthn_removed": "high",
+    "webauthn_login": "info",
+    "webauthn_login_failed": "medium",
+    "soar_disable_user": "critical",
+    "soar_revoke_sessions": "high",
+    "soar_lock_matter": "critical",
+    "soar_force_logout_all": "critical",
 }
 
 CEF_SEVERITY = {
@@ -177,3 +188,12 @@ def audit_to_syslog(event: AuditEventJSON) -> AuditEventSyslog:
             f"User {event.user_email or 'system'} performed {event.action} on {event.entity_type} {event.entity_id}"
         ),
     )
+
+
+def enqueue_siem_push(audit_log_id: str) -> None:
+    try:
+        from app.common.celery_tasks import push_siem_event
+
+        push_siem_event.delay(audit_log_id)
+    except Exception:
+        pass

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -45,6 +45,7 @@ class UserResponse(BaseModel):
     last_name: str
     role: UserRole
     is_active: bool
+    webauthn_enabled: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -65,6 +66,7 @@ class LoginResponse(BaseModel):
     token_type: str = "bearer"
     requires_2fa: bool = False
     temp_token: Optional[str] = None
+    mfa_methods: Optional[List[str]] = None
 
 
 class TwoFactorSetupResponse(BaseModel):
@@ -88,3 +90,45 @@ class TwoFactorLoginRequest(BaseModel):
 
 class TwoFactorStatusResponse(BaseModel):
     enabled: bool
+
+
+# WebAuthn / FIDO2 schemas
+
+
+class WebAuthnRegistrationBeginResponse(BaseModel):
+    options: dict
+
+
+class WebAuthnRegistrationCompleteRequest(BaseModel):
+    credential: dict
+    name: str = Field(min_length=1, max_length=200)
+
+
+class WebAuthnRegistrationCompleteResponse(BaseModel):
+    id: str
+    name: str
+    created_at: datetime
+
+
+class WebAuthnAuthBeginRequest(BaseModel):
+    temp_token: str
+
+
+class WebAuthnAuthBeginResponse(BaseModel):
+    options: dict
+
+
+class WebAuthnAuthCompleteRequest(BaseModel):
+    temp_token: str
+    credential: dict
+
+
+class WebAuthnCredentialResponse(BaseModel):
+    id: str
+    name: str
+    transports: Optional[List[str]] = None
+    created_at: datetime
+
+
+class WebAuthnCredentialName(BaseModel):
+    name: str = Field(min_length=1, max_length=200)

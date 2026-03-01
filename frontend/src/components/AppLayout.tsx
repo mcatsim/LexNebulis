@@ -5,10 +5,10 @@ import {
 } from '@mantine/core';
 import {
   IconAlarm, IconAlertTriangle, IconCalculator, IconCalendar, IconCash, IconChecklist, IconClipboardList,
-  IconCreditCard, IconDashboard,
+  IconCloud, IconCreditCard, IconDashboard,
   IconFileDescription, IconKey, IconLogout, IconMail, IconMoon, IconReceipt2, IconReportAnalytics, IconScale,
-  IconSearch, IconSettings, IconShieldLock, IconSignature,
-  IconSun, IconTemplate, IconUserPlus, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
+  IconSearch, IconServer, IconSettings, IconShieldLock, IconSignature,
+  IconSun, IconTemplate, IconTransferIn, IconUserPlus, IconUsers, IconUsersGroup, IconBuildingBank, IconWorld,
 } from '@tabler/icons-react';
 import { useAuthStore } from '../stores/authStore';
 import { useTimerStore } from '../stores/timerStore';
@@ -41,6 +41,9 @@ const ADMIN_ITEMS = [
   { label: 'Admin', icon: IconSettings, path: '/admin' },
   { label: 'Audit Logs', icon: IconShieldLock, path: '/admin/audit' },
   { label: 'SSO', icon: IconKey, path: '/admin/sso' },
+  { label: 'SCIM', icon: IconTransferIn, path: '/admin/scim' },
+  { label: 'SIEM', icon: IconServer, path: '/admin/siem' },
+  { label: 'Cloud Storage', icon: IconCloud, path: '/admin/cloud-storage' },
 ];
 
 export default function AppLayout() {

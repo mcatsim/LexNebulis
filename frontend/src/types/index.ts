@@ -8,6 +8,7 @@ export interface User {
   last_name: string;
   role: UserRole;
   is_active: boolean;
+  webauthn_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -24,6 +25,14 @@ export interface LoginResponse {
   token_type?: string;
   requires_2fa?: boolean;
   temp_token?: string;
+  mfa_methods?: string[];
+}
+
+export interface WebAuthnCredential {
+  id: string;
+  name: string;
+  transports?: string[];
+  created_at: string;
 }
 
 export interface TwoFactorSetupResponse {
@@ -843,6 +852,14 @@ export interface SSOProvider {
   saml_entity_id: string | null;
   saml_sso_url: string | null;
   saml_certificate: string | null;
+  saml_sp_entity_id: string | null;
+  saml_idp_metadata_url: string | null;
+  saml_idp_metadata_xml: string | null;
+  saml_name_id_format: string | null;
+  saml_sign_requests: boolean | null;
+  saml_sp_certificate: string | null;
+  saml_attribute_mapping: Record<string, string> | null;
+  saml_want_assertions_signed: boolean | null;
   email_claim: string | null;
   name_claim: string | null;
   role_mapping: Record<string, string> | null;
@@ -1003,6 +1020,97 @@ export interface ExportPreview {
   sample_rows: ExportPreviewRow[];
   export_type: string;
   format: ExportFormat;
+}
+
+// SIEM Config
+export type SyslogProtocol = 'udp' | 'tcp' | 'tls';
+export type SiemFormatType = 'json' | 'cef' | 'syslog';
+
+export interface SiemConfig {
+  id: string;
+  webhook_url: string | null;
+  webhook_secret_masked: string | null;
+  syslog_host: string | null;
+  syslog_port: number | null;
+  syslog_protocol: SyslogProtocol;
+  syslog_tls_ca_cert: string | null;
+  realtime_enabled: boolean;
+  realtime_format: SiemFormatType;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface SoarActionResponse {
+  success: boolean;
+  message: string;
+  action: string;
+}
+
+// Cloud Storage
+export type CloudStorageProviderType = 'google_drive' | 'dropbox' | 'box' | 'onedrive';
+
+export interface CloudStorageConnection {
+  id: string;
+  provider: CloudStorageProviderType;
+  display_name: string;
+  account_email: string | null;
+  root_folder_id: string | null;
+  root_folder_name: string | null;
+  is_active: boolean;
+  connected_by: string;
+  has_access_token: boolean;
+  has_refresh_token: boolean;
+  token_expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CloudStorageLink {
+  id: string;
+  document_id: string | null;
+  matter_id: string;
+  connection_id: string;
+  cloud_file_id: string;
+  cloud_file_name: string;
+  cloud_file_url: string | null;
+  cloud_mime_type: string | null;
+  cloud_size_bytes: number | null;
+  cloud_modified_at: string | null;
+  link_type: string;
+  created_by: string;
+  created_at: string;
+  connection_provider: string | null;
+  connection_display_name: string | null;
+}
+
+export interface CloudFileItem {
+  id: string;
+  name: string;
+  mime_type: string | null;
+  size: number | null;
+  modified_at: string | null;
+  is_folder: boolean;
+  web_url: string | null;
+}
+
+export interface CloudFileBrowserResponse {
+  items: CloudFileItem[];
+  folder_id: string | null;
+  folder_name: string | null;
+}
+
+// SCIM
+export interface ScimBearerToken {
+  id: string;
+  description: string;
+  created_at: string;
+  expires_at: string | null;
+  last_used_at: string | null;
+  is_active: boolean;
+}
+
+export interface ScimBearerTokenCreateResponse extends ScimBearerToken {
+  token: string;
 }
 
 // Audit

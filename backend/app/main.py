@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.accounting.router import router as accounting_router
 from app.admin.router import router as admin_router
+from app.cloud_storage.router import router as cloud_storage_router
 from app.auth.router import router as auth_router
 from app.billing.router import router as billing_router
 from app.calendar.router import router as calendar_router
@@ -25,6 +26,7 @@ from app.portal.router import client_router as portal_client_router
 from app.portal.router import staff_router as portal_staff_router
 from app.reports.router import router as reports_router
 from app.search.router import router as search_router
+from app.scim.router import router as scim_router
 from app.sso.router import router as sso_router
 from app.tasks.router import router as tasks_router
 from app.tasks.router import workflow_router
@@ -83,8 +85,10 @@ app.include_router(ledes_router, prefix="/api/ledes", tags=["LEDES"])
 app.include_router(esign_router, prefix="/api/esign", tags=["E-Signature"])
 app.include_router(emails_router, prefix="/api/emails", tags=["Emails"])
 app.include_router(payments_router, prefix="/api/payments", tags=["Payments"])
+app.include_router(scim_router, prefix="/api/scim", tags=["SCIM"])
 app.include_router(sso_router, prefix="/api/sso", tags=["SSO"])
 app.include_router(accounting_router, prefix="/api/accounting", tags=["Accounting"])
+app.include_router(cloud_storage_router, prefix="/api/cloud-storage", tags=["Cloud Storage"])
 
 
 @app.get("/api/health")

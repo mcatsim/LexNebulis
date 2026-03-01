@@ -18,10 +18,20 @@ class SSOProviderCreate(BaseModel):
     role_mapping: Optional[dict[str, str]] = None
     auto_create_users: bool = True
     default_role: str = "paralegal"
-    # SAML fields (stored for future use)
+    # SAML IdP fields
     saml_entity_id: Optional[str] = None
     saml_sso_url: Optional[str] = None
     saml_certificate: Optional[str] = None
+    # SAML SP / extended fields
+    saml_sp_entity_id: Optional[str] = None
+    saml_idp_metadata_url: Optional[str] = None
+    saml_idp_metadata_xml: Optional[str] = None
+    saml_name_id_format: Optional[str] = "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"
+    saml_sign_requests: Optional[bool] = False
+    saml_sp_certificate: Optional[str] = None
+    saml_sp_private_key: Optional[str] = None
+    saml_attribute_mapping: Optional[dict[str, str]] = None
+    saml_want_assertions_signed: Optional[bool] = True
 
 
 class SSOProviderUpdate(BaseModel):
@@ -42,10 +52,20 @@ class SSOProviderUpdate(BaseModel):
     role_mapping: Optional[dict[str, str]] = None
     auto_create_users: Optional[bool] = None
     default_role: Optional[str] = None
-    # SAML fields (stored for future use)
+    # SAML IdP fields
     saml_entity_id: Optional[str] = None
     saml_sso_url: Optional[str] = None
     saml_certificate: Optional[str] = None
+    # SAML SP / extended fields
+    saml_sp_entity_id: Optional[str] = None
+    saml_idp_metadata_url: Optional[str] = None
+    saml_idp_metadata_xml: Optional[str] = None
+    saml_name_id_format: Optional[str] = None
+    saml_sign_requests: Optional[bool] = None
+    saml_sp_certificate: Optional[str] = None
+    saml_sp_private_key: Optional[str] = None
+    saml_attribute_mapping: Optional[dict[str, str]] = None
+    saml_want_assertions_signed: Optional[bool] = None
 
 
 class SSOProviderResponse(BaseModel):
@@ -64,6 +84,15 @@ class SSOProviderResponse(BaseModel):
     scopes: Optional[str] = None
     saml_entity_id: Optional[str] = None
     saml_sso_url: Optional[str] = None
+    saml_certificate: Optional[str] = None
+    saml_sp_entity_id: Optional[str] = None
+    saml_idp_metadata_url: Optional[str] = None
+    saml_idp_metadata_xml: Optional[str] = None
+    saml_name_id_format: Optional[str] = None
+    saml_sign_requests: Optional[bool] = None
+    saml_sp_certificate: Optional[str] = None
+    saml_attribute_mapping: Optional[dict[str, str]] = None
+    saml_want_assertions_signed: Optional[bool] = None
     email_claim: Optional[str] = None
     name_claim: Optional[str] = None
     role_mapping: Optional[dict[str, str]] = None

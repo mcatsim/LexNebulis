@@ -1,17 +1,22 @@
+import base64
 import hashlib
 import json
 import secrets
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import List, Optional
 
 import jwt
 import pyotp
+import redis.asyncio as aioredis
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from webauthn import generate_authentication_options, generate_registration_options, verify_authentication_response, verify_registration_response
+from webauthn.helpers import options_to_json
+from webauthn.helpers.structs import AuthenticatorSelectionCriteria, AuthenticatorTransport, PublicKeyCredentialDescriptor, ResidentKeyRequirement, UserVerificationRequirement
 
-from app.auth.models import AuditLog, RefreshToken, User, UserRole
+from app.auth.models import AuditLog, RefreshToken, User, UserRole, WebAuthnCredential
 from app.auth.schemas import UserCreate
 from app.config import settings
 from app.database import async_session
@@ -159,6 +164,204 @@ async def disable_2fa(db: AsyncSession, user: User, code: str) -> None:
     await db.flush()
 
 
+def _get_redis() -> aioredis.Redis:
+    return aioredis.from_url(settings.redis_url, decode_responses=False)
+
+
+def _transport_str_to_enum(t: str) -> AuthenticatorTransport:
+    mapping = {
+        "usb": AuthenticatorTransport.USB,
+        "nfc": AuthenticatorTransport.NFC,
+        "ble": AuthenticatorTransport.BLE,
+        "internal": AuthenticatorTransport.INTERNAL,
+        "hybrid": AuthenticatorTransport.HYBRID,
+    }
+    return mapping.get(t, AuthenticatorTransport.INTERNAL)
+
+
+async def webauthn_registration_begin(user: User) -> dict:
+    existing_creds = user.webauthn_credentials or []
+    exclude_credentials = [
+        PublicKeyCredentialDescriptor(
+            id=cred.credential_id,
+            transports=[_transport_str_to_enum(t) for t in (cred.transports or [])],
+        )
+        for cred in existing_creds
+    ]
+
+    options = generate_registration_options(
+        rp_id=settings.webauthn_rp_id,
+        rp_name=settings.webauthn_rp_name,
+        user_id=str(user.id).encode(),
+        user_name=user.email,
+        user_display_name=user.full_name,
+        exclude_credentials=exclude_credentials,
+        authenticator_selection=AuthenticatorSelectionCriteria(
+            resident_key=ResidentKeyRequirement.DISCOURAGED,
+            user_verification=UserVerificationRequirement.PREFERRED,
+        ),
+    )
+
+    options_json = json.loads(options_to_json(options))
+
+    r = _get_redis()
+    await r.set(
+        f"webauthn:reg:{user.id}",
+        options.challenge,
+        ex=300,
+    )
+    await r.aclose()
+
+    return options_json
+
+
+async def webauthn_registration_complete(
+    user: User, credential_data: dict, name: str, db: AsyncSession
+) -> WebAuthnCredential:
+    r = _get_redis()
+    challenge = await r.get(f"webauthn:reg:{user.id}")
+    await r.delete(f"webauthn:reg:{user.id}")
+    await r.aclose()
+
+    if challenge is None:
+        raise ValueError("Registration challenge expired or not found")
+
+    verification = verify_registration_response(
+        credential=credential_data,
+        expected_challenge=challenge,
+        expected_rp_id=settings.webauthn_rp_id,
+        expected_origin=settings.webauthn_origin,
+    )
+
+    aaguid_str = str(verification.aaguid) if verification.aaguid else None
+
+    transports_list: Optional[List[str]] = None
+    raw_transports = credential_data.get("response", {}).get("transports")
+    if raw_transports and isinstance(raw_transports, list):
+        transports_list = raw_transports
+
+    credential = WebAuthnCredential(
+        user_id=user.id,
+        credential_id=verification.credential_id,
+        public_key=verification.credential_public_key,
+        sign_count=verification.sign_count,
+        name=name,
+        transports=transports_list,
+        aaguid=aaguid_str,
+    )
+    db.add(credential)
+    user.webauthn_enabled = True
+    await db.flush()
+    await db.refresh(credential)
+    return credential
+
+
+async def webauthn_auth_begin(user: User) -> dict:
+    existing_creds = user.webauthn_credentials or []
+    if not existing_creds:
+        raise ValueError("No WebAuthn credentials registered")
+
+    allow_credentials = [
+        PublicKeyCredentialDescriptor(
+            id=cred.credential_id,
+            transports=[_transport_str_to_enum(t) for t in (cred.transports or [])],
+        )
+        for cred in existing_creds
+    ]
+
+    options = generate_authentication_options(
+        rp_id=settings.webauthn_rp_id,
+        allow_credentials=allow_credentials,
+        user_verification=UserVerificationRequirement.PREFERRED,
+    )
+
+    options_json = json.loads(options_to_json(options))
+
+    r = _get_redis()
+    await r.set(
+        f"webauthn:auth:{user.id}",
+        options.challenge,
+        ex=300,
+    )
+    await r.aclose()
+
+    return options_json
+
+
+async def webauthn_auth_complete(user: User, credential_data: dict, db: AsyncSession) -> bool:
+    r = _get_redis()
+    challenge = await r.get(f"webauthn:auth:{user.id}")
+    await r.delete(f"webauthn:auth:{user.id}")
+    await r.aclose()
+
+    if challenge is None:
+        raise ValueError("Authentication challenge expired or not found")
+
+    existing_creds = user.webauthn_credentials or []
+    matching_cred: Optional[WebAuthnCredential] = None
+
+    raw_id = credential_data.get("rawId") or credential_data.get("id", "")
+    try:
+        incoming_id = base64.urlsafe_b64decode(raw_id + "==")
+    except Exception:
+        incoming_id = raw_id.encode() if isinstance(raw_id, str) else raw_id
+
+    for cred in existing_creds:
+        if cred.credential_id == incoming_id:
+            matching_cred = cred
+            break
+
+    if matching_cred is None:
+        raise ValueError("Credential not found")
+
+    verification = verify_authentication_response(
+        credential=credential_data,
+        expected_challenge=challenge,
+        expected_rp_id=settings.webauthn_rp_id,
+        expected_origin=settings.webauthn_origin,
+        credential_public_key=matching_cred.public_key,
+        credential_current_sign_count=matching_cred.sign_count,
+    )
+
+    matching_cred.sign_count = verification.new_sign_count
+    await db.flush()
+    return True
+
+
+async def get_user_webauthn_credentials(user_id: uuid.UUID, db: AsyncSession) -> list:
+    result = await db.execute(
+        select(WebAuthnCredential).where(WebAuthnCredential.user_id == user_id)
+    )
+    return list(result.scalars().all())
+
+
+async def delete_webauthn_credential(
+    credential_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession
+) -> None:
+    result = await db.execute(
+        select(WebAuthnCredential).where(
+            WebAuthnCredential.id == credential_id,
+            WebAuthnCredential.user_id == user_id,
+        )
+    )
+    credential = result.scalar_one_or_none()
+    if credential is None:
+        raise ValueError("Credential not found")
+
+    await db.delete(credential)
+    await db.flush()
+
+    remaining = await db.execute(
+        select(WebAuthnCredential).where(WebAuthnCredential.user_id == user_id)
+    )
+    if remaining.scalar_one_or_none() is None:
+        user_result = await db.execute(select(User).where(User.id == user_id))
+        user = user_result.scalar_one_or_none()
+        if user:
+            user.webauthn_enabled = False
+            await db.flush()
+
+
 async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -299,6 +502,10 @@ async def create_audit_log(
     )
     db.add(entry)
     await db.flush()
+
+    from app.common.audit import enqueue_siem_push
+
+    enqueue_siem_push(entry_id)
 
 
 async def bootstrap_admin():

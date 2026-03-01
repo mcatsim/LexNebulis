@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Enum, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, JSON, LargeBinary, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.common.base_models import GUID, TimestampMixin, UUIDBase
@@ -34,8 +34,15 @@ class User(UUIDBase, TimestampMixin):
     totp_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     recovery_codes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
+    # WebAuthn / FIDO2
+    webauthn_enabled: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+
+    # SCIM
+    scim_external_id: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+
     # Relationships
     time_entries = relationship("TimeEntry", back_populates="user", lazy="selectin")
+    webauthn_credentials = relationship("WebAuthnCredential", back_populates="user", lazy="selectin")
     calendar_events = relationship(
         "CalendarEvent", back_populates="assigned_user", foreign_keys="CalendarEvent.assigned_to", lazy="selectin"
     )
@@ -80,6 +87,22 @@ class AuditLog(UUIDBase):
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False, index=True
     )
+
+
+class WebAuthnCredential(UUIDBase):
+    __tablename__ = "webauthn_credentials"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), nullable=False, index=True)
+    credential_id: Mapped[bytes] = mapped_column(LargeBinary, unique=True, nullable=False)
+    public_key: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    sign_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    transports: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    aaguid: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+    # Relationships
+    user = relationship("User", back_populates="webauthn_credentials")
 
 
 class SystemSetting(UUIDBase):
