@@ -317,7 +317,7 @@ export default function CalendarPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Calendar</Title>
+        <Title order={1}>Calendar</Title>
         <Button
           leftSection={<IconPlus size={16} />}
           onClick={() => {

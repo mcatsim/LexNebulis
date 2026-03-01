@@ -655,12 +655,12 @@ function ListView({ onSelectLead }: { onSelectLead: (lead: Lead) => void }) {
       render: (lead: Lead) => (
         <Group gap="xs">
           <Tooltip label="View details">
-            <ActionIcon variant="subtle" size="sm" onClick={(e: React.MouseEvent) => { e.stopPropagation(); onSelectLead(lead); }}>
+            <ActionIcon variant="subtle" size="sm" aria-label="View lead" onClick={(e: React.MouseEvent) => { e.stopPropagation(); onSelectLead(lead); }}>
               <IconEye size={14} />
             </ActionIcon>
           </Tooltip>
           <Tooltip label="Delete">
-            <ActionIcon variant="subtle" color="red" size="sm" onClick={(e: React.MouseEvent) => { e.stopPropagation(); deleteMutation.mutate(lead.id); }}>
+            <ActionIcon variant="subtle" color="red" size="sm" aria-label="Delete lead" onClick={(e: React.MouseEvent) => { e.stopPropagation(); deleteMutation.mutate(lead.id); }}>
               <IconTrash size={14} />
             </ActionIcon>
           </Tooltip>
@@ -903,7 +903,7 @@ function FormsTab() {
                     {formItem.fields_json.length} field(s) | Created {formatDate(formItem.created_at)}
                   </Text>
                 </Box>
-                <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(formItem.id)}>
+                <ActionIcon variant="subtle" color="red" aria-label="Delete form" onClick={() => deleteMutation.mutate(formItem.id)}>
                   <IconTrash size={16} />
                 </ActionIcon>
               </Group>
@@ -1067,7 +1067,7 @@ export default function IntakePage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Client Intake Pipeline</Title>
+        <Title order={1}>Client Intake Pipeline</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateLeadOpen(true)}>
           New Lead
         </Button>

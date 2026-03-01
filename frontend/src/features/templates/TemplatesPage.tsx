@@ -374,8 +374,8 @@ function TemplateVariablesModal({
             <Table striped withTableBorder>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Variable Name</Table.Th>
-                  <Table.Th>Placeholder</Table.Th>
+                  <Table.Th scope="col">Variable Name</Table.Th>
+                  <Table.Th scope="col">Placeholder</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -626,8 +626,8 @@ function GenerateDocumentWizard() {
               <Table striped withTableBorder>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th w={250}>Variable</Table.Th>
-                    <Table.Th>Value</Table.Th>
+                    <Table.Th scope="col" w={250}>Variable</Table.Th>
+                    <Table.Th scope="col">Value</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -774,6 +774,7 @@ function GeneratedDocumentsHistory() {
             <ActionIcon
               variant="subtle"
               color="blue"
+              aria-label="Download document"
               component="a"
               href={documentsApi.getDownloadUrl(doc.document_id)}
               target="_blank"
@@ -790,7 +791,7 @@ function GeneratedDocumentsHistory() {
 
   return (
     <Box mt="xl">
-      <Title order={4} mb="sm">Generated Document History</Title>
+      <Title order={2} mb="sm">Generated Document History</Title>
       <DataTable<GeneratedDocument>
         columns={columns}
         data={genDocs}
@@ -916,6 +917,7 @@ export default function TemplatesPage() {
             <ActionIcon
               variant="subtle"
               color="blue"
+              aria-label="View variables"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 setSelectedTemplate(t);
@@ -929,6 +931,7 @@ export default function TemplatesPage() {
             <ActionIcon
               variant="subtle"
               color="teal"
+              aria-label="Download template"
               component="a"
               href={templatesApi.downloadUrl(t.id)}
               target="_blank"
@@ -942,6 +945,7 @@ export default function TemplatesPage() {
             <ActionIcon
               variant="subtle"
               color="yellow"
+              aria-label="Edit template"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 setSelectedTemplate(t);
@@ -955,6 +959,7 @@ export default function TemplatesPage() {
             <ActionIcon
               variant="subtle"
               color="red"
+              aria-label="Delete template"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 setDeleteConfirmId(t.id);
@@ -971,7 +976,7 @@ export default function TemplatesPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Document Templates</Title>
+        <Title order={1}>Document Templates</Title>
       </Group>
 
       <Tabs value={activeTab} onChange={setActiveTab}>

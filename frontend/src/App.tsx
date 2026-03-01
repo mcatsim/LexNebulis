@@ -1,5 +1,5 @@
-import { Route, Routes } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { LoadingOverlay } from '@mantine/core';
 import AppLayout from './components/AppLayout';
 import AuthGuard from './auth/AuthGuard';
@@ -52,8 +52,70 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<LoadingOverlay visible />}>{children}</Suspense>;
 }
 
+const ROUTE_NAMES: Record<string, string> = {
+  '/': 'Dashboard',
+  '/clients': 'Clients',
+  '/matters': 'Matters',
+  '/contacts': 'Contacts',
+  '/intake': 'Intake',
+  '/documents': 'Documents',
+  '/emails': 'Emails',
+  '/esign': 'E-Sign',
+  '/calendar': 'Calendar',
+  '/billing': 'Billing',
+  '/payments': 'Payments',
+  '/reports': 'Reports',
+  '/tasks': 'Tasks',
+  '/templates': 'Templates',
+  '/trust': 'Trust Accounts',
+  '/ledes': 'E-Billing',
+  '/accounting': 'Accounting',
+  '/deadlines': 'Deadlines',
+  '/conflicts': 'Conflicts',
+  '/portal-admin': 'Portal Management',
+  '/settings': 'Settings',
+  '/admin': 'Administration',
+  '/admin/audit': 'Audit Logs',
+  '/admin/sso': 'SSO Settings',
+  '/login': 'Login',
+};
+
+function RouteAnnouncer() {
+  const location = useLocation();
+  const [announcement, setAnnouncement] = useState('');
+
+  useEffect(() => {
+    const name = ROUTE_NAMES[location.pathname] || 'Page';
+    const title = `${name} - LexNebulis`;
+    document.title = title;
+    setAnnouncement(`Navigated to ${name}`);
+  }, [location.pathname]);
+
+  return (
+    <div
+      aria-live="assertive"
+      aria-atomic="true"
+      style={{
+        position: 'absolute',
+        width: '1px',
+        height: '1px',
+        padding: 0,
+        margin: '-1px',
+        overflow: 'hidden',
+        clip: 'rect(0,0,0,0)',
+        whiteSpace: 'nowrap',
+        borderWidth: 0,
+      }}
+    >
+      {announcement}
+    </div>
+  );
+}
+
 export default function App() {
   return (
+    <>
+    <RouteAnnouncer />
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route
@@ -111,5 +173,6 @@ export default function App() {
         <Route path="messages" element={<SuspenseWrapper><PortalMessagesPage /></SuspenseWrapper>} />
       </Route>
     </Routes>
+    </>
   );
 }

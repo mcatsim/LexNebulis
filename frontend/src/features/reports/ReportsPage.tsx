@@ -257,7 +257,7 @@ function OverviewTab({
       )}
 
       <Group justify="space-between">
-        <Title order={4}>Utilization by Attorney</Title>
+        <Title order={2}>Utilization by Attorney</Title>
         <ExportButton reportType="utilization" startDate={startDate} endDate={endDate} />
       </Group>
       {utilizationLoading ? (
@@ -267,11 +267,11 @@ function OverviewTab({
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Attorney</Table.Th>
-                <Table.Th>Total Hours</Table.Th>
-                <Table.Th>Billable</Table.Th>
-                <Table.Th>Non-Billable</Table.Th>
-                <Table.Th>Utilization</Table.Th>
+                <Table.Th scope="col">Attorney</Table.Th>
+                <Table.Th scope="col">Total Hours</Table.Th>
+                <Table.Th scope="col">Billable</Table.Th>
+                <Table.Th scope="col">Non-Billable</Table.Th>
+                <Table.Th scope="col">Utilization</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -307,7 +307,7 @@ function OverviewTab({
       )}
 
       <Group justify="space-between">
-        <Title order={4}>Aged Receivables</Title>
+        <Title order={2}>Aged Receivables</Title>
         <ExportButton reportType="aged-receivables" startDate={startDate} endDate={endDate} />
       </Group>
       {arLoading ? (
@@ -317,13 +317,13 @@ function OverviewTab({
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Client</Table.Th>
-                <Table.Th>Current (0-30)</Table.Th>
-                <Table.Th>31-60 Days</Table.Th>
-                <Table.Th>61-90 Days</Table.Th>
-                <Table.Th>91-120 Days</Table.Th>
-                <Table.Th>120+ Days</Table.Th>
-                <Table.Th>Total</Table.Th>
+                <Table.Th scope="col">Client</Table.Th>
+                <Table.Th scope="col">Current (0-30)</Table.Th>
+                <Table.Th scope="col">31-60 Days</Table.Th>
+                <Table.Th scope="col">61-90 Days</Table.Th>
+                <Table.Th scope="col">91-120 Days</Table.Th>
+                <Table.Th scope="col">120+ Days</Table.Th>
+                <Table.Th scope="col">Total</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -390,7 +390,7 @@ function RevenueTab({
   return (
     <Stack gap="lg">
       <Group justify="space-between">
-        <Title order={4}>Revenue by Attorney</Title>
+        <Title order={2}>Revenue by Attorney</Title>
         <ExportButton reportType="revenue" startDate={startDate} endDate={endDate} />
       </Group>
 
@@ -419,11 +419,11 @@ function RevenueTab({
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Attorney</Table.Th>
-              <Table.Th>Billed</Table.Th>
-              <Table.Th>Collected</Table.Th>
-              <Table.Th>Hours Worked</Table.Th>
-              <Table.Th>Effective Rate</Table.Th>
+              <Table.Th scope="col">Attorney</Table.Th>
+              <Table.Th scope="col">Billed</Table.Th>
+              <Table.Th scope="col">Collected</Table.Th>
+              <Table.Th scope="col">Hours Worked</Table.Th>
+              <Table.Th scope="col">Effective Rate</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -513,7 +513,7 @@ function MattersTab({
   return (
     <Stack gap="lg">
       <Group justify="space-between">
-        <Title order={4}>Matter Profitability</Title>
+        <Title order={2}>Matter Profitability</Title>
         <ExportButton reportType="matter-profitability" startDate={startDate} endDate={endDate} />
       </Group>
 
@@ -521,21 +521,21 @@ function MattersTab({
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th style={{ cursor: 'pointer' }} onClick={() => handleSort('matter_title')}>
+              <Table.Th scope="col" style={{ cursor: 'pointer' }} onClick={() => handleSort('matter_title')}>
                 Matter{sortIndicator('matter_title')}
               </Table.Th>
-              <Table.Th>Client</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th style={{ cursor: 'pointer' }} onClick={() => handleSort('total_hours')}>
+              <Table.Th scope="col">Client</Table.Th>
+              <Table.Th scope="col">Status</Table.Th>
+              <Table.Th scope="col" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_hours')}>
                 Hours{sortIndicator('total_hours')}
               </Table.Th>
-              <Table.Th style={{ cursor: 'pointer' }} onClick={() => handleSort('total_billed_cents')}>
+              <Table.Th scope="col" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_billed_cents')}>
                 Billed{sortIndicator('total_billed_cents')}
               </Table.Th>
-              <Table.Th style={{ cursor: 'pointer' }} onClick={() => handleSort('total_collected_cents')}>
+              <Table.Th scope="col" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_collected_cents')}>
                 Collected{sortIndicator('total_collected_cents')}
               </Table.Th>
-              <Table.Th style={{ cursor: 'pointer' }} onClick={() => handleSort('effective_rate_cents')}>
+              <Table.Th scope="col" style={{ cursor: 'pointer' }} onClick={() => handleSort('effective_rate_cents')}>
                 Eff. Rate{sortIndicator('effective_rate_cents')}
               </Table.Th>
             </Table.Tr>
@@ -664,7 +664,7 @@ function BillingTab({
       </SimpleGrid>
 
       <Group justify="space-between">
-        <Title order={4}>Billable Hours by Practice Area</Title>
+        <Title order={2}>Billable Hours by Practice Area</Title>
         <ExportButton reportType="billable-hours" startDate={startDate} endDate={endDate} />
       </Group>
       {billableLoading ? (
@@ -674,10 +674,10 @@ function BillingTab({
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Attorney</Table.Th>
-                <Table.Th>Practice Area</Table.Th>
-                <Table.Th>Billable Hours</Table.Th>
-                <Table.Th>Billable Amount</Table.Th>
+                <Table.Th scope="col">Attorney</Table.Th>
+                <Table.Th scope="col">Practice Area</Table.Th>
+                <Table.Th scope="col">Billable Hours</Table.Th>
+                <Table.Th scope="col">Billable Amount</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -772,7 +772,7 @@ export default function ReportsPage() {
   return (
     <Stack>
       <Group justify="space-between" align="flex-end">
-        <Title order={2}>Reports &amp; Analytics</Title>
+        <Title order={1}>Reports &amp; Analytics</Title>
         <DateRangeControls
           startDate={startDate}
           endDate={endDate}

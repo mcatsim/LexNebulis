@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
   return (
     <Stack>
-      <Title order={2}>Welcome back, {user?.first_name}</Title>
+      <Title order={1}>Welcome back, {user?.first_name}</Title>
 
       <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }}>
         {stats.map((stat) => (
@@ -63,7 +63,7 @@ export default function DashboardPage() {
       <Grid>
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Title order={4} mb="md">Upcoming Events</Title>
+            <Title order={2} mb="md">Upcoming Events</Title>
             {events?.data?.items?.length ? (
               <Stack gap="xs">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -89,7 +89,7 @@ export default function DashboardPage() {
 
         <Grid.Col span={{ base: 12, md: 6 }}>
           <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Title order={4} mb="md">Recent Time Entries</Title>
+            <Title order={2} mb="md">Recent Time Entries</Title>
             {recentTime?.data?.items?.length ? (
               <Stack gap="xs">
                 {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}

@@ -453,7 +453,7 @@ export default function TrustPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Trust Accounts</Title>
+        <Title order={1}>Trust Accounts</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateModalOpen(true)}>
           New Trust Account
         </Button>

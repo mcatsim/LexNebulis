@@ -223,13 +223,14 @@ function UTBMSCodesTab() {
       label: '',
       render: (c: UTBMSCode) => (
         <Group gap="xs">
-          <ActionIcon variant="subtle" size="sm" onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(c); }}>
+          <ActionIcon variant="subtle" size="sm" aria-label="Edit code" onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(c); }}>
             <IconEdit size={14} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
             color="red"
             size="sm"
+            aria-label="Delete code"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               deleteMutation.mutate(c.id);
@@ -520,13 +521,14 @@ function BillingGuidelinesTab() {
       label: '',
       render: (g: BillingGuideline) => (
         <Group gap="xs">
-          <ActionIcon variant="subtle" size="sm" onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(g); }}>
+          <ActionIcon variant="subtle" size="sm" aria-label="Edit guideline" onClick={(e: React.MouseEvent) => { e.stopPropagation(); openEdit(g); }}>
             <IconEdit size={14} />
           </ActionIcon>
           <ActionIcon
             variant="subtle"
             color="red"
             size="sm"
+            aria-label="Delete guideline"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               deleteMutation.mutate(g.id);
@@ -664,7 +666,7 @@ function ComplianceTab() {
       {/* Block Billing Detector */}
       <Paper shadow="xs" p="lg" withBorder>
         <Stack>
-          <Title order={4}>Block Billing Detector</Title>
+          <Title order={2}>Block Billing Detector</Title>
           <Text size="sm" c="dimmed">
             Paste a time entry description to check if it might be considered block billing.
           </Text>
@@ -725,7 +727,7 @@ function ComplianceTab() {
       {/* Guideline Compliance Checker */}
       <Paper shadow="xs" p="lg" withBorder>
         <Stack>
-          <Title order={4}>Guideline Compliance Checker</Title>
+          <Title order={2}>Guideline Compliance Checker</Title>
           <Text size="sm" c="dimmed">
             Enter a time entry ID and select a client to check against their billing guidelines.
           </Text>
@@ -776,9 +778,9 @@ function ComplianceTab() {
                   <Table striped withTableBorder>
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Rule</Table.Th>
-                        <Table.Th>Severity</Table.Th>
-                        <Table.Th>Message</Table.Th>
+                        <Table.Th scope="col">Rule</Table.Th>
+                        <Table.Th scope="col">Severity</Table.Th>
+                        <Table.Th scope="col">Message</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -890,7 +892,7 @@ function LEDESExportTab() {
     <Stack>
       <Paper shadow="xs" p="lg" withBorder>
         <Stack>
-          <Title order={4}>LEDES 1998B Export</Title>
+          <Title order={2}>LEDES 1998B Export</Title>
           <Text size="sm" c="dimmed">
             Select an invoice to preview and download in LEDES 1998B format for e-billing submission.
           </Text>
@@ -966,7 +968,7 @@ function LEDESExportTab() {
 export default function LEDESPage() {
   return (
     <Stack>
-      <Title order={2}>E-Billing / LEDES</Title>
+      <Title order={1}>E-Billing / LEDES</Title>
 
       <Tabs defaultValue="codes">
         <Tabs.List>

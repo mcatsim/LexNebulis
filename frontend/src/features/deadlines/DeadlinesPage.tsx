@@ -375,11 +375,11 @@ function CourtRulesTab() {
                   <Table striped highlightOnHover>
                     <Table.Thead>
                       <Table.Tr>
-                        <Table.Th>Rule Name</Table.Th>
-                        <Table.Th>Trigger</Table.Th>
-                        <Table.Th>Offset</Table.Th>
-                        <Table.Th>Type</Table.Th>
-                        <Table.Th style={{ width: 100 }}>Actions</Table.Th>
+                        <Table.Th scope="col">Rule Name</Table.Th>
+                        <Table.Th scope="col">Trigger</Table.Th>
+                        <Table.Th scope="col">Offset</Table.Th>
+                        <Table.Th scope="col">Type</Table.Th>
+                        <Table.Th scope="col" style={{ width: 100 }}>Actions</Table.Th>
                       </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -413,6 +413,7 @@ function CourtRulesTab() {
                                 <ActionIcon
                                   size="sm"
                                   variant="subtle"
+                                  aria-label="Edit rule"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     openEditRule(rule);
@@ -426,6 +427,7 @@ function CourtRulesTab() {
                                   size="sm"
                                   variant="subtle"
                                   color="red"
+                                  aria-label="Delete rule"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     deleteRuleMutation.mutate(rule.id);
@@ -711,10 +713,10 @@ function MatterDeadlinesTab() {
               <Table striped>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Trigger Event</Table.Th>
-                    <Table.Th>Date</Table.Th>
-                    <Table.Th>Notes</Table.Th>
-                    <Table.Th style={{ width: 60 }}>Actions</Table.Th>
+                    <Table.Th scope="col">Trigger Event</Table.Th>
+                    <Table.Th scope="col">Date</Table.Th>
+                    <Table.Th scope="col">Notes</Table.Th>
+                    <Table.Th scope="col" style={{ width: 60 }}>Actions</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
@@ -735,6 +737,7 @@ function MatterDeadlinesTab() {
                             size="sm"
                             variant="subtle"
                             color="red"
+                            aria-label="Delete trigger"
                             onClick={() => deleteTriggerMutation.mutate(t.id)}
                           >
                             <IconTrash size={14} />
@@ -1105,13 +1108,13 @@ function StatuteOfLimitationsTab() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Matter</Table.Th>
-              <Table.Th>Description</Table.Th>
-              <Table.Th>Statute Ref.</Table.Th>
-              <Table.Th>Expiration</Table.Th>
-              <Table.Th>Days Left</Table.Th>
-              <Table.Th>Urgency</Table.Th>
-              <Table.Th style={{ width: 100 }}>Actions</Table.Th>
+              <Table.Th scope="col">Matter</Table.Th>
+              <Table.Th scope="col">Description</Table.Th>
+              <Table.Th scope="col">Statute Ref.</Table.Th>
+              <Table.Th scope="col">Expiration</Table.Th>
+              <Table.Th scope="col">Days Left</Table.Th>
+              <Table.Th scope="col">Urgency</Table.Th>
+              <Table.Th scope="col" style={{ width: 100 }}>Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -1154,7 +1157,7 @@ function StatuteOfLimitationsTab() {
                   <Table.Td>
                     <Group gap={4}>
                       <Tooltip label="Edit">
-                        <ActionIcon size="sm" variant="subtle" onClick={() => openEdit(w)}>
+                        <ActionIcon size="sm" variant="subtle" aria-label="Edit watch" onClick={() => openEdit(w)}>
                           <IconEdit size={14} />
                         </ActionIcon>
                       </Tooltip>
@@ -1163,6 +1166,7 @@ function StatuteOfLimitationsTab() {
                           size="sm"
                           variant="subtle"
                           color="red"
+                          aria-label="Delete watch"
                           onClick={() => deleteMutation.mutate(w.id)}
                         >
                           <IconTrash size={14} />
@@ -1224,7 +1228,7 @@ export default function DeadlinesPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>
+        <Title order={1}>
           <IconScale size={28} style={{ verticalAlign: 'middle', marginRight: 8 }} />
           Rules-Based Deadline Calendaring
         </Title>

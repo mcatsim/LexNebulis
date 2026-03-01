@@ -186,10 +186,10 @@ export default function ContactDetailPage() {
     <Stack>
       <Group justify="space-between">
         <Group>
-          <ActionIcon variant="subtle" onClick={() => navigate('/contacts')}>
+          <ActionIcon variant="subtle" aria-label="Go back" onClick={() => navigate('/contacts')}>
             <IconArrowLeft size={20} />
           </ActionIcon>
-          <Title order={2}>
+          <Title order={1}>
             {contact.first_name} {contact.last_name}
           </Title>
           <Badge color={ROLE_COLOR_MAP[contact.role]} variant="light" size="lg">
@@ -238,7 +238,7 @@ export default function ContactDetailPage() {
       </Card>
 
       <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Title order={4} mb="md">
+        <Title order={2} mb="md">
           Edit Contact
         </Title>
         <form onSubmit={form.onSubmit((values) => updateMutation.mutate(values))}>
@@ -289,7 +289,7 @@ export default function ContactDetailPage() {
       </Card>
 
       <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Title order={4} mb="md">
+        <Title order={2} mb="md">
           Related Matters
         </Title>
         <DataTable<Matter>

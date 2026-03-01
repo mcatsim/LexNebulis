@@ -199,7 +199,7 @@ export default function MatterListPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Matters</Title>
+        <Title order={1}>Matters</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateModalOpen(true)}>
           New Matter
         </Button>

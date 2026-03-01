@@ -269,7 +269,7 @@ function NewRequestModal({
                   w={80}
                 />
                 {signers.length > 1 && (
-                  <ActionIcon color="red" variant="subtle" onClick={() => removeSigner(index)}>
+                  <ActionIcon color="red" variant="subtle" aria-label="Remove signer" onClick={() => removeSigner(index)}>
                     <IconTrash size={16} />
                   </ActionIcon>
                 )}
@@ -516,7 +516,7 @@ export default function ESignPage() {
 
   return (
     <Stack>
-      <Title order={2}>E-Signature</Title>
+      <Title order={1}>E-Signature</Title>
 
       <Group justify="space-between">
         <Select

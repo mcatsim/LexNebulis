@@ -216,7 +216,7 @@ export default function DocumentsPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Documents</Title>
+        <Title order={1}>Documents</Title>
         <Button leftSection={<IconUpload size={16} />} onClick={() => setUploadModalOpen(true)}>
           Upload Document
         </Button>

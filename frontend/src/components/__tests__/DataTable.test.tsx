@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '../../test/test-utils';
+import { axe } from 'vitest-axe';
 
 import DataTable from '../DataTable';
 
@@ -136,5 +137,54 @@ describe('DataTable', () => {
 
     // Without the page size handler, there should be no select with value "25"
     expect(screen.queryByDisplayValue('25')).not.toBeInTheDocument();
+  });
+
+  it('triggers onRowClick on Enter key press', async () => {
+    const onRowClick = vi.fn();
+    const { user } = render(
+      <DataTable {...defaultProps} onRowClick={onRowClick} />,
+    );
+
+    const row = screen.getByText('Alice Johnson').closest('tr')!;
+    row.focus();
+    await user.keyboard('{Enter}');
+
+    expect(onRowClick).toHaveBeenCalledWith(sampleData[0]);
+  });
+
+  it('triggers onRowClick on Space key press', async () => {
+    const onRowClick = vi.fn();
+    const { user } = render(
+      <DataTable {...defaultProps} onRowClick={onRowClick} />,
+    );
+
+    const row = screen.getByText('Alice Johnson').closest('tr')!;
+    row.focus();
+    await user.keyboard(' ');
+
+    expect(onRowClick).toHaveBeenCalledWith(sampleData[0]);
+  });
+
+  it('renders scope="col" on header cells', () => {
+    render(<DataTable {...defaultProps} />);
+
+    const headers = screen.getAllByRole('columnheader');
+    headers.forEach((th) => {
+      expect(th).toHaveAttribute('scope', 'col');
+    });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(
+      <DataTable {...defaultProps} onPageSizeChange={vi.fn()} caption="Test table" />,
+    );
+    const results = await axe(container, {
+      rules: {
+        region: { enabled: false },
+        // Mantine Pagination prev/next buttons lack accessible names (library limitation)
+        'button-name': { enabled: false },
+      },
+    });
+    expect(results).toHaveNoViolations();
   });
 });

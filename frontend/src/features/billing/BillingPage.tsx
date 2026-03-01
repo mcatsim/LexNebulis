@@ -602,7 +602,7 @@ function InvoiceDetail({
         )}
       </Card>
 
-      <Title order={4}>Line Items (Time Entries)</Title>
+      <Title order={2}>Line Items (Time Entries)</Title>
       <DataTable<TimeEntry>
         columns={[
           { key: 'date', label: 'Date', render: (e) => new Date(e.date).toLocaleDateString() },
@@ -622,7 +622,7 @@ function InvoiceDetail({
         onPageChange={() => {}}
       />
 
-      <Title order={4}>Payments</Title>
+      <Title order={2}>Payments</Title>
       {paymentsLoading ? (
         <Loader size="sm" />
       ) : payments.length === 0 ? (
@@ -1059,7 +1059,7 @@ function InvoicesTab() {
 export default function BillingPage() {
   return (
     <Stack>
-      <Title order={2}>Billing</Title>
+      <Title order={1}>Billing</Title>
       <Tabs defaultValue="time-entries">
         <Tabs.List>
           <Tabs.Tab value="time-entries" leftSection={<IconClock size={16} />}>

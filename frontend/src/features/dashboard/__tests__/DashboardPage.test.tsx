@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '../../../test/test-utils';
+import { axe } from 'vitest-axe';
 import DashboardPage from '../DashboardPage';
 import { useAuthStore } from '../../../stores/authStore';
 import { mockUser } from '../../../test/mocks/data';
@@ -45,10 +46,10 @@ describe('DashboardPage', () => {
     render(<DashboardPage />);
 
     await waitFor(() => {
-      // The section heading is an h4 rendered by Title order={4}
+      // The section heading is an h2 rendered by Title order={2}
       const headings = screen.getAllByText('Upcoming Events');
       const sectionHeading = headings.find(
-        (el) => el.tagName === 'H4',
+        (el) => el.tagName === 'H2',
       );
       expect(sectionHeading).toBeDefined();
     });
@@ -76,7 +77,7 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       const headings = screen.getAllByText('Recent Time Entries');
       const sectionHeading = headings.find(
-        (el) => el.tagName === 'H4',
+        (el) => el.tagName === 'H2',
       );
       expect(sectionHeading).toBeDefined();
     });
@@ -142,5 +143,19 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       expect(screen.getByText('No recent time entries')).toBeInTheDocument();
     });
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<DashboardPage />);
+    await waitFor(() => {
+      expect(screen.getByText(/welcome back/i)).toBeInTheDocument();
+    });
+    const results = await axe(container, {
+      rules: {
+        region: { enabled: false },
+        'button-name': { enabled: false },
+      },
+    });
+    expect(results).toHaveNoViolations();
   });
 });

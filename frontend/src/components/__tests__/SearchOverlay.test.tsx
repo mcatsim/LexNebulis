@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '../../test/test-utils';
+import { axe } from 'vitest-axe';
 import SearchOverlay from '../SearchOverlay';
 
 const mockNavigate = vi.fn();
@@ -99,5 +100,36 @@ describe('SearchOverlay', () => {
       (modal as HTMLElement).click();
       expect(onClose).toHaveBeenCalled();
     }
+  });
+
+  it('renders listbox role on results container', () => {
+    render(<SearchOverlay opened={true} onClose={vi.fn()} />);
+
+    expect(screen.getByRole('listbox', { name: /search results/i })).toBeInTheDocument();
+  });
+
+  it('announces result count via live region', async () => {
+    const { user } = render(<SearchOverlay opened={true} onClose={vi.fn()} />);
+
+    const input = screen.getByPlaceholderText(/search clients/i);
+    await user.type(input, 'Alice');
+
+    await waitFor(
+      () => {
+        const liveRegion = document.querySelector('[aria-live="polite"]');
+        expect(liveRegion).toHaveTextContent(/\d+ results? found/);
+      },
+      { timeout: 3000 },
+    );
+  });
+
+  it('has no accessibility violations', async () => {
+    const { container } = render(<SearchOverlay opened={true} onClose={vi.fn()} />);
+    const results = await axe(container, {
+      rules: {
+        region: { enabled: false },
+      },
+    });
+    expect(results).toHaveNoViolations();
   });
 });

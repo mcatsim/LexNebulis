@@ -114,7 +114,7 @@ export default function AuditLogPage() {
     <Stack>
       <Group>
         <IconShieldLock size={28} />
-        <Title order={2}>Audit Logs</Title>
+        <Title order={1}>Audit Logs</Title>
       </Group>
 
       <Text size="sm" c="dimmed">

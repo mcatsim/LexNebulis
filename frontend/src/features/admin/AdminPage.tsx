@@ -74,7 +74,7 @@ export default function AdminPage() {
 
   return (
     <Stack>
-      <Title order={2}>Administration</Title>
+      <Title order={1}>Administration</Title>
 
       <Tabs defaultValue="users">
         <Tabs.List>
@@ -91,11 +91,11 @@ export default function AdminPage() {
           <Table striped highlightOnHover withTableBorder>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>Role</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Created</Table.Th>
+                <Table.Th scope="col">Name</Table.Th>
+                <Table.Th scope="col">Email</Table.Th>
+                <Table.Th scope="col">Role</Table.Th>
+                <Table.Th scope="col">Status</Table.Th>
+                <Table.Th scope="col">Created</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -129,9 +129,9 @@ export default function AdminPage() {
               <Table striped withTableBorder>
                 <Table.Thead>
                   <Table.Tr>
-                    <Table.Th>Key</Table.Th>
-                    <Table.Th>Value</Table.Th>
-                    <Table.Th>Updated</Table.Th>
+                    <Table.Th scope="col">Key</Table.Th>
+                    <Table.Th scope="col">Value</Table.Th>
+                    <Table.Th scope="col">Updated</Table.Th>
                   </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>

@@ -383,6 +383,7 @@ export default function EmailsPage() {
               variant="subtle"
               color="red"
               size="sm"
+              aria-label="Delete email"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 setDeleteConfirmId(email.id);
@@ -400,7 +401,7 @@ export default function EmailsPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Emails</Title>
+        <Title order={1}>Emails</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setFileModalOpen(true)}>
           File Email
         </Button>

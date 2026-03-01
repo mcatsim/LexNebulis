@@ -10,6 +10,7 @@ import {
   mockTimeEntries,
   mockInvoices,
   mockSearchResults,
+  mockPaymentSettings,
   makePaginatedResponse,
 } from './data';
 
@@ -133,5 +134,74 @@ export const handlers = [
         r.subtitle.toLowerCase().includes(q.toLowerCase()),
     );
     return HttpResponse.json({ query: q, results: filtered });
+  }),
+
+  // ── Accounting ──────────────────────────────────────────
+  http.get('/api/accounting/accounts', ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '25');
+    return HttpResponse.json(makePaginatedResponse([], 0, page, pageSize));
+  }),
+
+  http.get('/api/accounting/mappings', () => {
+    return HttpResponse.json(makePaginatedResponse([], 0, 1, 25));
+  }),
+
+  http.get('/api/accounting/export/history', () => {
+    return HttpResponse.json(makePaginatedResponse([], 0, 1, 25));
+  }),
+
+  // ── Payments ────────────────────────────────────────────
+  http.get('/api/payments/links', ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '25');
+    return HttpResponse.json(makePaginatedResponse([], 0, page, pageSize));
+  }),
+
+  http.get('/api/payments/settings', () => {
+    return HttpResponse.json(mockPaymentSettings);
+  }),
+
+  http.get('/api/payments/webhooks', () => {
+    return HttpResponse.json(makePaginatedResponse([], 0, 1, 25));
+  }),
+
+  // ── Tasks ───────────────────────────────────────────────
+  http.get('/api/tasks', ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '25');
+    return HttpResponse.json(makePaginatedResponse([], 0, page, pageSize));
+  }),
+
+  http.get('/api/workflows', () => {
+    return HttpResponse.json(makePaginatedResponse([], 0, 1, 25));
+  }),
+
+  // ── Conflicts ───────────────────────────────────────────
+  http.get('/api/conflicts/checks', ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '25');
+    return HttpResponse.json(makePaginatedResponse([], 0, page, pageSize));
+  }),
+
+  // ── Templates ───────────────────────────────────────────
+  http.get('/api/templates', ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const pageSize = Number(url.searchParams.get('page_size') || '25');
+    return HttpResponse.json(makePaginatedResponse([], 0, page, pageSize));
+  }),
+
+  http.get('/api/templates/generated', () => {
+    return HttpResponse.json(makePaginatedResponse([], 0, 1, 25));
+  }),
+
+  // ── Trust ───────────────────────────────────────────────
+  http.get('/api/trust/accounts', () => {
+    return HttpResponse.json(makePaginatedResponse([], 0, 1, 25));
   }),
 ];

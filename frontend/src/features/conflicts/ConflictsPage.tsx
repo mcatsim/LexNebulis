@@ -199,7 +199,7 @@ function ConflictCheckerTab() {
       <Card shadow="sm" padding="lg" radius="md" withBorder>
         <form onSubmit={searchForm.onSubmit(handleRunCheck)}>
           <Stack gap="sm">
-            <Title order={4}>Run Conflict Check</Title>
+            <Title order={2}>Run Conflict Check</Title>
             <SimpleGrid cols={{ base: 1, sm: 3 }}>
               <TextInput
                 label="Name"
@@ -241,7 +241,7 @@ function ConflictCheckerTab() {
           <Stack gap="md">
             <Group justify="space-between">
               <Group>
-                <Title order={4}>Check Results</Title>
+                <Title order={2}>Check Results</Title>
                 <Badge
                   color={STATUS_COLORS[selectedCheck.status] ?? 'gray'}
                   variant="filled"
@@ -300,7 +300,7 @@ function ConflictCheckerTab() {
 
       {/* Past Checks Table */}
       <Card shadow="sm" padding="lg" radius="md" withBorder>
-        <Title order={4} mb="md">Check History</Title>
+        <Title order={2} mb="md">Check History</Title>
         <DataTable<ConflictCheck>
           columns={checksColumns}
           data={checks}
@@ -385,6 +385,7 @@ function MatchCard({
                   color="green"
                   variant="light"
                   size="sm"
+                  aria-label="Clear conflict"
                   onClick={() => onResolve(match.id, 'cleared')}
                   loading={isPending}
                 >
@@ -396,6 +397,7 @@ function MatchCard({
                   color="red"
                   variant="light"
                   size="sm"
+                  aria-label="Flag conflict"
                   onClick={() => onResolve(match.id, 'flagged')}
                   loading={isPending}
                 >
@@ -407,6 +409,7 @@ function MatchCard({
                   color="blue"
                   variant="light"
                   size="sm"
+                  aria-label="Waive conflict"
                   onClick={() => onResolve(match.id, 'waiver_obtained')}
                   loading={isPending}
                 >
@@ -567,6 +570,7 @@ function EthicalWallsTab() {
               color="red"
               variant="light"
               size="sm"
+              aria-label="Remove wall"
               onClick={(e: React.MouseEvent) => {
                 e.stopPropagation();
                 removeWallMutation.mutate(w.id);
@@ -685,7 +689,7 @@ export default function ConflictsPage() {
     <Stack>
       <Group>
         <IconAlertTriangle size={28} color="var(--mantine-color-orange-6)" />
-        <Title order={2}>Conflict of Interest Checking</Title>
+        <Title order={1}>Conflict of Interest Checking</Title>
       </Group>
 
       <Tabs defaultValue="checker">

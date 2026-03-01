@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { afterEach, beforeAll, afterAll } from 'vitest';
+import { afterEach, beforeAll, afterAll, expect } from 'vitest';
+import { toHaveNoViolations } from 'vitest-axe/matchers';
+
+expect.extend({ toHaveNoViolations });
 import { server } from './mocks/server';
 
 // Polyfill localStorage for jsdom (zustand persist middleware requires it)

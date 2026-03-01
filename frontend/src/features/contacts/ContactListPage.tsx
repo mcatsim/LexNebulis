@@ -153,7 +153,7 @@ export default function ContactListPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Contacts</Title>
+        <Title order={1}>Contacts</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateModalOpen(true)}>
           New Contact
         </Button>

@@ -286,11 +286,11 @@ function ContactsTab({ matterId }: { matterId: string }) {
         <Table striped highlightOnHover withTableBorder>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Role</Table.Th>
-              <Table.Th>Relationship</Table.Th>
-              <Table.Th>Organization</Table.Th>
-              <Table.Th w={60}>Actions</Table.Th>
+              <Table.Th scope="col">Name</Table.Th>
+              <Table.Th scope="col">Role</Table.Th>
+              <Table.Th scope="col">Relationship</Table.Th>
+              <Table.Th scope="col">Organization</Table.Th>
+              <Table.Th scope="col" w={60}>Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -311,6 +311,7 @@ function ContactsTab({ matterId }: { matterId: string }) {
                   <ActionIcon
                     variant="subtle"
                     color="red"
+                    aria-label="Remove contact"
                     onClick={() => removeContactMutation.mutate(mc.id)}
                     loading={removeContactMutation.isPending}
                   >
@@ -618,10 +619,10 @@ export default function MatterDetailPage() {
     <Stack>
       <Group justify="space-between">
         <Group>
-          <ActionIcon variant="subtle" onClick={() => navigate('/matters')}>
+          <ActionIcon variant="subtle" aria-label="Go back" onClick={() => navigate('/matters')}>
             <IconArrowLeft size={20} />
           </ActionIcon>
-          <Title order={2}>
+          <Title order={1}>
             M-{String(matter.matter_number).padStart(5, '0')}: {matter.title}
           </Title>
           <Badge color={STATUS_COLOR_MAP[matter.status]} variant="light" size="lg">

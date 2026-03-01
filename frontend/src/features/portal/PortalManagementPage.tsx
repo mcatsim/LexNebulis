@@ -14,7 +14,7 @@ import { portalStaffApi, clientsApi, mattersApi, documentsApi } from '../../api/
 export default function PortalManagementPage() {
   return (
     <Stack gap="lg">
-      <Title order={2}>Client Portal Management</Title>
+      <Title order={1}>Client Portal Management</Title>
       <Tabs defaultValue="users">
         <Tabs.List>
           <Tabs.Tab value="users" leftSection={<IconUsers size={16} />}>Client Users</Tabs.Tab>
@@ -141,12 +141,12 @@ function ClientUsersTab() {
           <Table striped highlightOnHover>
             <Table.Thead>
               <Table.Tr>
-                <Table.Th>Name</Table.Th>
-                <Table.Th>Email</Table.Th>
-                <Table.Th>Status</Table.Th>
-                <Table.Th>Last Login</Table.Th>
-                <Table.Th>Created</Table.Th>
-                <Table.Th>Actions</Table.Th>
+                <Table.Th scope="col">Name</Table.Th>
+                <Table.Th scope="col">Email</Table.Th>
+                <Table.Th scope="col">Status</Table.Th>
+                <Table.Th scope="col">Last Login</Table.Th>
+                <Table.Th scope="col">Created</Table.Th>
+                <Table.Th scope="col">Actions</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
@@ -314,11 +314,11 @@ function SharedDocumentsTab() {
             <Table striped highlightOnHover>
               <Table.Thead>
                 <Table.Tr>
-                  <Table.Th>Filename</Table.Th>
-                  <Table.Th>Type</Table.Th>
-                  <Table.Th>Shared By</Table.Th>
-                  <Table.Th>Shared At</Table.Th>
-                  <Table.Th>Note</Table.Th>
+                  <Table.Th scope="col">Filename</Table.Th>
+                  <Table.Th scope="col">Type</Table.Th>
+                  <Table.Th scope="col">Shared By</Table.Th>
+                  <Table.Th scope="col">Shared At</Table.Th>
+                  <Table.Th scope="col">Note</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>

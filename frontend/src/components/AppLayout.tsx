@@ -66,6 +66,30 @@ export default function AppLayout() {
 
   return (
     <>
+      <a
+        href="#main-content"
+        style={{
+          position: 'absolute',
+          left: '-9999px',
+          top: 'auto',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+          zIndex: 9999,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.position = 'static';
+          e.currentTarget.style.width = 'auto';
+          e.currentTarget.style.height = 'auto';
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.position = 'absolute';
+          e.currentTarget.style.width = '1px';
+          e.currentTarget.style.height = '1px';
+        }}
+      >
+        Skip to main content
+      </a>
       <SearchOverlay opened={searchOpen} onClose={() => setSearchOpen(false)} />
       <AppShell
         header={{ height: 60 }}
@@ -75,7 +99,7 @@ export default function AppLayout() {
         <AppShell.Header>
           <Group h="100%" px="md" justify="space-between">
             <Group>
-              <Burger opened={opened} onClick={() => setOpened(!opened)} hiddenFrom="sm" size="sm" />
+              <Burger opened={opened} onClick={() => setOpened(!opened)} hiddenFrom="sm" size="sm" aria-label="Toggle navigation menu" />
               <IconScale size={28} color="var(--mantine-color-blue-6)" />
               <Text fw={700} size="lg">LexNebulis</Text>
             </Group>
@@ -87,23 +111,23 @@ export default function AppLayout() {
                 </Badge>
               )}
               <Tooltip label="Search (Ctrl+K)">
-                <ActionIcon variant="default" size="lg" onClick={() => setSearchOpen(true)}>
+                <ActionIcon variant="default" size="lg" onClick={() => setSearchOpen(true)} aria-label="Search">
                   <IconSearch size={18} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Toggle dark mode">
-                <ActionIcon variant="default" size="lg" onClick={() => toggleColorScheme()}>
+                <ActionIcon variant="default" size="lg" onClick={() => toggleColorScheme()} aria-label="Toggle dark mode">
                   {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
                 </ActionIcon>
               </Tooltip>
               <Text size="sm" c="dimmed">{user?.first_name} {user?.last_name}</Text>
               <Tooltip label="Account Settings">
-                <ActionIcon variant="default" size="lg" onClick={() => navigate('/settings')}>
+                <ActionIcon variant="default" size="lg" onClick={() => navigate('/settings')} aria-label="Account Settings">
                   <IconSettings size={18} />
                 </ActionIcon>
               </Tooltip>
               <Tooltip label="Logout">
-                <ActionIcon variant="subtle" color="red" onClick={handleLogout}>
+                <ActionIcon variant="subtle" color="red" onClick={handleLogout} aria-label="Logout">
                   <IconLogout size={18} />
                 </ActionIcon>
               </Tooltip>
@@ -111,7 +135,7 @@ export default function AppLayout() {
           </Group>
         </AppShell.Header>
 
-        <AppShell.Navbar p="sm">
+        <AppShell.Navbar p="sm" aria-label="Main navigation">
           <AppShell.Section grow component={ScrollArea}>
             {NAV_ITEMS.map((item) => (
               <NavLink
@@ -121,6 +145,7 @@ export default function AppLayout() {
                 label={item.label}
                 leftSection={<item.icon size={20} />}
                 active={location.pathname === item.path}
+                aria-current={location.pathname === item.path ? 'page' : undefined}
                 onClick={() => setOpened(false)}
               />
             ))}
@@ -135,6 +160,7 @@ export default function AppLayout() {
                       label={item.label}
                       leftSection={<item.icon size={18} />}
                       active={location.pathname === item.path}
+                      aria-current={location.pathname === item.path ? 'page' : undefined}
                       onClick={() => setOpened(false)}
                     />
                   ))}
@@ -144,7 +170,7 @@ export default function AppLayout() {
           </AppShell.Section>
         </AppShell.Navbar>
 
-        <AppShell.Main>
+        <AppShell.Main id="main-content">
           <Outlet />
         </AppShell.Main>
       </AppShell>

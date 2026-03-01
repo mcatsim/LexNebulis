@@ -16,20 +16,26 @@ interface Props<T> {
   onPageSizeChange?: (size: number) => void;
   onRowClick?: (item: T) => void;
   loading?: boolean;
+  caption?: string;
 }
 
 export default function DataTable<T extends { id?: string }>({
-  columns, data, total, page, pageSize, onPageChange, onPageSizeChange, onRowClick, loading,
+  columns, data, total, page, pageSize, onPageChange, onPageSizeChange, onRowClick, loading, caption,
 }: Props<T>) {
   const totalPages = Math.ceil(total / pageSize) || 1;
 
   return (
     <>
       <Table striped highlightOnHover withTableBorder>
+        {caption && (
+          <caption style={{ position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', borderWidth: 0 }}>
+            {caption}
+          </caption>
+        )}
         <Table.Thead>
           <Table.Tr>
             {columns.map((col) => (
-              <Table.Th key={col.key}>{col.label}</Table.Th>
+              <Table.Th key={col.key} scope="col">{col.label}</Table.Th>
             ))}
           </Table.Tr>
         </Table.Thead>
@@ -48,6 +54,9 @@ export default function DataTable<T extends { id?: string }>({
                 key={item.id || idx}
                 style={onRowClick ? { cursor: 'pointer' } : undefined}
                 onClick={() => onRowClick?.(item)}
+                tabIndex={onRowClick ? 0 : undefined}
+                role={onRowClick ? 'button' : undefined}
+                onKeyDown={onRowClick ? (e: React.KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(item); } } : undefined}
               >
                 {columns.map((col) => (
                   <Table.Td key={col.key}>
@@ -72,9 +81,10 @@ export default function DataTable<T extends { id?: string }>({
               data={['10', '25', '50', '100']}
               value={String(pageSize)}
               onChange={(v) => onPageSizeChange(Number(v))}
+              aria-label="Rows per page"
             />
           )}
-          <Pagination total={totalPages} value={page} onChange={onPageChange} size="sm" />
+          <Pagination total={totalPages} value={page} onChange={onPageChange} size="sm" aria-label="Pagination" />
         </Group>
       </Group>
     </>

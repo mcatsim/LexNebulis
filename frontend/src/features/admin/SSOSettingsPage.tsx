@@ -223,7 +223,7 @@ export default function SSOSettingsPage() {
       <Group justify="space-between">
         <Group>
           <IconKey size={28} />
-          <Title order={2}>SSO Configuration</Title>
+          <Title order={1}>SSO Configuration</Title>
         </Group>
         <Button leftSection={<IconPlug size={16} />} onClick={openCreateModal}>
           Add Provider
@@ -234,12 +234,12 @@ export default function SSOSettingsPage() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Type</Table.Th>
-              <Table.Th>Active</Table.Th>
-              <Table.Th>Default</Table.Th>
-              <Table.Th>Client ID</Table.Th>
-              <Table.Th>Actions</Table.Th>
+              <Table.Th scope="col">Name</Table.Th>
+              <Table.Th scope="col">Type</Table.Th>
+              <Table.Th scope="col">Active</Table.Th>
+              <Table.Th scope="col">Default</Table.Th>
+              <Table.Th scope="col">Client ID</Table.Th>
+              <Table.Th scope="col">Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -287,7 +287,7 @@ export default function SSOSettingsPage() {
                 <Table.Td>
                   <Group gap="xs">
                     <Tooltip label="Edit">
-                      <ActionIcon variant="subtle" onClick={() => openEditModal(provider)}>
+                      <ActionIcon variant="subtle" aria-label="Edit provider" onClick={() => openEditModal(provider)}>
                         <IconEdit size={16} />
                       </ActionIcon>
                     </Tooltip>
@@ -295,6 +295,7 @@ export default function SSOSettingsPage() {
                       <ActionIcon
                         variant="subtle"
                         color="blue"
+                        aria-label="Auto-discover endpoints"
                         loading={discoverMutation.isPending}
                         onClick={() => discoverMutation.mutate(provider.id)}
                       >
@@ -305,6 +306,7 @@ export default function SSOSettingsPage() {
                       <ActionIcon
                         variant="subtle"
                         color="teal"
+                        aria-label="Test connection"
                         loading={testMutation.isPending}
                         onClick={() => testMutation.mutate(provider.id)}
                       >
@@ -312,7 +314,7 @@ export default function SSOSettingsPage() {
                       </ActionIcon>
                     </Tooltip>
                     <Tooltip label="Delete">
-                      <ActionIcon variant="subtle" color="red" onClick={() => deleteMutation.mutate(provider.id)}>
+                      <ActionIcon variant="subtle" color="red" aria-label="Delete provider" onClick={() => deleteMutation.mutate(provider.id)}>
                         <IconTrash size={16} />
                       </ActionIcon>
                     </Tooltip>

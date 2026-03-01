@@ -65,13 +65,34 @@ export default function SearchOverlay({ opened, onClose }: Props) {
         onChange={(e) => setQuery(e.currentTarget.value)}
         autoFocus
         size="md"
+        role="combobox"
+        aria-expanded={results.length > 0}
+        aria-controls="search-results-list"
+        aria-autocomplete="list"
       />
-      <Stack gap="xs" mt="md">
+      <div
+        aria-live="polite"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          borderWidth: 0,
+        }}
+      >
+        {query.length >= 2 ? `${results.length} result${results.length !== 1 ? 's' : ''} found` : ''}
+      </div>
+      <Stack gap="xs" mt="md" role="listbox" aria-label="Search results" id="search-results-list">
         {results.map((r) => (
           <UnstyledButton
             key={`${r.type}-${r.id}`}
             onClick={() => handleSelect(r)}
             p="sm"
+            role="option"
             style={{ borderRadius: 'var(--mantine-radius-sm)', ':hover': { backgroundColor: 'var(--mantine-color-gray-1)' } }}
           >
             <Group justify="space-between">

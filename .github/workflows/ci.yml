@@ -194,10 +194,10 @@ jobs:
             --coverage.reporter=text \
             --coverage.reporter=html \
             --coverage.reporter=lcov \
-            --coverage.thresholds.lines=4 \
-            --coverage.thresholds.functions=4 \
-            --coverage.thresholds.branches=4 \
-            --coverage.thresholds.statements=4
+            --coverage.thresholds.lines=5 \
+            --coverage.thresholds.functions=5 \
+            --coverage.thresholds.branches=5 \
+            --coverage.thresholds.statements=5
 
       - name: Upload coverage report
         if: always()

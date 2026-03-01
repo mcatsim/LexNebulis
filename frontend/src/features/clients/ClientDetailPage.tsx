@@ -313,10 +313,10 @@ export default function ClientDetailPage() {
     <Stack>
       <Group justify="space-between">
         <Group>
-          <ActionIcon variant="subtle" onClick={() => navigate('/clients')}>
+          <ActionIcon variant="subtle" aria-label="Go back" onClick={() => navigate('/clients')}>
             <IconArrowLeft size={20} />
           </ActionIcon>
-          <Title order={2}>{getDisplayName()}</Title>
+          <Title order={1}>{getDisplayName()}</Title>
           <Badge color={STATUS_COLORS[client.status]} variant="light">
             {client.status}
           </Badge>

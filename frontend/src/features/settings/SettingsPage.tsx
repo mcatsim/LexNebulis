@@ -5,7 +5,7 @@ export default function SettingsPage() {
   return (
     <Stack>
       <div>
-        <Title order={2}>Account Settings</Title>
+        <Title order={1}>Account Settings</Title>
         <Text c="dimmed" size="sm">Manage your account security and preferences</Text>
       </div>
       <TwoFactorSetup />

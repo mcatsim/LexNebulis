@@ -217,7 +217,7 @@ function ChartOfAccountsTab() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={4}>Chart of Accounts</Title>
+        <Title order={2}>Chart of Accounts</Title>
         <Group>
           <Button
             variant="outline"
@@ -241,13 +241,13 @@ function ChartOfAccountsTab() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Code</Table.Th>
-              <Table.Th>Name</Table.Th>
-              <Table.Th>Type</Table.Th>
-              <Table.Th>QB Name</Table.Th>
-              <Table.Th>Xero Code</Table.Th>
-              <Table.Th>Active</Table.Th>
-              <Table.Th>Actions</Table.Th>
+              <Table.Th scope="col">Code</Table.Th>
+              <Table.Th scope="col">Name</Table.Th>
+              <Table.Th scope="col">Type</Table.Th>
+              <Table.Th scope="col">QB Name</Table.Th>
+              <Table.Th scope="col">Xero Code</Table.Th>
+              <Table.Th scope="col">Active</Table.Th>
+              <Table.Th scope="col">Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -276,12 +276,13 @@ function ChartOfAccountsTab() {
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                    <ActionIcon variant="subtle" color="blue" onClick={() => openEdit(account)}>
+                    <ActionIcon variant="subtle" color="blue" aria-label="Edit account" onClick={() => openEdit(account)}>
                       <IconEdit size={16} />
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
                       color="red"
+                      aria-label="Delete account"
                       onClick={() => deleteMutation.mutate(account.id)}
                       loading={deleteMutation.isPending}
                     >
@@ -476,7 +477,7 @@ function AccountMappingsTab() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={4}>Account Mappings</Title>
+        <Title order={2}>Account Mappings</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={openCreate}>
           Create Mapping
         </Button>
@@ -490,10 +491,10 @@ function AccountMappingsTab() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Source Type</Table.Th>
-              <Table.Th>Account</Table.Th>
-              <Table.Th>Default</Table.Th>
-              <Table.Th>Actions</Table.Th>
+              <Table.Th scope="col">Source Type</Table.Th>
+              <Table.Th scope="col">Account</Table.Th>
+              <Table.Th scope="col">Default</Table.Th>
+              <Table.Th scope="col">Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -528,12 +529,13 @@ function AccountMappingsTab() {
                 </Table.Td>
                 <Table.Td>
                   <Group gap="xs">
-                    <ActionIcon variant="subtle" color="blue" onClick={() => openEdit(mapping)}>
+                    <ActionIcon variant="subtle" color="blue" aria-label="Edit mapping" onClick={() => openEdit(mapping)}>
                       <IconEdit size={16} />
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
                       color="red"
+                      aria-label="Delete mapping"
                       onClick={() => deleteMutation.mutate(mapping.id)}
                       loading={deleteMutation.isPending}
                     >
@@ -651,7 +653,7 @@ function ExportTab() {
     <Stack>
       <Card shadow="sm" padding="lg" withBorder>
         <Stack>
-          <Title order={4}>Export Accounting Data</Title>
+          <Title order={2}>Export Accounting Data</Title>
 
           <Group grow>
             <Select
@@ -709,7 +711,7 @@ function ExportTab() {
         <Card shadow="sm" padding="lg" withBorder>
           <Stack>
             <Group justify="space-between">
-              <Title order={4}>Preview</Title>
+              <Title order={2}>Preview</Title>
               <Group>
                 <Badge variant="light" size="lg">
                   {previewData.row_count ?? 0} records
@@ -725,7 +727,7 @@ function ExportTab() {
                 <Table.Thead>
                   <Table.Tr>
                     {sampleKeys.map((key) => (
-                      <Table.Th key={key}>{key}</Table.Th>
+                      <Table.Th scope="col" key={key}>{key}</Table.Th>
                     ))}
                   </Table.Tr>
                 </Table.Thead>
@@ -788,17 +790,17 @@ function ExportHistoryTab() {
 
   return (
     <Stack>
-      <Title order={4}>Export History</Title>
+      <Title order={2}>Export History</Title>
 
       <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Date</Table.Th>
-            <Table.Th>Format</Table.Th>
-            <Table.Th>Type</Table.Th>
-            <Table.Th>Date Range</Table.Th>
-            <Table.Th>Records</Table.Th>
-            <Table.Th>Exported By</Table.Th>
+            <Table.Th scope="col">Date</Table.Th>
+            <Table.Th scope="col">Format</Table.Th>
+            <Table.Th scope="col">Type</Table.Th>
+            <Table.Th scope="col">Date Range</Table.Th>
+            <Table.Th scope="col">Records</Table.Th>
+            <Table.Th scope="col">Exported By</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -859,7 +861,7 @@ export default function AccountingPage() {
     <Stack>
       <Group>
         <IconCalculator size={28} />
-        <Title order={2}>Accounting Integration</Title>
+        <Title order={1}>Accounting Integration</Title>
       </Group>
 
       <Tabs defaultValue="accounts">

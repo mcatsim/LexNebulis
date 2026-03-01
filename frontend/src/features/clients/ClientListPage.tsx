@@ -199,7 +199,7 @@ export default function ClientListPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Clients</Title>
+        <Title order={1}>Clients</Title>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setCreateModalOpen(true)}>
           New Client
         </Button>

@@ -316,6 +316,14 @@ export const mockPayment: Payment = {
   created_at: '2024-07-15T00:00:00Z',
 };
 
+export const mockPaymentSettings = {
+  stripe_enabled: false,
+  stripe_publishable_key: null,
+  payment_methods: ['credit_card', 'ach'],
+  default_currency: 'usd',
+  auto_receipt: true,
+};
+
 // ── Trust Accounts ────────────────────────────────────────────
 
 export const mockTrustAccount: TrustAccount = {

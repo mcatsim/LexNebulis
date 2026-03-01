@@ -129,7 +129,7 @@ function PaymentLinksTab() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={4}>Payment Links</Title>
+        <Title order={2}>Payment Links</Title>
         <Button leftSection={<IconLink size={16} />} onClick={() => setCreateOpen(true)}>
           Create Payment Link
         </Button>
@@ -143,13 +143,13 @@ function PaymentLinksTab() {
         <Table striped highlightOnHover>
           <Table.Thead>
             <Table.Tr>
-              <Table.Th>Invoice #</Table.Th>
-              <Table.Th>Client</Table.Th>
-              <Table.Th>Amount</Table.Th>
-              <Table.Th>Status</Table.Th>
-              <Table.Th>Created</Table.Th>
-              <Table.Th>Expires</Table.Th>
-              <Table.Th>Actions</Table.Th>
+              <Table.Th scope="col">Invoice #</Table.Th>
+              <Table.Th scope="col">Client</Table.Th>
+              <Table.Th scope="col">Amount</Table.Th>
+              <Table.Th scope="col">Status</Table.Th>
+              <Table.Th scope="col">Created</Table.Th>
+              <Table.Th scope="col">Expires</Table.Th>
+              <Table.Th scope="col">Actions</Table.Th>
             </Table.Tr>
           </Table.Thead>
           <Table.Tbody>
@@ -179,7 +179,7 @@ function PaymentLinksTab() {
                     <CopyButton value={window.location.origin + '/pay/' + link.access_token}>
                       {({ copied, copy }) => (
                         <Tooltip label={copied ? 'Copied' : 'Copy link'}>
-                          <ActionIcon variant="subtle" color={copied ? 'green' : 'blue'} onClick={copy}>
+                          <ActionIcon variant="subtle" color={copied ? 'green' : 'blue'} aria-label="Copy payment link" onClick={copy}>
                             {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
                           </ActionIcon>
                         </Tooltip>
@@ -191,6 +191,7 @@ function PaymentLinksTab() {
                           <ActionIcon
                             variant="subtle"
                             color="teal"
+                            aria-label="Send payment link"
                             onClick={() => sendMutation.mutate(link.id)}
                             loading={sendMutation.isPending}
                           >
@@ -201,6 +202,7 @@ function PaymentLinksTab() {
                           <ActionIcon
                             variant="subtle"
                             color="red"
+                            aria-label="Cancel payment link"
                             onClick={() => cancelMutation.mutate(link.id)}
                             loading={cancelMutation.isPending}
                           >
@@ -350,7 +352,7 @@ function SettingsTab() {
 
   return (
     <Stack>
-      <Title order={4}>Payment Processor Configuration</Title>
+      <Title order={2}>Payment Processor Configuration</Title>
 
       <Card shadow="sm" padding="lg" withBorder>
         <Stack>
@@ -453,17 +455,17 @@ function WebhooksTab() {
 
   return (
     <Stack>
-      <Title order={4}>Webhook Events</Title>
+      <Title order={2}>Webhook Events</Title>
 
       <Table striped highlightOnHover>
         <Table.Thead>
           <Table.Tr>
-            <Table.Th>Processor</Table.Th>
-            <Table.Th>Event Type</Table.Th>
-            <Table.Th>Event ID</Table.Th>
-            <Table.Th>Processed</Table.Th>
-            <Table.Th>Error</Table.Th>
-            <Table.Th>Time</Table.Th>
+            <Table.Th scope="col">Processor</Table.Th>
+            <Table.Th scope="col">Event Type</Table.Th>
+            <Table.Th scope="col">Event ID</Table.Th>
+            <Table.Th scope="col">Processed</Table.Th>
+            <Table.Th scope="col">Error</Table.Th>
+            <Table.Th scope="col">Time</Table.Th>
           </Table.Tr>
         </Table.Thead>
         <Table.Tbody>
@@ -487,9 +489,9 @@ function WebhooksTab() {
               </Table.Td>
               <Table.Td>
                 {wh.processed ? (
-                  <IconCheck size={16} color="green" />
+                  <><IconCheck size={16} color="green" aria-hidden="true" /> Processed</>
                 ) : (
-                  <IconX size={16} color="red" />
+                  <><IconX size={16} color="red" aria-hidden="true" /> Unprocessed</>
                 )}
               </Table.Td>
               <Table.Td>
@@ -532,7 +534,7 @@ export default function PaymentsPage() {
     <Stack>
       <Group>
         <IconCreditCard size={28} />
-        <Title order={2}>Online Payments</Title>
+        <Title order={1}>Online Payments</Title>
       </Group>
 
       <Tabs defaultValue="links">

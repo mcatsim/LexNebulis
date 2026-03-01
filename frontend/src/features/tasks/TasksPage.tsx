@@ -139,6 +139,7 @@ function TaskDetailRow({ task }: { task: Task }) {
               variant="subtle"
               color="red"
               size="xs"
+              aria-label="Delete checklist item"
               onClick={() => deleteChecklistMutation.mutate(item.id)}
             >
               <IconTrash size={12} />
@@ -511,6 +512,7 @@ function CreateWorkflowModal({
                     variant="subtle"
                     color="red"
                     size="sm"
+                    aria-label="Delete workflow step"
                     onClick={() => removeStep(index)}
                   >
                     <IconTrash size={14} />
@@ -814,6 +816,7 @@ export default function TasksPage() {
         <ActionIcon
           variant="subtle"
           size="sm"
+          aria-label="Toggle task details"
           onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
             setExpandedTaskId(expandedTaskId === task.id ? null : task.id);
@@ -909,6 +912,7 @@ export default function TasksPage() {
             variant="subtle"
             color="red"
             size="sm"
+            aria-label="Delete task"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               deleteTaskMutation.mutate(task.id);
@@ -924,7 +928,7 @@ export default function TasksPage() {
   return (
     <Stack>
       <Group justify="space-between">
-        <Title order={2}>Tasks & Workflows</Title>
+        <Title order={1}>Tasks & Workflows</Title>
       </Group>
 
       <Tabs value={activeTab} onChange={setActiveTab}>
@@ -1074,6 +1078,7 @@ export default function TasksPage() {
                           variant="subtle"
                           color="red"
                           size="sm"
+                          aria-label="Delete workflow template"
                           onClick={() => deleteWorkflowMutation.mutate(template.id)}
                         >
                           <IconTrash size={14} />
