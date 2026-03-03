@@ -51,3 +51,9 @@ pgdata/
 
 # Redis data
 redis-data/
+
+# Test coverage
+coverage/
+**/coverage/
+.coverage
+.coverage.*
