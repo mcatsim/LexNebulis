@@ -7,6 +7,7 @@ from typing import Optional
 
 import httpx
 import jwt as jose_jwt
+from jwt import PyJWKClient
 from cryptography.fernet import InvalidToken
 from onelogin.saml2.auth import OneLogin_Saml2_Auth
 from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser
@@ -422,16 +423,34 @@ def generate_sp_metadata(provider: SSOProvider) -> str:
     return metadata
 
 
-async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[User, str, str]:
-    """
-    Handle the SSO callback from the IdP.
+async def _decode_id_token(id_token: str, jwks_uri: Optional[str], client_id: str) -> dict:
+    """Decode and verify an OIDC id_token using the provider's JWKS.
 
-    Validates state, exchanges code for tokens, extracts user claims,
-    finds or creates the user, and issues app JWT tokens.
-
-    Returns (user, access_token, refresh_token_value).
+    Raises ValueError if the token cannot be verified.
     """
-    # 1. Validate state and find the SSO session
+    if not jwks_uri:
+        raise ValueError("Cannot verify id_token: no JWKS URI configured for this provider")
+
+    try:
+        jwks_client = PyJWKClient(jwks_uri)
+        signing_key = jwks_client.get_signing_key_from_jwt(id_token)
+        claims = jose_jwt.decode(
+            id_token,
+            signing_key.key,
+            algorithms=["RS256", "ES256"],
+            audience=client_id,
+            options={"verify_exp": True},
+        )
+        return claims
+    except Exception as e:
+        raise ValueError(f"id_token signature verification failed: {e}")
+
+
+async def _consume_sso_state(db: AsyncSession, state: str) -> SSOSession:
+    """Validate and delete the SSO state parameter in one operation.
+
+    Raises ValueError if the state is invalid, expired, or already used.
+    """
     result = await db.execute(select(SSOSession).where(SSOSession.state == state))
     sso_session = result.scalar_one_or_none()
 
@@ -444,7 +463,29 @@ async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[
         if expires.tzinfo is None:
             expires = expires.replace(tzinfo=timezone.utc)
         if expires < datetime.now(timezone.utc):
+            await db.delete(sso_session)
             raise ValueError("SSO session has expired")
+
+    # Consume: delete the session so it cannot be reused
+    provider_id = sso_session.provider_id
+    await db.delete(sso_session)
+    await db.flush()
+
+    # Return the session (detached) with the info we need
+    return sso_session
+
+
+async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[User, str, str]:
+    """
+    Handle the SSO callback from the IdP.
+
+    Validates state, exchanges code for tokens, extracts user claims,
+    finds or creates the user, and issues app JWT tokens.
+
+    Returns (user, access_token, refresh_token_value).
+    """
+    # 1. Validate and consume the state parameter (one-time use)
+    sso_session = await _consume_sso_state(db, state)
 
     # 2. Get the provider
     provider_result = await db.execute(select(SSOProvider).where(SSOProvider.id == sso_session.provider_id))
@@ -486,16 +527,15 @@ async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[
     claims: dict = {}
 
     if id_token:
-        # Decode the id_token. For simplicity, we decode without verification
-        # against JWKS here (the token was just received directly from the IdP
-        # over HTTPS). In production, you'd verify the signature using the JWKS.
         try:
-            claims = jose_jwt.decode(
+            claims = await _decode_id_token(
                 id_token,
-                options={"verify_signature": False},
-                algorithms=["RS256", "HS256"],
+                jwks_uri=provider.jwks_uri,
+                client_id=provider.client_id or "",
             )
-        except Exception:
+        except ValueError:
+            # If JWKS verification fails, fall back to userinfo endpoint only
+            # (the access_token was obtained directly from the IdP over TLS)
             claims = {}
 
     # If we don't have enough claims, try the userinfo endpoint
@@ -522,10 +562,16 @@ async def handle_sso_callback(db: AsyncSession, code: str, state: str) -> tuple[
     # 5. Find or create user
     user = await _find_or_create_user(db, provider, email, full_name, claims)
 
-    # 6. Update SSO session
-    sso_session.user_id = user.id
-    sso_session.external_id = external_id
-    sso_session.id_token_claims = claims
+    # 6. Create new SSO session for the authenticated user
+    new_sso_session = SSOSession(
+        provider_id=sso_session.provider_id,
+        user_id=user.id,
+        external_id=external_id,
+        state=secrets.token_urlsafe(32),
+        id_token_claims=claims,
+        expires_at=datetime.now(timezone.utc) + timedelta(hours=8),
+    )
+    db.add(new_sso_session)
     await db.flush()
 
     # 7. Issue app JWT tokens
