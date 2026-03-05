@@ -52,6 +52,7 @@ from app.auth.service import (
     webauthn_registration_begin,
     webauthn_registration_complete,
 )
+from app.common.rate_limit import rate_limit_login, rate_limit_2fa
 from app.common.pagination import PaginatedResponse, PaginationParams
 from app.database import get_db
 from app.dependencies import get_current_user, require_roles
@@ -61,6 +62,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=LoginResponse)
 async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
+    rate_limit_login(request)
     user = await authenticate_user(db, data.email, data.password)
     if user is None:
         # Commit to persist failed-login counter / lockout state before
@@ -133,6 +135,7 @@ async def change_password(
 @router.post("/2fa/verify", response_model=LoginResponse)
 async def verify_2fa_login(data: TwoFactorLoginRequest, request: Request, db: Annotated[AsyncSession, Depends(get_db)]):
     """Verify a TOTP code (or recovery code) to complete 2FA login."""
+    rate_limit_2fa(request)
     user_id = verify_2fa_pending_token(data.temp_token)
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired 2FA token")
