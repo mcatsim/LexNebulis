@@ -4,6 +4,7 @@ In-memory sliding window rate limiter.
 Uses a simple dict-based approach for single-instance deployments.
 For clustered deployments (K8s), swap to Redis-backed implementation.
 """
+
 import time
 from collections import defaultdict
 from threading import Lock

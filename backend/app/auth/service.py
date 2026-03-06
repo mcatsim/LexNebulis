@@ -114,6 +114,7 @@ def verify_recovery_code(stored_hashes_json: str, code: str) -> tuple[bool, str]
     Returns (valid, updated_hashes_json) with used code removed.
     """
     import hmac as _hmac
+
     code_hash = hashlib.sha256(code.upper().encode()).hexdigest()
     hashes = json.loads(stored_hashes_json)
     for i, stored_hash in enumerate(hashes):
@@ -345,15 +346,11 @@ async def webauthn_auth_complete(user: User, credential_data: dict, db: AsyncSes
 
 
 async def get_user_webauthn_credentials(user_id: uuid.UUID, db: AsyncSession) -> list:
-    result = await db.execute(
-        select(WebAuthnCredential).where(WebAuthnCredential.user_id == user_id)
-    )
+    result = await db.execute(select(WebAuthnCredential).where(WebAuthnCredential.user_id == user_id))
     return list(result.scalars().all())
 
 
-async def delete_webauthn_credential(
-    credential_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession
-) -> None:
+async def delete_webauthn_credential(credential_id: uuid.UUID, user_id: uuid.UUID, db: AsyncSession) -> None:
     result = await db.execute(
         select(WebAuthnCredential).where(
             WebAuthnCredential.id == credential_id,
@@ -367,9 +364,7 @@ async def delete_webauthn_credential(
     await db.delete(credential)
     await db.flush()
 
-    remaining = await db.execute(
-        select(WebAuthnCredential).where(WebAuthnCredential.user_id == user_id)
-    )
+    remaining = await db.execute(select(WebAuthnCredential).where(WebAuthnCredential.user_id == user_id))
     if remaining.scalar_one_or_none() is None:
         user_result = await db.execute(select(User).where(User.id == user_id))
         user = user_result.scalar_one_or_none()
@@ -541,4 +536,5 @@ async def bootstrap_admin():
         db.add(admin)
         await db.commit()
         import logging
+
         logging.getLogger(__name__).info("Bootstrap admin created")

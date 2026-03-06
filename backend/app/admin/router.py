@@ -452,16 +452,12 @@ def _siem_config_to_response(config: SiemConfig) -> dict:
         "syslog_host": config.syslog_host,
         "syslog_port": config.syslog_port,
         "syslog_protocol": (
-            config.syslog_protocol.value
-            if hasattr(config.syslog_protocol, "value")
-            else config.syslog_protocol
+            config.syslog_protocol.value if hasattr(config.syslog_protocol, "value") else config.syslog_protocol
         ),
         "syslog_tls_ca_cert": config.syslog_tls_ca_cert,
         "realtime_enabled": config.realtime_enabled,
         "realtime_format": (
-            config.realtime_format.value
-            if hasattr(config.realtime_format, "value")
-            else config.realtime_format
+            config.realtime_format.value if hasattr(config.realtime_format, "value") else config.realtime_format
         ),
         "created_at": config.created_at.isoformat() if config.created_at else None,
         "updated_at": config.updated_at.isoformat() if config.updated_at else None,
@@ -512,11 +508,7 @@ async def update_siem_config(
         changes["syslog_port"] = {"old": config.syslog_port, "new": data.syslog_port}
         config.syslog_port = data.syslog_port
     if data.syslog_protocol is not None:
-        old_proto = (
-            config.syslog_protocol.value
-            if hasattr(config.syslog_protocol, "value")
-            else config.syslog_protocol
-        )
+        old_proto = config.syslog_protocol.value if hasattr(config.syslog_protocol, "value") else config.syslog_protocol
         changes["syslog_protocol"] = {"old": old_proto, "new": data.syslog_protocol}
         config.syslog_protocol = SyslogProtocol(data.syslog_protocol)
     if data.syslog_tls_ca_cert is not None:
@@ -526,11 +518,7 @@ async def update_siem_config(
         changes["realtime_enabled"] = {"old": config.realtime_enabled, "new": data.realtime_enabled}
         config.realtime_enabled = data.realtime_enabled
     if data.realtime_format is not None:
-        old_fmt = (
-            config.realtime_format.value
-            if hasattr(config.realtime_format, "value")
-            else config.realtime_format
-        )
+        old_fmt = config.realtime_format.value if hasattr(config.realtime_format, "value") else config.realtime_format
         changes["realtime_format"] = {"old": old_fmt, "new": data.realtime_format}
         config.realtime_format = SiemFormat(data.realtime_format)
 
@@ -591,18 +579,14 @@ async def test_siem_webhook(
         try:
             secret = decrypt_field(config.webhook_secret_encrypted)
             sign_payload = timestamp.encode("utf-8") + b"." + payload_bytes
-            signature = hmac.new(
-                secret.encode("utf-8"), sign_payload, hashlib.sha256
-            ).hexdigest()
+            signature = hmac.new(secret.encode("utf-8"), sign_payload, hashlib.sha256).hexdigest()
             headers["X-LexNebulis-Signature"] = f"sha256={signature}"
         except Exception:
             pass
 
     try:
         async with httpx_lib.AsyncClient(timeout=10) as client:
-            resp = await client.post(
-                config.webhook_url, content=payload_bytes, headers=headers
-            )
+            resp = await client.post(config.webhook_url, content=payload_bytes, headers=headers)
         return {"status": "sent", "response_status": resp.status_code}
     except Exception as e:
         return {"status": "error", "detail": str(e)}
@@ -626,7 +610,7 @@ async def test_siem_syslog(
 
     test_message = (
         f"<134>1 {datetime.utcnow().isoformat()}Z lexnebulis lexnebulis - "
-        f"SIEM-TEST [lexnebulis@0 test=\"true\"] "
+        f'SIEM-TEST [lexnebulis@0 test="true"] '
         f"Syslog connectivity test from LexNebulis by {admin.email}"
     )
 

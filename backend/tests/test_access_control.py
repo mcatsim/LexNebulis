@@ -1,4 +1,5 @@
 """Tests for resource-level access control."""
+
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -39,8 +40,6 @@ class TestMatterAccessControl:
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
-    async def test_unassigned_attorney_cannot_access_matter(
-        self, second_attorney_client, sample_matter
-    ):
+    async def test_unassigned_attorney_cannot_access_matter(self, second_attorney_client, sample_matter):
         resp = await second_attorney_client.get(f"/api/matters/{sample_matter['id']}")
         assert resp.status_code == 403

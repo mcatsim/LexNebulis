@@ -97,6 +97,7 @@ async def health_check():
 
 
 if settings.environment == "test":
+
     @app.get("/api/health/crash-test")
     async def crash_test():
         raise RuntimeError("Deliberate crash for testing exception handler")

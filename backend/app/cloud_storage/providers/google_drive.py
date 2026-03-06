@@ -148,12 +148,16 @@ class GoogleDriveProvider(CloudStorageProvider):
 
         boundary = "----LexNebulisBoundary"
         body = (
-            f"--{boundary}\r\n"
-            f'Content-Type: application/json; charset=UTF-8\r\n\r\n'
-            f"{json.dumps(metadata)}\r\n"
-            f"--{boundary}\r\n"
-            f"Content-Type: {mime_type}\r\n\r\n"
-        ).encode() + content + f"\r\n--{boundary}--".encode()
+            (
+                f"--{boundary}\r\n"
+                f"Content-Type: application/json; charset=UTF-8\r\n\r\n"
+                f"{json.dumps(metadata)}\r\n"
+                f"--{boundary}\r\n"
+                f"Content-Type: {mime_type}\r\n\r\n"
+            ).encode()
+            + content
+            + f"\r\n--{boundary}--".encode()
+        )
 
         async with httpx.AsyncClient() as client:
             resp = await client.post(

@@ -56,9 +56,7 @@ async def create_sso_provider(db: AsyncSession, data: dict, created_by: Optional
         saml_sp_entity_id=data.get("saml_sp_entity_id"),
         saml_idp_metadata_url=data.get("saml_idp_metadata_url"),
         saml_idp_metadata_xml=data.get("saml_idp_metadata_xml"),
-        saml_name_id_format=data.get(
-            "saml_name_id_format", "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"
-        ),
+        saml_name_id_format=data.get("saml_name_id_format", "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress"),
         saml_sign_requests=data.get("saml_sign_requests", False),
         saml_sp_certificate=data.get("saml_sp_certificate"),
         saml_attribute_mapping=data.get("saml_attribute_mapping"),
@@ -258,8 +256,7 @@ def _build_saml_settings(provider: SSOProvider) -> dict:
             "url": acs_url,
             "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST",
         },
-        "NameIDFormat": provider.saml_name_id_format
-        or "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress",
+        "NameIDFormat": provider.saml_name_id_format or "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress",
     }
 
     if provider.saml_sp_certificate:
@@ -447,9 +444,7 @@ async def _consume_sso_state(db: AsyncSession, state: str) -> SSOSession:
 
     Raises ValueError if the state is invalid, expired, or already used.
     """
-    result = await db.execute(
-        select(SSOSession).where(SSOSession.state == state).with_for_update()
-    )
+    result = await db.execute(select(SSOSession).where(SSOSession.state == state).with_for_update())
     sso_session = result.scalar_one_or_none()
 
     if sso_session is None:

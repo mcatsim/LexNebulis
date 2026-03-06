@@ -1,4 +1,5 @@
 """Tests for auth hardening fixes."""
+
 import pytest
 
 from app.auth.service import (
@@ -34,15 +35,14 @@ class TestRecoveryCodeTiming:
     def test_verify_uses_constant_time_comparison(self):
         """verify_recovery_code should use hmac.compare_digest, not 'in' operator."""
         import inspect
+
         source = inspect.getsource(verify_recovery_code)
         assert "compare_digest" in source
 
 
 class TestPasswordChangeRevokesTokens:
     @pytest.mark.asyncio
-    async def test_password_change_revokes_refresh_tokens(
-        self, admin_client, admin_user
-    ):
+    async def test_password_change_revokes_refresh_tokens(self, admin_client, admin_user):
         """After password change, existing refresh tokens should be revoked."""
         # Login to get a refresh token
         resp = await admin_client.put(

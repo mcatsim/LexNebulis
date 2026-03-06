@@ -107,6 +107,7 @@ app.dependency_overrides[get_db] = _override_get_db
 def _clear_rate_limits():
     """Clear in-memory rate limit windows between every test."""
     from app.common.rate_limit import _windows
+
     _windows.clear()
     yield
     _windows.clear()

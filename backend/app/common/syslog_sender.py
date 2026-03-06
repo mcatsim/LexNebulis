@@ -76,9 +76,7 @@ class SyslogSender:
         writer.write(data + b"\n")
         await writer.drain()
 
-    async def _send_tls(
-        self, host: str, port: int, data: bytes, tls_ca_cert: Optional[str] = None
-    ) -> None:
+    async def _send_tls(self, host: str, port: int, data: bytes, tls_ca_cert: Optional[str] = None) -> None:
         key = (host, port, "tls")
         conn = self._tcp_connections.get(key)
         if conn is not None:

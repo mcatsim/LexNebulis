@@ -47,9 +47,7 @@ class TestSSOStateConsumption:
         """After callback processes a state, it must be deleted from the DB."""
         async with TestSession() as db:
             # Verify state exists before
-            result = await db.execute(
-                select(SSOSession).where(SSOSession.state == "test-state-token-123")
-            )
+            result = await db.execute(select(SSOSession).where(SSOSession.state == "test-state-token-123"))
             assert result.scalar_one_or_none() is not None
 
             # Consume the state
@@ -58,9 +56,7 @@ class TestSSOStateConsumption:
             await db.commit()
 
             # Verify state is deleted
-            result2 = await db.execute(
-                select(SSOSession).where(SSOSession.state == "test-state-token-123")
-            )
+            result2 = await db.execute(select(SSOSession).where(SSOSession.state == "test-state-token-123"))
             assert result2.scalar_one_or_none() is None
 
     @pytest.mark.asyncio

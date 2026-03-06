@@ -1,4 +1,5 @@
 """Tests for consolidated encryption module."""
+
 import pytest
 
 from app.common.encryption import decrypt_field, encrypt_field
@@ -38,6 +39,7 @@ class TestEncryption:
     def test_legacy_ciphertext_still_decryptable(self):
         """Backward compatibility: old Fernet tokens (no salt prefix) still work."""
         from app.common.encryption import _get_legacy_fernet
+
         legacy_fernet = _get_legacy_fernet()
         legacy_encrypted = legacy_fernet.encrypt(b"legacy-secret").decode()
         # decrypt_field should try new format first, fall back to legacy

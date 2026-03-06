@@ -67,9 +67,7 @@ def push_siem_event(self, audit_log_id: str):
 
     session = _get_sync_session()
     try:
-        result = session.execute(
-            select(AuditLog).where(AuditLog.id == uuid.UUID(audit_log_id))
-        )
+        result = session.execute(select(AuditLog).where(AuditLog.id == uuid.UUID(audit_log_id)))
         log_entry = result.scalar_one_or_none()
         if log_entry is None:
             logger.warning("Audit log entry %s not found", audit_log_id)
@@ -107,9 +105,7 @@ def push_siem_event(self, audit_log_id: str):
         # Send via syslog if configured
         if config.syslog_host:
             protocol = (
-                config.syslog_protocol.value
-                if hasattr(config.syslog_protocol, "value")
-                else config.syslog_protocol
+                config.syslog_protocol.value if hasattr(config.syslog_protocol, "value") else config.syslog_protocol
             )
             push_siem_syslog.delay(
                 config.syslog_host,
@@ -120,7 +116,7 @@ def push_siem_event(self, audit_log_id: str):
             )
     except Exception as exc:
         logger.error("Error pushing SIEM event: %s", exc)
-        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+        raise self.retry(exc=exc, countdown=2**self.request.retries)
     finally:
         session.close()
 
@@ -138,9 +134,7 @@ def push_siem_webhook(self, url: str, payload: dict, secret: str):
         signature = ""
         if secret:
             sign_payload = timestamp.encode("utf-8") + b"." + payload_bytes
-            signature = hmac.new(
-                secret.encode("utf-8"), sign_payload, hashlib.sha256
-            ).hexdigest()
+            signature = hmac.new(secret.encode("utf-8"), sign_payload, hashlib.sha256).hexdigest()
 
         headers = {
             "Content-Type": "application/json",
@@ -156,7 +150,7 @@ def push_siem_webhook(self, url: str, payload: dict, secret: str):
         logger.info("SIEM webhook sent to %s (status %d)", url, resp.status_code)
     except Exception as exc:
         logger.error("SIEM webhook error: %s", exc)
-        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+        raise self.retry(exc=exc, countdown=2**self.request.retries)
 
 
 @celery.task(
@@ -180,13 +174,11 @@ def push_siem_syslog(
 
         loop = asyncio.new_event_loop()
         try:
-            loop.run_until_complete(
-                send_syslog_message(host, port, protocol, message, tls_ca_cert)
-            )
+            loop.run_until_complete(send_syslog_message(host, port, protocol, message, tls_ca_cert))
         finally:
             loop.close()
 
         logger.info("SIEM syslog sent to %s:%d via %s", host, port, protocol)
     except Exception as exc:
         logger.error("SIEM syslog error: %s", exc)
-        raise self.retry(exc=exc, countdown=2 ** self.request.retries)
+        raise self.retry(exc=exc, countdown=2**self.request.retries)

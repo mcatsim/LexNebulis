@@ -131,6 +131,7 @@ async def change_password(
 
     # Revoke all existing refresh tokens (force re-login on other devices)
     from app.auth.models import RefreshToken
+
     tokens_result = await db.execute(
         select(RefreshToken).where(
             RefreshToken.user_id == current_user.id,
@@ -299,9 +300,7 @@ async def webauthn_register_complete_endpoint(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
     try:
-        credential = await webauthn_registration_complete(
-            current_user, data.credential, data.name, db
-        )
+        credential = await webauthn_registration_complete(current_user, data.credential, data.name, db)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:

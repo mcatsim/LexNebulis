@@ -51,9 +51,7 @@ def refresh_cloud_tokens():
                 # Run async method synchronously
                 loop = asyncio.new_event_loop()
                 try:
-                    token_data = loop.run_until_complete(
-                        provider_impl.refresh_access_token(refresh_token)
-                    )
+                    token_data = loop.run_until_complete(provider_impl.refresh_access_token(refresh_token))
                 finally:
                     loop.close()
 
@@ -65,9 +63,7 @@ def refresh_cloud_tokens():
                 if new_refresh_token:
                     connection.refresh_token_encrypted = encrypt_field(new_refresh_token)
                 if expires_in:
-                    connection.token_expires_at = datetime.now(timezone.utc) + timedelta(
-                        seconds=int(expires_in)
-                    )
+                    connection.token_expires_at = datetime.now(timezone.utc) + timedelta(seconds=int(expires_in))
 
                 refreshed += 1
                 logger.info(

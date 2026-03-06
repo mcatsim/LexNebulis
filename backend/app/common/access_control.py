@@ -5,6 +5,7 @@ Admins have full access. Other roles are scoped to matters they are
 assigned to (as attorney) or have been granted access via matter teams
 (future). Ethical-wall blocked matters are always denied.
 """
+
 import uuid
 
 from fastapi import HTTPException, status
@@ -31,9 +32,8 @@ async def check_matter_access(
         return
 
     from app.matters.models import Matter
-    result = await db.execute(
-        select(Matter).where(Matter.id == matter_id)
-    )
+
+    result = await db.execute(select(Matter).where(Matter.id == matter_id))
     matter = result.scalar_one_or_none()
     if matter is None:
         raise HTTPException(
@@ -43,6 +43,7 @@ async def check_matter_access(
 
     # Check ethical walls first — always deny
     from app.conflicts.models import EthicalWall
+
     wall_result = await db.execute(
         select(EthicalWall).where(
             EthicalWall.matter_id == matter_id,

@@ -36,9 +36,7 @@ def _derive_key(salt: bytes) -> bytes:
         salt=salt,
         iterations=_ITERATIONS,
     )
-    return base64.urlsafe_b64encode(
-        kdf.derive(settings.field_encryption_key.encode())
-    )
+    return base64.urlsafe_b64encode(kdf.derive(settings.field_encryption_key.encode()))
 
 
 def _get_legacy_fernet() -> Fernet:
@@ -51,9 +49,7 @@ def _get_legacy_fernet() -> Fernet:
             salt=b"lexnebulis-field-encryption",
             iterations=100_000,
         )
-        key = base64.urlsafe_b64encode(
-            kdf.derive(settings.field_encryption_key.encode())
-        )
+        key = base64.urlsafe_b64encode(kdf.derive(settings.field_encryption_key.encode()))
         _legacy_fernet = Fernet(key)
     return _legacy_fernet
 
@@ -82,8 +78,8 @@ def decrypt_field(value: Optional[str]) -> Optional[str]:
         raw = None
 
     # New format: starts with $LN1$ prefix
-    if raw and raw[:len(_SALT_PREFIX)] == _SALT_PREFIX:
-        rest = raw[len(_SALT_PREFIX):]
+    if raw and raw[: len(_SALT_PREFIX)] == _SALT_PREFIX:
+        rest = raw[len(_SALT_PREFIX) :]
         salt = rest[:_SALT_LENGTH]
         ciphertext = rest[_SALT_LENGTH:]
         key = _derive_key(salt)
