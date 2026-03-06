@@ -19,6 +19,8 @@ def _cleanup_window(key: str, window_seconds: int) -> None:
     """Remove timestamps older than the window."""
     cutoff = time.monotonic() - window_seconds
     _windows[key] = [t for t in _windows[key] if t > cutoff]
+    if not _windows[key]:
+        del _windows[key]
 
 
 def check_rate_limit(
@@ -53,3 +55,15 @@ def rate_limit_2fa(request: Request) -> None:
     """Rate limit 2FA verification attempts by IP address."""
     ip = request.client.host if request.client else "unknown"
     check_rate_limit(f"2fa:{ip}", max_requests=5, window_seconds=300)
+
+
+def reset_rate_limit(key: str) -> None:
+    """Reset rate limit for a key (e.g., after successful login)."""
+    with _lock:
+        _windows.pop(key, None)
+
+
+def reset_login_rate_limit(request: Request) -> None:
+    """Clear login rate limit for an IP after successful authentication."""
+    ip = request.client.host if request.client else "unknown"
+    reset_rate_limit(f"login:{ip}")

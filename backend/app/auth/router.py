@@ -52,7 +52,7 @@ from app.auth.service import (
     webauthn_registration_begin,
     webauthn_registration_complete,
 )
-from app.common.rate_limit import rate_limit_login, rate_limit_2fa
+from app.common.rate_limit import rate_limit_login, rate_limit_2fa, reset_login_rate_limit
 from app.common.pagination import PaginatedResponse, PaginationParams
 from app.database import get_db
 from app.dependencies import get_current_user, require_roles
@@ -69,6 +69,9 @@ async def login(data: LoginRequest, request: Request, db: Annotated[AsyncSession
         # raising, because the dependency's exception handler will rollback.
         await db.commit()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+
+    # Successful auth — clear rate limit for this IP
+    reset_login_rate_limit(request)
 
     # If any MFA method is enabled, return a temporary token instead of full credentials
     mfa_methods: List[str] = []

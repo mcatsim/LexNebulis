@@ -38,6 +38,9 @@ async def list_matters(
     attorney_id: Optional[uuid.UUID] = None,
     litigation_type: Optional[LitigationType] = None,
 ):
+    # Non-admin users can only see matters they are assigned to
+    if current_user.role.value != "admin":
+        attorney_id = current_user.id
     matters, total = await get_matters(db, page, page_size, search, status, client_id, attorney_id, litigation_type)
     items = [MatterResponse.model_validate(m).model_dump() for m in matters]
     return PaginatedResponse.create(items=items, total=total, page=page, page_size=page_size)

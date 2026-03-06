@@ -451,7 +451,9 @@ async def _consume_sso_state(db: AsyncSession, state: str) -> SSOSession:
 
     Raises ValueError if the state is invalid, expired, or already used.
     """
-    result = await db.execute(select(SSOSession).where(SSOSession.state == state))
+    result = await db.execute(
+        select(SSOSession).where(SSOSession.state == state).with_for_update()
+    )
     sso_session = result.scalar_one_or_none()
 
     if sso_session is None:
